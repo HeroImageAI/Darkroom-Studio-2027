@@ -49,6 +49,10 @@ test("exact branding survives SVG delivery and editable project round-trip", asy
   await expect(
     page.getByRole("heading", { name: "owned-mark.svg", exact: true }),
   ).toBeVisible();
+  await page.getByLabel("Image width", { exact: true }).fill("100");
+  await expect(page.getByLabel("Image height", { exact: true })).toHaveValue(
+    "100",
+  );
   await page.getByLabel("x", { exact: true }).fill("300");
   await page.getByLabel("y", { exact: true }).fill("120");
   await page.getByText("Finish & export", { exact: true }).click();

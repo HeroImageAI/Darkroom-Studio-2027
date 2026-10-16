@@ -1477,10 +1477,44 @@ export function EditWorkspace({
                 )}
               </fieldset>
               {rasterAsset && (
-                <p className="muted">
-                  {Math.round(rasterAsset.width * chosen.transform.scaleX)} ×{" "}
-                  {Math.round(rasterAsset.height * chosen.transform.scaleY)} px
-                </p>
+                <fieldset disabled={locked}>
+                  <legend>Image size</legend>
+                  {(["width", "height"] as const).map((dimension) => {
+                    const axis = dimension === "width" ? "scaleX" : "scaleY";
+                    const currentSize =
+                      rasterAsset[dimension] * chosen.transform[axis];
+                    return (
+                      <label key={dimension}>
+                        {dimension === "width" ? "Width" : "Height"} (px)
+                        <input
+                          aria-label={"Image " + dimension}
+                          type="number"
+                          min="1"
+                          max="16384"
+                          step="0.1"
+                          value={Number(currentSize.toFixed(3))}
+                          onChange={(e) => {
+                            const n = Number(e.target.value);
+                            if (n >= 1 && n <= 16384)
+                              changeLayer({
+                                transform: {
+                                  ...chosen.transform,
+                                  scaleX:
+                                    (chosen.transform.scaleX * n) / currentSize,
+                                  scaleY:
+                                    (chosen.transform.scaleY * n) / currentSize,
+                                },
+                              });
+                          }}
+                        />
+                      </label>
+                    );
+                  })}
+                  <p className="muted">
+                    Keeps current proportions. Use the scale controls for
+                    independent dimensions.
+                  </p>
+                </fieldset>
               )}
               {chosen.locked && (
                 <p className="muted">
