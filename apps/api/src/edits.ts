@@ -190,6 +190,9 @@ export function reviewEdit(
     }
     if (action === "reject") {
       store.db
+        .prepare("UPDATE candidates SET disposition='rejected' WHERE jobId=?")
+        .run(jobId);
+      store.db
         .prepare(
           "UPDATE edit_requests SET disposition='rejected' WHERE jobId=?",
         )
@@ -250,6 +253,11 @@ export function reviewEdit(
       request.task + " · " + request.instruction.slice(0, 90),
       saved.currentRevisionId,
     );
+    store.db
+      .prepare(
+        "UPDATE candidates SET disposition='accepted',documentId=?,versionId=? WHERE jobId=?",
+      )
+      .run(saved.id, version.id, jobId);
     store.db
       .prepare(
         "UPDATE edit_requests SET disposition='accepted',acceptedDocumentId=?,versionId=? WHERE jobId=?",
