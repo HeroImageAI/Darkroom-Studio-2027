@@ -4,7 +4,7 @@ Create. Edit. Finish.
 
 A focused local AI image studio. The user chooses the result; Darkroom chooses the process.
 
-This independent repository contains the local foundation and a Phase 2 Create candidate: prompts, references, variations, evidence-driven Klein/Qwen routing, result review, version storage and Send to Edit. Canvas editing is the next phase. See the [Phase 2 report](docs/PHASE_2_REPORT.md) for actual validation and limitations.
+This independent repository contains the local foundation, Create workflow and Phase 3 editing foundation. Create supports references, variations and reviewed Klein/Qwen routing. Edit supports layers, transforms, hide/reveal masks, rectangle/lasso selections, non-destructive crop, Undo/Redo and autosave recovery. See the [Phase 3 report](docs/PHASE_3_REPORT.md) and [Create report](docs/PHASE_2_REPORT.md) for actual validation and limits. AI edits and delivery export remain later phases.
 
 ## Run locally
 
@@ -50,4 +50,4 @@ For current Create validation, use `npx tsx scripts/validate-create.ts` for the 
 
 `main` is the reviewed baseline. Planning and implementation changes use feature branches and pull requests. HeroImageAI/Darkroom is read-only reference material; no legacy UI, runtime data, model weights or repository history is imported here.
 
-Phase 2 was authorised in chat; its PR is stacked on the unmerged foundation branch. Do not proceed to Phase 3 or merge automatically. See the build plan for explicit acceptance criteria.
+Phase 3 was authorised in chat; its PR is stacked on the unmerged create-workspace branch. Do not proceed to Phase 4 or merge automatically. See the build plan for explicit acceptance criteria.
