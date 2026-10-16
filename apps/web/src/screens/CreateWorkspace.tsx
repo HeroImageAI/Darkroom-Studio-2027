@@ -329,7 +329,7 @@ export function CreateWorkspace(p: Props) {
           Aspect
           <select
             aria-label="Aspect"
-            value={aspect}
+            value={custom ? "Custom" : aspect}
             onChange={(e) => {
               setAspect(e.target.value as typeof aspect);
               setCustom(false);
@@ -338,6 +338,7 @@ export function CreateWorkspace(p: Props) {
             {Object.keys(aspectDimensions).map((a) => (
               <option key={a}>{a}</option>
             ))}
+            {custom && <option value="Custom">Custom</option>}
           </select>
         </label>
         <label>
@@ -614,6 +615,36 @@ export function CreateWorkspace(p: Props) {
               disabled={pending}
             >
               Retry this brief
+            </Button>
+            <Button
+              onClick={() => {
+                if (!batch) return;
+                const prior = batch.request.intent;
+                p.onPrompt(prior.prompt);
+                p.onReferences(prior.references);
+                setQuality(prior.quality);
+                setModel(prior.model);
+                setVariations(batch.request.variations);
+                setSeed(String(prior.seed));
+                setWidth(prior.width);
+                setHeight(prior.height);
+                const matching = (
+                  Object.keys(
+                    aspectDimensions,
+                  ) as (keyof typeof aspectDimensions)[]
+                ).find((a) => {
+                  const [w, h] = dimensions(a, prior.quality);
+                  return w === prior.width && h === prior.height;
+                });
+                setCustom(!matching);
+                if (matching) setAspect(matching);
+                setSaved(false);
+                setNotice(
+                  "Saved brief, references and settings loaded for your next direction.",
+                );
+              }}
+            >
+              Use this brief
             </Button>
             <details className="request-details">
               <summary>Saved brief & settings</summary>

@@ -25,6 +25,18 @@ export class Worker {
     readonly client: ComfyClient,
   ) {}
   async recover() {
+    const active = this.store
+      .jobs()
+      .filter(
+        (j) =>
+          !["succeeded", "failed", "cancelled", "interrupted"].includes(
+            j.state,
+          ),
+      );
+    if (active.some((j) => !["queued", "validating"].includes(j.state))) {
+      const inspection = await this.client.inspect();
+      if (!inspection.status.verified) return;
+    }
     for (const j of this.store
       .jobs()
       .filter(
@@ -53,6 +65,11 @@ export class Worker {
             this.store.updateJob(j.id, "running", { promptId: recoveredId });
             continue;
           }
+          this.store.updateJob(j.id, "interrupted", {
+            error:
+              "Submission acknowledgement could not be recovered from the verified engine history and queue. Settings are preserved; no automatic retry was made.",
+          });
+          continue;
         } catch {
           /* Retain uncertain state while offline. */
         }
@@ -72,6 +89,17 @@ export class Worker {
         }
         if (history?.status?.completed) {
           await this.collect(j.id, history);
+          continue;
+        }
+        const started = this.store.jobStartedAt(j.id);
+        if (
+          started &&
+          Date.now() - Date.parse(String(started)) > 10 * 60 * 1000
+        ) {
+          this.store.updateJob(j.id, "interrupted", {
+            error:
+              "This job has exceeded the recovery deadline. The engine may still be running; inspect before retrying.",
+          });
           continue;
         }
         const q = await this.client.queue();

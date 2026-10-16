@@ -289,6 +289,13 @@ export class Store {
   job(id: string) {
     return this.jobs().find((j) => j.id === id);
   }
+  jobStartedAt(id: string) {
+    return this.db
+      .prepare(
+        "SELECT MIN(createdAt) AS started FROM events WHERE jobId=? AND type='state' AND json_extract(payload,'$.state')='running'",
+      )
+      .get(id)?.started;
+  }
   enqueue(projectId: string, input: IntentInput, key: string) {
     const intent = intentSchema.parse(input);
     const old = this.db

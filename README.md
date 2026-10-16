@@ -4,7 +4,7 @@ Create. Edit. Finish.
 
 A focused local AI image studio. The user chooses the result; Darkroom chooses the process.
 
-This independent repository contains a Phase 1 foundation candidate: a local React workspace, SQLite/file storage, document revisions, recoverable jobs and one validated semantic image workflow. Full Create and Edit workflows are later phases. See [Phase 1 report](docs/PHASE_1_REPORT.md) for actual validation and limitations.
+This independent repository contains the local foundation and a Phase 2 Create candidate: prompts, references, variations, evidence-driven Klein/Qwen routing, result review, version storage and Send to Edit. Canvas editing is the next phase. See the [Phase 2 report](docs/PHASE_2_REPORT.md) for actual validation and limitations.
 
 ## Run locally
 
@@ -48,4 +48,4 @@ Opt-in live GPU tests: `npx tsx scripts/live-foundation.ts` tests the semantic a
 
 `main` is the reviewed baseline. Planning and implementation changes use feature branches and pull requests. HeroImageAI/Darkroom is read-only reference material; no legacy UI, runtime data, model weights or repository history is imported here.
 
-Phase 1 was authorised in chat; its PR is stacked on the unmerged planning branch. Do not proceed to Phase 2 or merge automatically. See the build plan for explicit acceptance criteria.
+Phase 2 was authorised in chat; its PR is stacked on the unmerged foundation branch. Do not proceed to Phase 3 or merge automatically. See the build plan for explicit acceptance criteria.

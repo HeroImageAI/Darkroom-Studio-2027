@@ -32,6 +32,7 @@ export function App() {
   );
   const [references, setReferences] = useState<string[]>([]);
   const [selected, setSelected] = useState<Asset>();
+  const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const upload = useRef<HTMLInputElement>(null);
   async function refresh(id = project) {
@@ -127,6 +128,7 @@ export function App() {
           body: form,
         });
         setSelected(asset);
+        setSelectedDocument(null);
         imported.push(asset);
       }
       await refresh();
@@ -175,6 +177,7 @@ export function App() {
         "Editable master saved locally. Canvas tools arrive in the next editing phase.",
       );
       localStorage.setItem("darkroom.lastDocument", doc.id);
+      setSelectedDocument(doc.id);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -209,6 +212,7 @@ export function App() {
             key={a.id}
             onClick={() => {
               setSelected(a);
+              setSelectedDocument(null);
               setPage("Edit");
             }}
           >
@@ -379,6 +383,7 @@ export function App() {
                   setAssets(list);
                   setSelected(list.find((a) => a.id === assetId));
                   localStorage.setItem("darkroom.lastDocument", documentId);
+                  setSelectedDocument(documentId);
                   setPage("Edit");
                   setNotice("Generated version saved and opened in Edit.");
                 }}
@@ -423,9 +428,13 @@ export function App() {
                       Original preserved
                     </small>
                   </div>
-                  <Button onClick={() => void createMaster()} disabled={busy}>
-                    Save initial master
-                  </Button>
+                  {selectedDocument ? (
+                    <Status ok>Master saved</Status>
+                  ) : (
+                    <Button onClick={() => void createMaster()} disabled={busy}>
+                      Save initial master
+                    </Button>
+                  )}
                   <a
                     className="button"
                     href={"/api/assets/" + selected.id}
