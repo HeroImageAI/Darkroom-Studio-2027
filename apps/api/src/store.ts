@@ -113,8 +113,10 @@ export class Store {
       hash,
       name: name.slice(0, 200),
       mime: "image/" + metadata.format,
-      width: metadata.width,
-      height: metadata.height,
+      width:
+        (metadata.orientation ?? 1) >= 5 ? metadata.height : metadata.width,
+      height:
+        (metadata.orientation ?? 1) >= 5 ? metadata.width : metadata.height,
       alpha: metadata.hasAlpha ?? false,
       origin,
       createdAt: now(),
@@ -262,20 +264,24 @@ export class Store {
       return this.writeRevision(id, expectedRevision, snapshot);
     });
   }
-  version(id: string, name: string) {
-    const doc = this.document(id);
-    if (!doc) throw Error("Document not found");
-    const v = {
-      id: randomUUID(),
-      documentId: id,
-      revisionId: String(doc.currentRevisionId),
-      name,
-      createdAt: now(),
-    };
-    this.db
-      .prepare("INSERT INTO versions VALUES(?,?,?,?,?)")
-      .run(v.id, id, v.revisionId, name, v.createdAt);
-    return v;
+  version(id: string, name: string, expectedRevision?: string) {
+    return this.transaction(() => {
+      const doc = this.document(id);
+      if (!doc) throw Error("Document not found");
+      if (expectedRevision && doc.currentRevisionId !== expectedRevision)
+        throw new Conflict("Document changed; reload before saving a version");
+      const v = {
+        id: randomUUID(),
+        documentId: id,
+        revisionId: String(doc.currentRevisionId),
+        name,
+        createdAt: now(),
+      };
+      this.db
+        .prepare("INSERT INTO versions VALUES(?,?,?,?,?)")
+        .run(v.id, id, v.revisionId, name, v.createdAt);
+      return v;
+    });
   }
   jobs() {
     return this.db

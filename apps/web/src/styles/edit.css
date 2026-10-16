@@ -1,0 +1,195 @@
+.edit-heading,
+.edit-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+.edit-heading h1 {
+  font-size: 1.5rem;
+  margin: var(--space-2) 0;
+}
+.edit-heading .save-state {
+  margin-left: auto;
+}
+.edit-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.edit-toolbar select {
+  width: auto;
+}
+.edit-toolbar [aria-pressed="true"],
+.layer-row.selected {
+  border-color: var(--crimson);
+  background: var(--surface-raised);
+}
+.edit-body {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) 210px;
+  height: calc(100dvh - 300px);
+  min-height: 360px;
+  max-height: 820px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.edit-layers,
+.edit-properties {
+  padding: var(--space-3);
+  background: var(--surface-panel);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  overflow-y: auto;
+}
+.edit-layers h2,
+.edit-properties h2 {
+  font-size: 1rem;
+}
+.edit-layers .button,
+.edit-properties .button {
+  margin: var(--space-1) 0;
+  width: 100%;
+}
+.layer-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.layer-name {
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  width: 100%;
+  padding: var(--space-2) 0;
+}
+.layer-row label {
+  display: inline-flex;
+  gap: var(--space-1);
+  align-items: center;
+  font-size: 0.75rem;
+  margin-right: var(--space-2);
+}
+.edit-body input[type="checkbox"] {
+  width: auto;
+}
+.edit-properties label {
+  display: block;
+  font-size: 0.8rem;
+  margin-bottom: var(--space-2);
+}
+.edit-properties input:not([type="checkbox"]) {
+  width: 100%;
+}
+.edit-properties fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: var(--space-3) 0;
+  padding: var(--space-2);
+}
+.edit-stage {
+  display: grid;
+  container-type: size;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: var(--space-6);
+  min-height: 0;
+  background: var(--surface-app);
+}
+.edit-paper {
+  flex-shrink: 0;
+  max-height: 100%;
+  transform-origin: center;
+  background: repeating-conic-gradient(
+      var(--graphite) 0% 25%,
+      var(--charcoal) 0% 50%
+    )
+    50% / 20px 20px;
+  box-shadow: var(--shadow);
+}
+.edit-paper svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  overflow: hidden;
+  user-select: none;
+}
+.selection-outline,
+.crop-outline {
+  fill: none;
+  stroke: var(--white);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  filter: drop-shadow(0 0 1px var(--black));
+}
+.crop-outline {
+  stroke: var(--crimson);
+  fill: color-mix(in srgb, var(--crimson) 10%, transparent);
+}
+.edit-start {
+  text-align: center;
+  padding: var(--space-6);
+}
+.edit-start img {
+  max-width: 100%;
+  max-height: 55vh;
+  display: block;
+  margin: auto;
+}
+@media (max-width: 1250px) {
+  .edit-body {
+    grid-template-columns: 150px minmax(0, 1fr);
+    grid-template-rows: minmax(400px, 60vh) auto;
+    height: auto;
+  }
+  .edit-properties {
+    grid-column: 1/-1;
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    max-height: 360px;
+  }
+  .edit-properties > * {
+    max-width: 210px;
+  }
+}
+@media (max-width: 650px) {
+  .edit-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .edit-stage {
+    grid-row: 1;
+    min-height: 0;
+    padding: var(--space-3);
+  }
+  .edit-layers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .edit-layers > * {
+    max-width: 180px;
+  }
+  .edit-heading .save-state {
+    margin-left: 0;
+  }
+}
+.edit-properties input:not([type="checkbox"]):not([type="range"]) {
+  background: var(--surface-app);
+  color: var(--text-primary);
+  border: 1px solid var(--control-border);
+  padding: var(--space-2);
+  border-radius: var(--radius);
+}
+.edit-body input[type="range"],
+.edit-body input[type="checkbox"] {
+  accent-color: var(--crimson);
+}

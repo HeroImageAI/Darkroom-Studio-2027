@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import sharp from "sharp";
+import { initialSnapshot } from "../../packages/document/src/schema.js";
 const ids = {
   reference: "27f8387b-f439-4243-9694-77e50c18c851",
   second: "b704a4cb-f420-4c99-bd53-85b61dbdc8a1",
@@ -103,6 +104,21 @@ async function mockCreate(page: Page, loseFirstResponse = false) {
     });
     await r.fulfill({ json: c });
   });
+  await page.route("**/api/documents/*", (r) =>
+    r.fulfill({
+      json: {
+        id: ids.doc,
+        projectId: batches[0].request.projectId,
+        originalAssetId: outputs[0]!.id,
+        currentRevisionId: ids.version,
+        snapshot: initialSnapshot(
+          ids.doc,
+          { id: outputs[0]!.id, width: 64, height: 64 },
+          ids.reference,
+        ),
+      },
+    }),
+  );
   return calls;
 }
 test("reviews variations, compares references, saves versions and sends a result to Edit", async ({
@@ -137,11 +153,11 @@ test("reviews variations, compares references, saves versions and sends a result
   await expect(page.getByAltText("Generated variation 1")).toBeVisible();
   await page.getByRole("button", { name: "Send to Edit ↗" }).click();
   await expect(
-    page.getByRole("heading", { name: "Your workspace." }),
+    page.getByRole("heading", { name: "Your working canvas." }),
   ).toBeVisible();
-  await expect(page.getByRole("status")).toContainText(
-    "Generated version saved",
-  );
+  await expect(
+    page.getByText("Generated version saved and opened in Edit."),
+  ).toBeVisible();
 });
 test("reuses the same idempotency key and random seed after a lost response", async ({
   page,

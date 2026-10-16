@@ -252,12 +252,16 @@ export async function createApp(
   });
   app.post<{ Params: { id: string } }>(
     "/api/documents/:id/versions",
-    async (req) =>
-      store.version(
-        req.params.id,
-        z.object({ name: z.string().trim().min(1).max(120) }).parse(req.body)
-          .name,
-      ),
+    async (req) => {
+      const body = z
+        .object({
+          name: z.string().trim().min(1).max(120),
+          expectedRevision: z.string().uuid().optional(),
+        })
+        .strict()
+        .parse(req.body);
+      return store.version(req.params.id, body.name, body.expectedRevision);
+    },
   );
   app.get("/api/jobs", () => store.jobs().map(({ provenance, ...job }) => job));
   app.get<{ Params: { id: string } }>("/api/jobs/:id", async (req, reply) => {
