@@ -20,7 +20,7 @@ Phase 3 canvas/layer/transform/mask/crop editing and autosave commands; intellig
 
 ## TEST RESULTS
 
-- Automated unit/integration, strict TypeScript, production build and browser results are recorded in the final handoff and PR. Tests cover routing/reference limits, exact prompt preservation, atomic/idempotent batches, seed wrapping, reference order/ownership/integrity, independent versions, review idempotency, history recovery, upload receipts and dynamic node contracts.
+- Local validation passed: 48 unit/integration tests, five Chromium browser tests, strict TypeScript and the production build. Tests cover routing/reference limits, exact prompt preservation, atomic/idempotent batches, seed wrapping, reference order/ownership/integrity, independent versions, review idempotency, history recovery, upload receipts and dynamic node contracts.
 - Five Chromium browser cases cover the original foundation flows plus Create reference/order/settings, candidate review/comparison/version/Send to Edit, reload and lost-response idempotency. The two added UI cases use explicitly mocked responses inside test source; they are not model validation. Real model execution is separately recorded below.
 - Tests use isolated fixture storage. No passing API response is used as proof of visual quality. CI results must be distinguished from local runs.
 
@@ -35,6 +35,8 @@ The owned fixture is a simple black cylindrical perfume bottle, black cap and cr
 For ordinary Draft generation, Klein is preferred for measured iteration speed. Qwen is preferred for Final, visible-text requests and one/two-reference fidelity, supported by the scoped current checks and the legacy per-feature QA cited in LEGACY_LESSONS.md. Both models passed the simple NOIR text case; that case alone does not prove Qwen universally better at typography. Preferences remain central policy, not UI conditionals.
 
 A separate real API → queue → worker run created four three-reference Auto/Draft variations serially in 69,626 ms after submission. All four outputs were visually inspected; each has a single bottle and NOIR label without the guide rectangle. Exact reference bytes were verified unchanged. Submission replay created no additional jobs; named version storage and live browser comparison/Send to Edit were verified. Different seeds produce design/lighting variation; this is reference-based creation, not an exact protected product-edit guarantee.
+
+A further generation submitted through the real browser UI completed with Auto selecting Qwen, one reference, Final, 1024 × 1024, in 33,658 ms. Visual inspection confirmed one black bottle, cream label and the requested NOIR / EAU DE PARFUM text. Its scoped evidence is data/create-live/evidence/ui-run.json; this is separate from mocked browser tests.
 
 Local raw evidence: data/create-qa/runs.json, its sixteen PNGs and reference PNGs; data/create-live/evidence/run.json and four actual variation PNGs. These remain outside Git. The table below records the scoped run observations. Timings include load/cache differences and differing resolutions; do not read them as matched-quality speed comparisons. GPU figures are sampled whole-GPU use, not precise per-model allocation.
 
@@ -72,3 +74,4 @@ create-workspace is based on foundation because earlier PRs remain unmerged. Log
 ## RECOMMENDATION
 
 Review the Create candidate and explicit Qwen three-reference Draft limitation. Verify CI, then approve the phase before Phase 3. The next phase is the coherent editing canvas; do not expand into intelligent edits or finishing early.
+

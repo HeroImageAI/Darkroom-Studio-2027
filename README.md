@@ -35,6 +35,8 @@ Browser tests use an isolated service on port 2028 with data/e2e. Chromium is th
 
 Opt-in live GPU tests: `npx tsx scripts/live-foundation.ts` tests the semantic adapter; `npx tsx scripts/live-api-foundation.ts` tests the protected API/queue/worker/collection path. They refuse a busy engine, write synthetic outputs/evidence locally and do not interrupt other clients. Never treat API success as visual QA. After inspecting output, record evidence before enabling a matching manifest. Regenerating a graph resets validation.
 
+For current Create validation, use `npx tsx scripts/validate-create.ts` for the sixteen model/reference/quality cases, and `npx tsx scripts/live-create.ts` for four serial API/worker variations, replay protection, reference integrity and version storage. These use owned synthetic fixtures and local data/create-qa and data/create-live folders. The visual harness resumes completed cases and does not automatically enable a route. Qwen Draft with three references is excluded after failing the lighting-guide case; Auto uses Klein there. See the Phase 2 report before changing validation flags.
+
 ## Planning baseline
 
 - [Product specification](docs/DARKROOM_PRODUCT_SPEC.md)
