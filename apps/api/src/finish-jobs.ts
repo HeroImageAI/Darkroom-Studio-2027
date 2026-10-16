@@ -73,6 +73,8 @@ export async function submitFinish(
     throw new Conflict("Save the current master before finishing");
   if (doc.snapshot.layers.length >= 100)
     throw Error("Finish needs a free layer slot");
+  if (r.task === "Restore" && !doc.snapshot.selection)
+    throw Error("Select the lettering or details to preserve before restoring");
   if (
     r.task !== "Upscale" &&
     (doc.snapshot.width !== r.width || doc.snapshot.height !== r.height)
@@ -166,6 +168,7 @@ export async function collectFinish(
     r.task,
     r.width,
     r.height,
+    (JSON.parse(row.snapshotJson) as Snapshot).selection,
   );
   const asset = await store.internalAsset(
     bytes,

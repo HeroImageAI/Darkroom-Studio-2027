@@ -15,6 +15,7 @@ import {
 import {
   finishOutput,
   finishGraph,
+  finishInput,
 } from "../../apps/api/src/finish-workflows.js";
 import { finishSignature } from "../../apps/api/src/finish-readiness.js";
 import type { FinishRequest } from "../../packages/contracts/src/finish.js";
@@ -114,6 +115,70 @@ it("retains the resized alpha plane for AI upscale and rejects wrong dimensions"
   await expect(finishOutput(bytes, raw, "Upscale", 256, 256)).rejects.toThrow(
     "dimensions",
   );
+});
+it("restores at twice the working size while keeping selected RGBA and the full alpha plane exact", async () => {
+  const { bytes } = await fixture(),
+    preserve = [
+      { x: 64, y: 64 },
+      { x: 192, y: 64 },
+      { x: 192, y: 192 },
+      { x: 64, y: 192 },
+    ];
+  const input = await finishInput(bytes, "Restore", 256, 256),
+    meta = await sharp(input.engine).metadata();
+  expect([meta.width, meta.height]).toEqual([512, 512]);
+  const raw = await sharp({
+    create: { width: 512, height: 512, channels: 3, background: "blue" },
+  })
+    .png()
+    .toBuffer();
+  const result = await finishOutput(bytes, raw, "Restore", 256, 256, preserve),
+    before = await sharp(bytes).ensureAlpha().raw().toBuffer(),
+    after = await sharp(result).raw().toBuffer();
+  expect((await sharp(result).metadata()).width).toBe(256);
+  for (let y = 0; y < 256; y++)
+    for (let x = 0; x < 256; x++) {
+      const i = (y * 256 + x) * 4;
+      expect(after[i + 3]).toBe(before[i + 3]);
+      if (x >= 64 && x < 192 && y >= 64 && y < 192)
+        expect(after.subarray(i, i + 4)).toEqual(before.subarray(i, i + 4));
+    }
+  expect([...after.subarray(0, 3)]).toEqual([0, 0, 255]);
+  await expect(finishOutput(bytes, raw, "Restore", 256, 256)).rejects.toThrow(
+    "Select",
+  );
+  await expect(finishInput(bytes, "Restore", 1025, 256)).rejects.toThrow(
+    "working resolution",
+  );
+});
+it("requires a saved protected selection and freezes it for Restore", async () => {
+  const f = await fixture();
+  await expect(
+    submitFinish(store, f.client, { ...f.request, task: "Restore" }),
+  ).rejects.toThrow("Select");
+  const selection = [
+    { x: 64, y: 64 },
+    { x: 192, y: 64 },
+    { x: 192, y: 192 },
+    { x: 64, y: 192 },
+  ];
+  const saved = store.saveDocument(f.doc.id, f.doc.currentRevisionId, {
+    ...f.doc.snapshot,
+    selection,
+  });
+  const row = await submitFinish(store, f.client, {
+    ...f.request,
+    expectedRevision: saved.currentRevisionId,
+    task: "Restore",
+  });
+  expect(JSON.parse(row.snapshotJson).selection).toEqual(selection);
+  store.saveDocument(f.doc.id, saved.currentRevisionId, {
+    ...saved.snapshot,
+    selection: undefined,
+  });
+  expect(
+    JSON.parse(finishRow(store, row.jobId)!.snapshotJson).selection,
+  ).toEqual(selection);
 });
 it("atomically accepts one revision, keeps old layers, saves a version and replays review", async () => {
   const f = await candidate(),

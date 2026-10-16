@@ -40,7 +40,14 @@ export const finishRequestSchema = z
   .strict()
   .refine((r) => r.width * r.height <= 4194304, {
     message: "AI Finish is currently limited to 4,194,304 pixels.",
-  });
+  })
+  .refine(
+    (r) => r.task !== "Restore" || (r.width <= 1024 && r.height <= 1024),
+    {
+      message:
+        "Restore currently supports canvases up to 1024 pixels per side.",
+    },
+  );
 export type FinishRequest = z.infer<typeof finishRequestSchema>;
 export type ExportRecord = {
   id: string;

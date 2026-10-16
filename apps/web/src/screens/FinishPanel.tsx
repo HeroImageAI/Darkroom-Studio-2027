@@ -11,6 +11,7 @@ export function FinishPanel({
   documentId,
   width,
   height,
+  hasSelection,
   prepare,
   onCrop,
   onApplied,
@@ -19,6 +20,7 @@ export function FinishPanel({
   documentId: string;
   width: number;
   height: number;
+  hasSelection: boolean;
   prepare: () => Promise<{ documentId: string; expectedRevision: string }>;
   onCrop: () => void;
   onApplied: (id: string) => Promise<void>;
@@ -87,6 +89,7 @@ export function FinishPanel({
       <p>Prepare a delivery copy from the saved master.</p>
       <Button onClick={onCrop}>Crop on canvas</Button>
       <AIFinishPanel
+        hasSelection={hasSelection}
         documentId={documentId}
         width={width}
         height={height}

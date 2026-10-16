@@ -296,7 +296,7 @@ export async function createApp(
   app.get("/api/finish-capabilities", () => ({
     tasks: finishEvidence().enabledTasks,
     limits:
-      "AI Finish: up to 2048 pixels per side and 4,194,304 pixels. Restore is unavailable: small label text failed fidelity review.",
+      "AI Finish: up to 2048 pixels per side. Restore supports up to 1024 pixels per side and keeps your selected details unchanged.",
   }));
   app.post("/api/finish", async (req, reply) =>
     reply

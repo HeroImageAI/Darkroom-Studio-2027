@@ -14,9 +14,9 @@ it("pins enabled finishing templates and the actual alpha processing implementat
     expect(e.templateHashes[task]).toBe(
       graphHash(finishGraph(task, "__INPUT__")),
     );
-  expect(e.enabledTasks).not.toContain("Restore");
+  expect(e.enabledTasks).toContain("Restore");
 });
-it("refuses an unvalidated Restore and a changed engine schema or version", async () => {
+it("refuses changed engine schemas or versions for every enabled task", async () => {
   await expect(assertFinishReady("Restore", {}, "0.41.2")).rejects.toThrow(
     "validation",
   );

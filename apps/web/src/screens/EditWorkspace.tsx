@@ -881,6 +881,7 @@ export function EditWorkspace({
         </div>
         <aside className="edit-properties" aria-label="Layer properties">
           <FinishPanel
+            hasSelection={!!doc.selection}
             key={documentId}
             documentId={documentId}
             width={doc.width}

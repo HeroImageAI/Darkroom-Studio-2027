@@ -3,8 +3,12 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { randomUUID, createHash } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import sharp from "sharp";
-const origin = process.env.DR_FINISH_LIVE_URL ?? "http://127.0.0.1:2041",
-  root = process.env.DR_FINISH_LIVE_EVIDENCE ?? "data/finish-release/evidence";
+const origin = process.env.DR_FINISH_LIVE_URL ?? "http://127.0.0.1:2042",
+  root = process.env.DR_FINISH_LIVE_EVIDENCE ?? "data/restore-release/evidence",
+  task =
+    process.env.DR_FINISH_LIVE_TASK === "Restore"
+      ? "Restore"
+      : "Remove background";
 mkdirSync(root, { recursive: true });
 async function get(path: string) {
   const r = await fetch(origin + "/api" + path);
@@ -12,17 +16,23 @@ async function get(path: string) {
   return r.json();
 }
 const { token } = await get("/session");
-async function post(path: string, payload: unknown) {
+async function post(path: string, payload: unknown, method = "POST") {
   const r = await fetch(origin + "/api" + path, {
-    method: "POST",
+    method,
     headers: { "content-type": "application/json", "x-darkroom-token": token },
     body: JSON.stringify(payload),
   });
   if (!r.ok) throw Error(await r.text());
   return r.json();
 }
-const project = await post("/projects", { name: "Finish validation · NOIR" }),
-  source = await sharp(readFileSync("data/create-qa/reference-1.png"))
+const project = await post("/projects", { name: `${task} validation · NOIR` }),
+  source = await sharp(
+    readFileSync(
+      task === "Restore"
+        ? "data/restore-qa/384-degraded.before.png"
+        : "data/create-qa/reference-1.png",
+    ),
+  )
     .resize(384, 384)
     .png()
     .toBuffer(),
@@ -38,13 +48,32 @@ const uploaded = await fetch(origin + "/api/assets?projectId=" + project.id, {
   body,
 });
 if (!uploaded.ok) throw Error(await uploaded.text());
-const asset = await uploaded.json(),
-  doc = await post(`/projects/${project.id}/documents`, { assetId: asset.id });
+const asset = await uploaded.json();
+let doc = await post(`/projects/${project.id}/documents`, {
+  assetId: asset.id,
+});
+if (task === "Restore")
+  doc = await post(
+    `/documents/${doc.id}`,
+    {
+      expectedRevision: doc.currentRevisionId,
+      snapshot: {
+        ...doc.snapshot,
+        selection: [
+          { x: 146, y: 164 },
+          { x: 238, y: 164 },
+          { x: 238, y: 267 },
+          { x: 146, y: 267 },
+        ],
+      },
+    },
+    "PATCH",
+  );
 const request = {
     documentId: doc.id,
     expectedRevision: doc.currentRevisionId,
     idempotencyKey: randomUUID(),
-    task: "Remove background",
+    task,
     width: 384,
     height: 384,
   },
@@ -72,8 +101,22 @@ while (Date.now() - start < 600000) {
         ).arrayBuffer(),
       ),
       pixels = await sharp(bytes).ensureAlpha().raw().toBuffer();
-    if (pixels[3] !== 0 || pixels[(192 * 384 + 192) * 4 + 3]! < 250)
+    if (
+      (task === "Remove background" && pixels[3] !== 0) ||
+      pixels[(192 * 384 + 192) * 4 + 3]! < 250
+    )
       throw Error("Live alpha check failed");
+    let protectedPixels = 0;
+    if (task === "Restore") {
+      const before = await sharp(source).ensureAlpha().raw().toBuffer();
+      for (let y = 164; y < 267; y++)
+        for (let x = 146; x < 238; x++) {
+          const i = (y * 384 + x) * 4;
+          if (!pixels.subarray(i, i + 4).equals(before.subarray(i, i + 4)))
+            throw Error("Live protected label changed");
+          protectedPixels++;
+        }
+    }
     if (
       (await get("/documents/" + doc.id)).currentRevisionId !==
       doc.currentRevisionId
@@ -89,6 +132,8 @@ while (Date.now() - start < 600000) {
       JSON.stringify(
         {
           projectId: project.id,
+          task,
+          protectedPixels,
           documentId: doc.id,
           jobId: row.jobId,
           resultId: job.resultId,

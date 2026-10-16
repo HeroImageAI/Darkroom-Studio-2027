@@ -29,11 +29,16 @@ test("Finish prepares real PNG and JPEG attachments and initiates downloads with
     );
   const doc = await (await page.request.get("/api/documents/" + id)).json();
   await page.getByText("Finish & export", { exact: true }).click();
+  await page.getByLabel("Finish action").selectOption("Restore");
   await expect(
-    page
-      .getByLabel("Finish action")
-      .getByRole("option", { name: "Restore", exact: true }),
-  ).toHaveAttribute("disabled", "");
+    page.getByText(
+      "Select lettering, a logo or details to keep unchanged, then run Restore.",
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Run finishing", exact: true }),
+  ).toBeDisabled();
+  await page.getByLabel("Finish action").selectOption("Remove background");
   await page.getByLabel("Export size").selectOption("2");
   await page
     .getByRole("button", { name: "Prepare export", exact: true })
@@ -88,5 +93,30 @@ test("Finish prepares real PNG and JPEG attachments and initiates downloads with
   await page.getByText("Finish & export", { exact: true }).click();
   await expect(
     page.getByRole("link", { name: "400 × 300 · JPEG" }),
+  ).toBeVisible();
+  await page.getByLabel("Finish action").selectOption("Restore");
+  await page.getByRole("button", { name: "Select", exact: true }).click();
+  const canvas = await page
+    .getByRole("img", { name: "Editable image canvas" })
+    .boundingBox();
+  if (!canvas) throw Error("Canvas not visible");
+  await page.mouse.move(
+    canvas.x + canvas.width * 0.3,
+    canvas.y + canvas.height * 0.3,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    canvas.x + canvas.width * 0.7,
+    canvas.y + canvas.height * 0.7,
+    { steps: 5 },
+  );
+  await page.mouse.up();
+  await expect(
+    page.getByRole("button", { name: "Run finishing", exact: true }),
+  ).toBeEnabled();
+  await expect(
+    page.getByText(
+      "Selected details stay unchanged. Restore repairs the surrounding image at the original size.",
+    ),
   ).toBeVisible();
 });

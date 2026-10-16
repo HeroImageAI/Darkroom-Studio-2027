@@ -7,7 +7,7 @@ import { finishGraph, type FinishTask } from "./finish-workflows.js";
 import { graphHash } from "../../../packages/workflows/src/bind.js";
 import type { ObjectInfo } from "../../../packages/workflows/src/manifest.js";
 export const finishEvidence = () =>
-  JSON.parse(readFileSync("workflows/finish-validation.json", "utf8")) as {
+  JSON.parse(readFileSync("workflows/finish-validation-v2.json", "utf8")) as {
     enabledTasks: FinishTask[];
     nodeFingerprint: string;
     modelHashes: Record<string, string>;
@@ -16,10 +16,10 @@ export const finishEvidence = () =>
     evidenceId: string;
     engineVersion: string;
   };
-export const finishSignature = () =>
-  createHash("sha256")
-    .update(readFileSync("apps/api/src/finish-workflows.ts"))
-    .digest("hex");
+const loadedFinishSignature = createHash("sha256")
+  .update(readFileSync("apps/api/src/finish-workflows.ts"))
+  .digest("hex");
+export const finishSignature = () => loadedFinishSignature;
 export function finishNodeFingerprint(info: ObjectInfo) {
   const names = [
     ...new Set(

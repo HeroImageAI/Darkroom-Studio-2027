@@ -5,6 +5,17 @@ import type {
 import { graphHash, preflight } from "../../../packages/workflows/src/bind.js";
 import sharp from "sharp";
 export type FinishTask = "Restore" | "Upscale" | "Remove background";
+type Point = { x: number; y: number };
+export function finishEngineSize(
+  task: FinishTask,
+  width: number,
+  height: number,
+) {
+  const scale = task === "Restore" ? 2 : 1;
+  if (width * scale > 2048 || height * scale > 2048)
+    throw Error("Finishing working resolution exceeds 2048 pixels per side");
+  return { width: width * scale, height: height * scale };
+}
 export function finishGraph(task: FinishTask, image: string): Graph {
   const graph: Graph = {};
   function node(
@@ -125,6 +136,11 @@ export async function finishInput(
   return {
     resized,
     engine: await sharp(resized)
+      .resize(
+        finishEngineSize(task, width, height).width,
+        finishEngineSize(task, width, height).height,
+        { fit: "fill", kernel: "lanczos3" },
+      )
       .flatten({
         background: task === "Remove background" ? "#ffffff" : "#808080",
       })
@@ -138,14 +154,18 @@ export async function finishOutput(
   task: FinishTask,
   width: number,
   height: number,
+  preserve?: Point[],
 ) {
+  if (task === "Restore" && (!preserve || preserve.length < 3))
+    throw Error("Select the lettering or details to preserve before restoring");
   const resized = await sharp(source)
     .resize(width, height, { fit: "fill", kernel: "lanczos3" })
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
   const meta = await sharp(raw).metadata();
-  if (meta.width !== width || meta.height !== height)
+  const engineSize = finishEngineSize(task, width, height);
+  if (meta.width !== engineSize.width || meta.height !== engineSize.height)
     throw Error("Finish result dimensions do not match request");
   if (task === "Remove background") {
     const mask = await sharp(raw).removeAlpha().greyscale().raw().toBuffer();
@@ -155,8 +175,30 @@ export async function finishOutput(
       );
     return sharp(resized.data, { raw: resized.info }).png().toBuffer();
   }
-  const rgb = await sharp(raw).removeAlpha().raw().toBuffer();
+  const rgb = await sharp(raw)
+    .resize(width, height, { fit: "fill", kernel: "lanczos3" })
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+  let protectedPixels: Buffer | undefined, transition: Buffer | undefined;
+  if (task === "Restore") {
+    const polygon = preserve!.map((p) => `${p.x},${p.y}`).join(" ");
+    const mask = Buffer.from(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="black"/><polygon points="${polygon}" fill="white"/></svg>`,
+    );
+    protectedPixels = await sharp(mask).greyscale().raw().toBuffer();
+    transition = await sharp(mask).blur(3).greyscale().raw().toBuffer();
+  }
   for (let i = 0; i < width * height; i++)
-    for (let c = 0; c < 3; c++) resized.data[i * 4 + c] = rgb[i * 3 + c]!;
+    for (let c = 0; c < 3; c++) {
+      const t = protectedPixels?.[i]
+        ? 0
+        : transition
+          ? Math.max(0, 1 - (2 * transition[i]!) / 255)
+          : 1;
+      resized.data[i * 4 + c] = Math.round(
+        resized.data[i * 4 + c]! * (1 - t) + rgb[i * 3 + c]! * t,
+      );
+    }
   return sharp(resized.data, { raw: resized.info }).png().toBuffer();
 }

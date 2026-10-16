@@ -23,7 +23,6 @@ const reports: any[] = existsSync(root + "/runs.json")
   : [];
 for (const task of [
   "Remove background",
-  "Restore",
   "Upscale",
 ] as FinishTask[]) {
   if (process.env.DR_FINISH_QA_TASK && task !== process.env.DR_FINISH_QA_TASK)

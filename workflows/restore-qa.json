@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-16",
+  "rights": "Owned synthetic NOIR fixture",
+  "restriction": "Restore requires a protected selection; repairs only surrounding pixels. Protected details retain source quality.",
+  "runs": [
+    {
+      "name": "384-clean",
+      "task": "Restore",
+      "size": 384,
+      "workingSize": 768,
+      "promptId": "734f9646-a32c-4b53-b5dd-0a66bff0a630",
+      "ms": 2209,
+      "sourceHash": "79bb01731acea823663aebeccfbc7378bde238ec0c1e6e46aea05d4aee353bc0",
+      "resultHash": "7e60f003c44bc3d816f320f6ed9e535d16551fc40a965c8bf27de46bb2b5525e",
+      "preserve": [
+        {
+          "x": 146,
+          "y": 164
+        },
+        {
+          "x": 238,
+          "y": 164
+        },
+        {
+          "x": 238,
+          "y": 267
+        },
+        {
+          "x": 146,
+          "y": 267
+        }
+      ],
+      "protectedPixels": 9476,
+      "protectedRGBA": "exact",
+      "alpha": "exact",
+      "changedOutside": 83302,
+      "implementationHash": "ecc0f907d3a133b7857f0b8933774188f3633f5df9179d83e1c809cbdc8b7c74",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "visualReview": "PASS: scoped protected-label fixture; source label unchanged; surrounding restoration reviewed"
+    },
+    {
+      "name": "768-clean",
+      "task": "Restore",
+      "size": 768,
+      "workingSize": 1536,
+      "promptId": "6eebe79a-6755-45d1-92dd-1b3c14ccb8da",
+      "ms": 4429,
+      "sourceHash": "b20fb24279433cc19af18ee7fd6c37b8e5eae24531b89112dea88bbf629ccebf",
+      "resultHash": "f7d16a38eb5437f22b299c0afe64256ab20e175ebc5259f04c603475b9a58465",
+      "preserve": [
+        {
+          "x": 292,
+          "y": 328
+        },
+        {
+          "x": 476,
+          "y": 328
+        },
+        {
+          "x": 476,
+          "y": 534
+        },
+        {
+          "x": 292,
+          "y": 534
+        }
+      ],
+      "protectedPixels": 37904,
+      "protectedRGBA": "exact",
+      "alpha": "exact",
+      "changedOutside": 308253,
+      "implementationHash": "ecc0f907d3a133b7857f0b8933774188f3633f5df9179d83e1c809cbdc8b7c74",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "visualReview": "PASS: scoped protected-label fixture; source label unchanged; surrounding restoration reviewed"
+    },
+    {
+      "name": "384-degraded",
+      "task": "Restore",
+      "size": 384,
+      "workingSize": 768,
+      "promptId": "57bb1939-59fb-4035-a8ad-25467acd4b65",
+      "ms": 2175,
+      "sourceHash": "bd63f6436d4e1f61154e40e8edeb53f549fc5434e9bd65644768bee9dcff742e",
+      "resultHash": "7c2e097332a3c866426f4e5183349115bdd493e09befbdd2bb3274f2e5535e93",
+      "preserve": [
+        {
+          "x": 146,
+          "y": 164
+        },
+        {
+          "x": 238,
+          "y": 164
+        },
+        {
+          "x": 238,
+          "y": 267
+        },
+        {
+          "x": 146,
+          "y": 267
+        }
+      ],
+      "protectedPixels": 9476,
+      "protectedRGBA": "exact",
+      "alpha": "exact",
+      "changedOutside": 82056,
+      "implementationHash": "ecc0f907d3a133b7857f0b8933774188f3633f5df9179d83e1c809cbdc8b7c74",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "visualReview": "PASS: scoped protected-label fixture; source label unchanged; surrounding restoration reviewed"
+    }
+  ],
+  "regressions": [
+    {
+      "task": "Remove background",
+      "name": "Remove-background",
+      "resultHash": "f355001f9319d2c1948a85324dd5acd535efab503ab739876be43e2e9677c87d",
+      "result": "byte-identical to visually reviewed output"
+    },
+    {
+      "task": "Upscale",
+      "name": "Upscale",
+      "resultHash": "6c75e2d2fd193c12e4c7fc554d9a4995f94f55a04eea901fa34cc605b4f88945",
+      "result": "byte-identical to visually reviewed output"
+    },
+    {
+      "task": "Upscale",
+      "name": "Upscale-384-4x",
+      "resultHash": "d306bfd7a98ec532bb5297b3d600848e26c3f9f0a87eb174637f4140300f4a3f",
+      "result": "byte-identical to visually reviewed output"
+    }
+  ]
+}

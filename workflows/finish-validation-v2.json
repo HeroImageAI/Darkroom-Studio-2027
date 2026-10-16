@@ -1,0 +1,21 @@
+{
+  "engineVersion": "0.41.2",
+  "enabledTasks": [
+    "Remove background",
+    "Upscale",
+    "Restore"
+  ],
+  "nodeFingerprint": "70a8098467bc2bde64617ef528b3e9e2ac1011c7ae88e07cf46a472ef4489987",
+  "modelHashes": {
+    "diffusion_models/seedvr2_7b_sharp_int8_convrot.safetensors": "db48be2f1cc7e36b01a2aa529810f5d9c6a971edd29be225cf1b0eb18d51c366",
+    "vae/ema_vae_fp16.safetensors": "20678548f420d98d26f11442d3528f8b8c94e57ee046ef93dbb7633da8612ca1",
+    "background_removal/birefnet.safetensors": "9ab37426bf4de0567af6b5d21b16151357149139362e6e8992021b8ce356a154"
+  },
+  "templateHashes": {
+    "Remove background": "ff9fc35f67b2959b3b1d183ed54f8b9b8b86661ba65adbfdfd935628523f1af3",
+    "Upscale": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c",
+    "Restore": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c"
+  },
+  "implementationHash": "ecc0f907d3a133b7857f0b8933774188f3633f5df9179d83e1c809cbdc8b7c74",
+  "evidenceId": "finish-protected-restore-2026-10-16"
+}

@@ -15,6 +15,7 @@ export function AIFinishPanel({
   documentId,
   width,
   height,
+  hasSelection,
   prepare,
   onApplied,
   onPreview,
@@ -22,6 +23,7 @@ export function AIFinishPanel({
   documentId: string;
   width: number;
   height: number;
+  hasSelection: boolean;
   prepare: () => Promise<{ documentId: string; expectedRevision: string }>;
   onApplied: (id: string) => Promise<void>;
   onPreview: (id: string | undefined) => void;
@@ -188,10 +190,19 @@ export function AIFinishPanel({
           : "SeedVR2; review lettering and identity"}
       </p>
       <p>{limits}</p>
+      {task === "Restore" && (
+        <p>
+          {hasSelection
+            ? "Selected details stay unchanged. Restore repairs the surrounding image at the original size."
+            : "Select lettering, a logo or details to keep unchanged, then run Restore."}
+        </p>
+      )}
       <Button
         disabled={
           busy ||
           !tasks.includes(task) ||
+          (task === "Restore" &&
+            (!hasSelection || outputWidth > 1024 || outputHeight > 1024)) ||
           outputWidth > 2048 ||
           outputHeight > 2048 ||
           outputWidth < 256 ||
