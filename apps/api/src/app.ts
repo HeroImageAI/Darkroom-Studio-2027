@@ -18,6 +18,9 @@ import { ComfyClient } from "./comfy.js";
 import { Worker } from "./worker.js";
 import { config, loopbackUrl } from "./config.js";
 import { graph, manifest, workflows } from "./workflow.js";
+import { submitEdit, editHistory, reviewEdit } from "./edits.js";
+import { editRequestSchema } from "../../../packages/contracts/src/edit.js";
+import { editEvidence } from "../../../packages/routing/src/edit-policy.js";
 import { readiness } from "./readiness.js";
 export async function createApp(
   options: {
@@ -131,7 +134,7 @@ export async function createApp(
             : "Not installed · optional",
         },
       ],
-      phase: 2,
+      phase: 4,
     };
   });
   app.post("/api/setup/connection", async (req) => {
@@ -262,6 +265,25 @@ export async function createApp(
         .parse(req.body);
       return store.version(req.params.id, body.name, body.expectedRevision);
     },
+  );
+  app.get("/api/edit-capabilities", () => editEvidence());
+  app.get<{ Params: { id: string } }>("/api/documents/:id/edits", (req) =>
+    editHistory(store, req.params.id),
+  );
+  app.post("/api/edits", async (req, reply) =>
+    reply
+      .code(202)
+      .send(await submitEdit(store, comfy, editRequestSchema.parse(req.body))),
+  );
+  app.post<{ Params: { id: string } }>("/api/edits/:id/review", (req) =>
+    reviewEdit(
+      store,
+      req.params.id,
+      z
+        .object({ action: z.enum(["accept", "keep-version", "reject"]) })
+        .strict()
+        .parse(req.body).action,
+    ),
   );
   app.get("/api/jobs", () => store.jobs().map(({ provenance, ...job }) => job));
   app.get<{ Params: { id: string } }>("/api/jobs/:id", async (req, reply) => {

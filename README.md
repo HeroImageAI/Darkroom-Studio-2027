@@ -4,7 +4,7 @@ Create. Edit. Finish.
 
 A focused local AI image studio. The user chooses the result; Darkroom chooses the process.
 
-This independent repository contains the local foundation, Create workflow and Phase 3 editing foundation. Create supports references, variations and reviewed Klein/Qwen routing. Edit supports layers, transforms, hide/reveal masks, rectangle/lasso selections, non-destructive crop, Undo/Redo and autosave recovery. See the [Phase 3 report](docs/PHASE_3_REPORT.md) and [Create report](docs/PHASE_2_REPORT.md) for actual validation and limits. AI edits and delivery export remain later phases.
+This independent repository contains the local foundation, Create workflow and Phase 4 intelligent editing candidate. Create supports references, variations and reviewed Klein/Qwen routing. Edit supports layers, transforms, hide/reveal masks, rectangle/lasso selections, non-destructive crop, Undo/Redo and autosave recovery. See the [Phase 4 report](docs/PHASE_4_REPORT.md), [Phase 3 report](docs/PHASE_3_REPORT.md) and [Create report](docs/PHASE_2_REPORT.md) for actual validation and limits. AI editing now offers scoped Remove/Replace/Recolour/Background/Expand/Instruct results for explicit review. Finish/export remains later work.
 
 ## Run locally
 
@@ -50,4 +50,6 @@ For current Create validation, use `npx tsx scripts/validate-create.ts` for the 
 
 `main` is the reviewed baseline. Planning and implementation changes use feature branches and pull requests. HeroImageAI/Darkroom is read-only reference material; no legacy UI, runtime data, model weights or repository history is imported here.
 
-Phase 3 was authorised in chat; its PR is stacked on the unmerged create-workspace branch. Do not proceed to Phase 4 or merge automatically. See the build plan for explicit acceptance criteria.
+Phase 4 was authorised in chat; its PR is stacked on the unmerged edit-workspace branch. The synthetic live Accept/reload check passed after specific user approval. Do not proceed to Phase 5 or merge automatically. See the build plan for explicit acceptance criteria.
+
+For scoped AI-edit QA, `npx tsx scripts/validate-edits.ts` creates owned-fixture model candidates; `npx tsx scripts/recompose-edit-qa.ts` rechecks saved raw output after compositor changes. Neither enables actions automatically. `npx tsx scripts/live-edit.ts` exercises a separately running isolated service (default port 2037) and leaves its result awaiting review. See the Phase 4 report before changing validation pins.

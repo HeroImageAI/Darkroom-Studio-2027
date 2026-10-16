@@ -142,6 +142,15 @@ export class Store {
     });
     return asset;
   }
+  async internalAsset(bytes: Buffer, name: string, projectId: string) {
+    const asset = await this.importAsset(bytes, name, projectId, "generated");
+    this.db
+      .prepare(
+        "UPDATE project_assets SET role='internal' WHERE projectId=? AND assetId=?",
+      )
+      .run(projectId, asset.id);
+    return asset;
+  }
   asset(id: string) {
     const row = this.db
       .prepare("SELECT * FROM assets WHERE id=?")
@@ -156,7 +165,7 @@ export class Store {
   assets(projectId: string) {
     return this.db
       .prepare(
-        "SELECT a.* FROM assets a JOIN project_assets p ON a.id=p.assetId WHERE p.projectId=? ORDER BY a.createdAt DESC",
+        "SELECT a.* FROM assets a JOIN project_assets p ON a.id=p.assetId WHERE p.projectId=? AND p.role!='internal' ORDER BY a.createdAt DESC",
       )
       .all(projectId)
       .map((r) => ({ ...r, alpha: !!r.alpha })) as unknown as Asset[];
@@ -481,6 +490,12 @@ export class Store {
     return this.transaction(() => {
       const c = this.candidates().find((c) => c.id === id);
       if (!c) throw Error("Candidate not found");
+      if (
+        this.db
+          .prepare("SELECT 1 FROM edit_requests WHERE jobId=?")
+          .get(c.jobId)
+      )
+        throw Error("Review AI edits from their source master.");
       if (action === "reject") {
         this.db
           .prepare("UPDATE candidates SET disposition='rejected' WHERE id=?")
