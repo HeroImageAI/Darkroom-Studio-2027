@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-16",
+  "evaluator": "Codex visual review",
+  "rights": "Owned synthetic NOIR bottle generated from repository SVG",
+  "hardware": "NVIDIA RTX 3090",
+  "peakVRAM": null,
+  "timingScope": "submission through output collection, excludes initial model file hashing; cold/warm state not separately established",
+  "runs": [
+    {
+      "task": "Remove background",
+      "promptId": "421928e2-69d4-4e19-a808-6a7163c2eb01",
+      "width": 384,
+      "height": 384,
+      "ms": 2322,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "templateHash": "ff9fc35f67b2959b3b1d183ed54f8b9b8b86661ba65adbfdfd935628523f1af3",
+      "resultHash": "f355001f9319d2c1948a85324dd5acd535efab503ab739876be43e2e9677c87d",
+      "visualReview": "PASS: scoped owned NOIR fixture; review required on other images",
+      "sourceHash": "79bb01731acea823663aebeccfbc7378bde238ec0c1e6e46aea05d4aee353bc0"
+    },
+    {
+      "task": "Restore",
+      "promptId": "8ceade29-1d7f-49c6-8ead-4db9bd015258",
+      "width": 384,
+      "height": 384,
+      "ms": 7200,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "templateHash": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c",
+      "resultHash": "fb5ead4aaf6f15d932db46ec3c65c44bc24397f8de8bcffbc222606b81e69d3b",
+      "visualReview": "FAIL: fine label text changed; route disabled",
+      "sourceHash": "79bb01731acea823663aebeccfbc7378bde238ec0c1e6e46aea05d4aee353bc0"
+    },
+    {
+      "task": "Upscale",
+      "promptId": "6c42dd82-d63b-4208-8966-d52c0b563396",
+      "width": 768,
+      "height": 768,
+      "ms": 2434,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "templateHash": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c",
+      "resultHash": "6c75e2d2fd193c12e4c7fc554d9a4995f94f55a04eea901fa34cc605b4f88945",
+      "visualReview": "PASS: scoped owned NOIR fixture; review required on other images",
+      "sourceHash": "79bb01731acea823663aebeccfbc7378bde238ec0c1e6e46aea05d4aee353bc0"
+    },
+    {
+      "task": "Upscale",
+      "promptId": "274f112c-42b0-46bf-90b9-b6ccfb2f1246",
+      "width": 1536,
+      "height": 1536,
+      "ms": 4306,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "templateHash": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c",
+      "resultHash": "d306bfd7a98ec532bb5297b3d600848e26c3f9f0a87eb174637f4140300f4a3f",
+      "visualReview": "PASS: scoped owned NOIR fixture; review required on other images",
+      "sourceHash": "79bb01731acea823663aebeccfbc7378bde238ec0c1e6e46aea05d4aee353bc0"
+    },
+    {
+      "task": "Restore",
+      "promptId": "ea6d0c29-9612-4c15-9aaf-62fa8a382a35",
+      "width": 768,
+      "height": 768,
+      "ms": 2114,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "templateHash": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c",
+      "resultHash": "65385230e8b259b767b817fc78e6fd8b73dcb8cd984540dd3a1184a02a0c259b",
+      "visualReview": "FAIL: fine label text changed; route disabled",
+      "sourceHash": "b20fb24279433cc19af18ee7fd6c37b8e5eae24531b89112dea88bbf629ccebf"
+    }
+  ]
+}
