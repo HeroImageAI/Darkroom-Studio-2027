@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY,name TEXT NOT NULL,createdAt TEXT NOT NULL);
+   CREATE TABLE IF NOT EXISTS assets(id TEXT PRIMARY KEY,hash TEXT NOT NULL,path TEXT NOT NULL,name TEXT NOT NULL,mime TEXT NOT NULL,width INTEGER NOT NULL,height INTEGER NOT NULL,alpha INTEGER NOT NULL,origin TEXT NOT NULL,createdAt TEXT NOT NULL);
+   CREATE TABLE IF NOT EXISTS project_assets(projectId TEXT REFERENCES projects(id),assetId TEXT REFERENCES assets(id),role TEXT NOT NULL,PRIMARY KEY(projectId,assetId));
+   CREATE TABLE IF NOT EXISTS documents(id TEXT PRIMARY KEY,projectId TEXT NOT NULL REFERENCES projects(id),originalAssetId TEXT NOT NULL REFERENCES assets(id),currentRevisionId TEXT);
+   CREATE TABLE IF NOT EXISTS revisions(id TEXT PRIMARY KEY,documentId TEXT NOT NULL REFERENCES documents(id),parentId TEXT REFERENCES revisions(id),path TEXT NOT NULL,hash TEXT NOT NULL,createdAt TEXT NOT NULL);
+   CREATE TABLE IF NOT EXISTS revision_assets(revisionId TEXT REFERENCES revisions(id),assetId TEXT REFERENCES assets(id),PRIMARY KEY(revisionId,assetId));
+   CREATE TABLE IF NOT EXISTS versions(id TEXT PRIMARY KEY,documentId TEXT REFERENCES documents(id),revisionId TEXT REFERENCES revisions(id),name TEXT NOT NULL,createdAt TEXT NOT NULL);
+   CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY,projectId TEXT NOT NULL REFERENCES projects(id),intent TEXT NOT NULL,state TEXT NOT NULL,promptId TEXT,error TEXT,resultId TEXT REFERENCES assets(id),createdAt TEXT NOT NULL,provenance TEXT,idempotencyKey TEXT NOT NULL UNIQUE);
+   CREATE TABLE IF NOT EXISTS events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,jobId TEXT REFERENCES jobs(id),type TEXT NOT NULL,payload TEXT NOT NULL,createdAt TEXT NOT NULL);
+   CREATE TABLE IF NOT EXISTS validations(id TEXT PRIMARY KEY,report TEXT NOT NULL,createdAt TEXT NOT NULL);

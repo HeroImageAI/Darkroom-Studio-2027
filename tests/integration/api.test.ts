@@ -1,0 +1,78 @@
+import { beforeEach, afterEach, it, expect } from "vitest";
+import { mkdtempSync, rmSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createApp } from "../../apps/api/src/app.js";
+let root: string;
+let server: Awaited<ReturnType<typeof createApp>>;
+beforeEach(async () => {
+  mkdirSync("data/tests", { recursive: true });
+  root = mkdtempSync(join("data/tests", "darkroom-api-"));
+  server = await createApp({ dataDir: root, worker: false });
+});
+afterEach(async () => {
+  await server.app.close();
+  rmSync(root, { recursive: true, force: true });
+});
+const headers = { host: "127.0.0.1:2027" };
+it("blocks hostile hosts, cross-site access and tokenless mutations", async () => {
+  expect(
+    (
+      await server.app.inject({
+        url: "/api/session",
+        headers: { host: "attacker.test" },
+      })
+    ).statusCode,
+  ).toBe(403);
+  expect(
+    (
+      await server.app.inject({
+        url: "/api/session",
+        headers: { ...headers, "sec-fetch-site": "cross-site" },
+      })
+    ).statusCode,
+  ).toBe(403);
+  expect(
+    (
+      await server.app.inject({
+        url: "/api/projects",
+        method: "POST",
+        headers,
+        payload: { name: "bad" },
+      })
+    ).statusCode,
+  ).toBe(403);
+});
+it("persists a project only with a valid workspace token", async () => {
+  const session = await server.app.inject({ url: "/api/session", headers });
+  const token = session.json().token;
+  const response = await server.app.inject({
+    url: "/api/projects",
+    method: "POST",
+    headers: { ...headers, "x-darkroom-token": token },
+    payload: { name: "Recovered project" },
+  });
+  expect(response.statusCode).toBe(201);
+  expect(
+    (await server.app.inject({ url: "/api/projects", headers })).json()[0].name,
+  ).toBe("Recovered project");
+});
+it("rejects invalid body fields and missing asset ids", async () => {
+  const token = (
+    await server.app.inject({ url: "/api/session", headers })
+  ).json().token;
+  expect(
+    (
+      await server.app.inject({
+        url: "/api/projects",
+        method: "POST",
+        headers: { ...headers, "x-darkroom-token": token },
+        payload: { name: "" },
+      })
+    ).statusCode,
+  ).toBe(400);
+  expect(
+    (await server.app.inject({ url: "/api/assets/not-a-real-file", headers }))
+      .statusCode,
+  ).toBe(404);
+});

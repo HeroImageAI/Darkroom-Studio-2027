@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "image.generate.klein.foundation",
+  "version": "1.0.0",
+  "modelFamily": "Klein",
+  "graphSha256": "cb561201b2eebf0f140adec16c3fd70eddd4974b7daef3461c9f80a2b8731589",
+  "bindings": {
+    "prompt": {
+      "title": "DR_PROMPT",
+      "input": "text",
+      "type": "string"
+    },
+    "width": {
+      "title": "DR_WIDTH",
+      "input": "value",
+      "type": "integer"
+    },
+    "height": {
+      "title": "DR_HEIGHT",
+      "input": "value",
+      "type": "integer"
+    },
+    "seed": {
+      "title": "DR_SEED",
+      "input": "noise_seed",
+      "type": "integer"
+    }
+  },
+  "outputs": [
+    {
+      "title": "DR_OUTPUT",
+      "kind": "image",
+      "alpha": false
+    }
+  ],
+  "models": [
+    {
+      "title": "DR_MODEL",
+      "input": "unet_name",
+      "filename": "flux-2-klein-9b-fp8.safetensors",
+      "source": "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B",
+      "licenceStatus": "Source/licence terms must be reviewed for intended use; no download performed",
+      "sha256": "865ba09f5b4c3cbd3468a4bd3acb9fcb2f8740c54317482f0bcd4ed1d3655cee"
+    },
+    {
+      "title": "DR_ENCODER",
+      "input": "clip_name",
+      "filename": "qwen_3_8b_fp8mixed.safetensors",
+      "source": "Existing local ComfyUI installation",
+      "licenceStatus": "Existing local weight; licence not independently verified",
+      "sha256": "abad16806e0cbabc54e0325d6565847443fe396d5f0be38bb3cd3fe75a1201d6"
+    },
+    {
+      "title": "DR_VAE",
+      "input": "vae_name",
+      "filename": "flux2-vae.safetensors",
+      "source": "Existing local ComfyUI installation",
+      "licenceStatus": "Existing local weight; licence not independently verified",
+      "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
+    }
+  ],
+  "maxPixels": 1048576,
+  "validationEvidenceId": "foundation-klein-2026-10-16",
+  "enabled": true,
+  "validationFingerprint": "fa774eb036e05613a4a088c2841198f8d10c23796791152b10307b374bb68b70"
+}
