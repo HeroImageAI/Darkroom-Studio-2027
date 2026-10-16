@@ -16,12 +16,23 @@ const base = {
   opacity: z.number().min(0).max(1),
   transform,
 };
+const point = z
+  .object({ x: z.number().finite(), y: z.number().finite() })
+  .strict();
+const maskStroke = z
+  .object({
+    points: z.array(point).min(1).max(2000),
+    size: z.number().min(1).max(4096),
+    reveal: z.boolean(),
+  })
+  .strict();
 const raster = z
   .object({
     ...base,
     type: z.enum(["raster", "generated", "paint"]),
     assetId: z.string().uuid(),
     maskAssetId: z.string().uuid().optional(),
+    maskStrokes: z.array(maskStroke).max(500).optional(),
   })
   .strict();
 const text = z
@@ -54,6 +65,7 @@ export const snapshotSchema = z
     height: z.number().int().positive().max(16384),
     colourSpace: z.literal("srgb"),
     layers: z.array(z.union([raster, text, vector])).max(100),
+    selection: z.array(point).min(3).max(2000).optional(),
   })
   .strict()
   .superRefine((doc, ctx) => {

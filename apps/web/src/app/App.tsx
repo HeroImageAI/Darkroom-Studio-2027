@@ -5,6 +5,7 @@ import type {
   EngineStatus,
   Job,
 } from "../../../../packages/contracts/src/index.js";
+import { EditWorkspace } from "../screens/EditWorkspace.js";
 import { CreateWorkspace } from "../screens/CreateWorkspace.js";
 import "../styles/create.css";
 import { api } from "../lib/api.js";
@@ -165,25 +166,6 @@ export function App() {
     window.addEventListener("paste", paste);
     return () => window.removeEventListener("paste", paste);
   }, [project, page, references]);
-  async function createMaster() {
-    if (!selected) return;
-    setBusy(true);
-    try {
-      const doc = await api<{ id: string }>(
-        "/projects/" + project + "/documents",
-        { method: "POST", body: JSON.stringify({ assetId: selected.id }) },
-      );
-      setNotice(
-        "Editable master saved locally. Canvas tools arrive in the next editing phase.",
-      );
-      localStorage.setItem("darkroom.lastDocument", doc.id);
-      setSelectedDocument(doc.id);
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
   async function newProject() {
     const name = window.prompt("Project name");
     if (!name?.trim()) return;
@@ -194,6 +176,7 @@ export function App() {
       });
       setProjects((v) => [p, ...v]);
       setProject(p.id);
+      setSelectedDocument(null);
       setSelected(undefined);
     } catch (e) {
       setError((e as Error).message);
@@ -262,7 +245,13 @@ export function App() {
             <button
               key={p}
               aria-current={page === p ? "page" : undefined}
-              onClick={() => setPage(p)}
+              onClick={() => {
+                if (p === "Edit" && !selected && !selectedDocument)
+                  setSelectedDocument(
+                    localStorage.getItem("darkroom.lastDocument." + project),
+                  );
+                setPage(p);
+              }}
             >
               {p}
             </button>
@@ -307,6 +296,7 @@ export function App() {
               value={project}
               onChange={(e) => {
                 setSelected(undefined);
+                setSelectedDocument(null);
                 setProject(e.target.value);
               }}
             >
@@ -334,7 +324,7 @@ export function App() {
                 : "Engine not connected"}
             </Status>
           </div>
-          <small className="foundation-label">CREATE PREVIEW · 0.2</small>
+          <small className="foundation-label">EDIT PREVIEW · 0.3</small>
         </aside>
         <main id="workspace" tabIndex={-1}>
           {error && (
@@ -382,7 +372,10 @@ export function App() {
                   );
                   setAssets(list);
                   setSelected(list.find((a) => a.id === assetId));
-                  localStorage.setItem("darkroom.lastDocument", documentId);
+                  localStorage.setItem(
+                    "darkroom.lastDocument." + project,
+                    documentId,
+                  );
                   setSelectedDocument(documentId);
                   setPage("Edit");
                   setNotice("Generated version saved and opened in Edit.");
@@ -398,57 +391,18 @@ export function App() {
             </>
           )}
           {page === "Edit" && (
-            <>
-              <div className="page-heading">
-                <div className="eyebrow">ONE IMAGE. NEW POSSIBILITIES.</div>
-                <h1>Your workspace.</h1>
-                <p>Keep the original. Make room for what comes next.</p>
-              </div>
-              <div className="canvas-area">
-                {selected ? (
-                  <img src={"/api/assets/" + selected.id} alt={selected.name} />
-                ) : (
-                  <div className="empty">
-                    <span className="empty-symbol">▧</span>
-                    <h2>Start with an image</h2>
-                    <p>Drop, paste or open a file.</p>
-                    <Button primary onClick={() => upload.current?.click()}>
-                      Open an image ↗
-                    </Button>
-                  </div>
-                )}
-              </div>
-              {selected && (
-                <div className="image-bar">
-                  <div>
-                    <strong>{selected.name}</strong>
-                    <small>
-                      {selected.width} × {selected.height} ·{" "}
-                      {selected.alpha ? "With transparency" : "Opaque image"} ·
-                      Original preserved
-                    </small>
-                  </div>
-                  {selectedDocument ? (
-                    <Status ok>Master saved</Status>
-                  ) : (
-                    <Button onClick={() => void createMaster()} disabled={busy}>
-                      Save initial master
-                    </Button>
-                  )}
-                  <a
-                    className="button"
-                    href={"/api/assets/" + selected.id}
-                    download={selected.name}
-                  >
-                    Download source ↗
-                  </a>
-                </div>
-              )}
-              <p className="muted">
-                Image preview and initial master storage are available. Canvas
-                editing tools belong to the next editing phase.
-              </p>
-            </>
+            <EditWorkspace
+              key={project + (selectedDocument ?? selected?.id ?? "")}
+              projectId={project}
+              asset={selected}
+              documentId={selectedDocument}
+              assets={assets}
+              onDocument={(id) => {
+                localStorage.setItem("darkroom.lastDocument." + project, id);
+                setSelectedDocument(id);
+              }}
+              onImport={() => upload.current?.click()}
+            />
           )}
           {page === "Library" && (
             <>
