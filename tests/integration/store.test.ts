@@ -177,16 +177,20 @@ it("reports orphan files without deleting them", () => {
 it("backs up before a forward schema migration and rolls back invalid SQL", () => {
   const p = store.createProject("Before migration");
   const migrations = join(root, "future-migrations");
+  const next =
+    Number(
+      store.db.prepare("SELECT MAX(version) AS v FROM migrations").get()!.v,
+    ) + 1;
   mkdirSync(migrations);
   writeFileSync(
-    join(migrations, "005_description.sql"),
+    join(migrations, `${String(next).padStart(3, "0")}_description.sql`),
     "ALTER TABLE projects ADD COLUMN description TEXT;",
   );
   migrate(store.db, root, migrations);
   expect(readdirSync(join(root, "backups"))).toHaveLength(1);
   expect(store.project(p.id)?.name).toBe("Before migration");
   writeFileSync(
-    join(migrations, "006_broken.sql"),
+    join(migrations, `${String(next + 1).padStart(3, "0")}_broken.sql`),
     "CREATE TABLE tentative(id INTEGER); THIS IS INVALID;",
   );
   expect(() => migrate(store.db, root, migrations)).toThrow();
@@ -197,7 +201,7 @@ it("backs up before a forward schema migration and rolls back invalid SQL", () =
   ).toBeUndefined();
   expect(
     store.db.prepare("SELECT MAX(version) AS v FROM migrations").get()?.v,
-  ).toBe(5);
+  ).toBe(next);
 });
 it("leases worker ownership across separate connections and releases safely", () => {
   const second = new Store(root);

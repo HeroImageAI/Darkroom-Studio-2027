@@ -11,7 +11,7 @@ type FileEvidence = {
 };
 const cache = new Map<string, { size: number; mtime: number; hash: string }>();
 let pending: Promise<FileEvidence[]> | undefined;
-function roots() {
+export function modelRoots() {
   const result: string[] = [];
   try {
     const settings = JSON.parse(
@@ -53,7 +53,7 @@ async function scan() {
           ? "text_encoders"
           : "vae";
     let found = false;
-    for (const root of roots()) {
+    for (const root of modelRoots()) {
       const path = join(root, folder, model.filename);
       let s;
       try {

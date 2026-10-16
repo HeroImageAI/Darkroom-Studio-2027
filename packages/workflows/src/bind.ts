@@ -36,7 +36,7 @@ export function bind(
 }
 export function preflight(
   graph: Graph,
-  manifest: Manifest,
+  manifest: Pick<Manifest, "graphSha256" | "bindings" | "outputs" | "models">,
   info: ObjectInfo,
   uploadedImages = new Set<string>(),
 ) {

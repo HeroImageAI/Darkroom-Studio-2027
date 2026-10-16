@@ -19,6 +19,7 @@ import {
 import type { Store } from "./store.js";
 import type { ComfyClient } from "./comfy.js";
 import { randomUUID } from "node:crypto";
+import { finishRow, executeFinish, collectFinish } from "./finish-jobs.js";
 export class Worker {
   private owner = randomUUID();
   private ownsLease = false;
@@ -182,6 +183,16 @@ export class Worker {
           throw Error(
             inspection.status.reason ?? "Verified Desktop engine required",
           );
+        if (finishRow(this.store, job.id)) {
+          await executeFinish(
+            this.store,
+            this.client,
+            job.id,
+            inspection,
+            () => this.stopped,
+          );
+          return;
+        }
         const edit = editRow(this.store, job.id);
         const editRoute = edit
           ? assertEditReady(
@@ -309,6 +320,8 @@ export class Worker {
     }
   }
   private async collect(jobId: string, history: any) {
+    if (finishRow(this.store, jobId))
+      return collectFinish(this.store, this.client, jobId, history);
     const job = this.store.job(jobId)!;
     const recorded = job.provenance ? JSON.parse(job.provenance) : {};
     const [outputId] = byTitle(recorded.graph ?? graph, "DR_OUTPUT");

@@ -1,0 +1,16 @@
+{
+  "engineVersion": "0.41.2",
+  "enabledTasks": ["Remove background", "Upscale"],
+  "nodeFingerprint": "70a8098467bc2bde64617ef528b3e9e2ac1011c7ae88e07cf46a472ef4489987",
+  "modelHashes": {
+    "diffusion_models/seedvr2_7b_sharp_int8_convrot.safetensors": "db48be2f1cc7e36b01a2aa529810f5d9c6a971edd29be225cf1b0eb18d51c366",
+    "vae/ema_vae_fp16.safetensors": "20678548f420d98d26f11442d3528f8b8c94e57ee046ef93dbb7633da8612ca1",
+    "background_removal/birefnet.safetensors": "9ab37426bf4de0567af6b5d21b16151357149139362e6e8992021b8ce356a154"
+  },
+  "templateHashes": {
+    "Remove background": "ff9fc35f67b2959b3b1d183ed54f8b9b8b86661ba65adbfdfd935628523f1af3",
+    "Upscale": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c"
+  },
+  "implementationHash": "55d5aa78da03452f5771280d528efa01f333734474db08192cdbd66c5b0c3d36",
+  "evidenceId": "finish-owned-noir-scoped-2026-10-16"
+}

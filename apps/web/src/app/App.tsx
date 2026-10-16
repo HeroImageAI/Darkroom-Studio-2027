@@ -339,7 +339,7 @@ export function App() {
                 : "Engine not connected"}
             </Status>
           </div>
-          <small className="foundation-label">AI EDIT PREVIEW · 0.4</small>
+          <small className="foundation-label">FINISH PREVIEW · 0.5</small>
         </aside>
         <main id="workspace" tabIndex={-1}>
           {error && (
