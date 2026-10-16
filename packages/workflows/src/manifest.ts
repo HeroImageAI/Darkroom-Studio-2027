@@ -16,6 +16,7 @@ export interface Manifest {
   >;
   outputs: { title: string; kind: "image"; alpha: boolean }[];
   models: {
+    sha256?: string;
     title: string;
     input: string;
     filename: string;

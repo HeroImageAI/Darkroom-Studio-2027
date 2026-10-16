@@ -56,6 +56,13 @@ export interface Job {
   provenance: string | null;
 }
 export interface EngineStatus {
+  modelVerificationReason?: string;
+  modelFiles?: {
+    filename: string;
+    sha256: string;
+    byteSize: number;
+    modifiedMs: number;
+  }[];
   connected: boolean;
   verified: boolean;
   version?: string;

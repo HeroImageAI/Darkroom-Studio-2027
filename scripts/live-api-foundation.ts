@@ -53,13 +53,11 @@ while (Date.now() - start < 120000) {
       elapsedMs: Date.now() - start,
       state: job.state,
       output: asset,
-      events: store
-        .events(0)
-        .map((e) => ({
-          sequence: e.sequence,
-          type: e.type,
-          payload: JSON.parse(String(e.payload)),
-        })),
+      events: store.events(0).map((e) => ({
+        sequence: e.sequence,
+        type: e.type,
+        payload: JSON.parse(String(e.payload)),
+      })),
       provenance: JSON.parse(job.provenance!),
     };
     writeFileSync(

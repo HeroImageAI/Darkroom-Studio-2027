@@ -5,6 +5,9 @@ import type {
   Graph,
 } from "../../../packages/workflows/src/manifest.js";
 import { loopbackUrl } from "./config.js";
+import { discoverDesktop } from "./discovery.js";
+import { modelInventory } from "./inventory.js";
+import { manifest } from "./workflow.js";
 export class ComfyClient {
   readonly clientId = randomUUID();
   constructor(
@@ -23,10 +26,10 @@ export class ComfyClient {
   }
   async inspect(): Promise<{ status: EngineStatus; info: ObjectInfo }> {
     try {
-      const [stats, info] = await Promise.all([
-        this.json("/system_stats"),
-        this.json("/object_info"),
-      ]);
+      const discovered = await discoverDesktop(this.url, this.instance);
+      this.url = discovered.url;
+      const stats = discovered.stats;
+      const info = await this.json("/object_info");
       const argv = stats.system?.argv as string[] | undefined;
       const verified =
         !!this.instance &&
@@ -35,6 +38,18 @@ export class ComfyClient {
             s.includes("instance-model-paths") &&
             s.includes(this.instance + ".yaml"),
         );
+      let inventoryError: string | undefined;
+      const files = verified
+        ? await modelInventory().catch((e) => {
+            inventoryError = (e as Error).message;
+            return [];
+          })
+        : [];
+      const changed = manifest.models.some(
+        (m) =>
+          m.sha256 &&
+          files.find((f) => f.filename === m.filename)?.sha256 !== m.sha256,
+      );
       const models: Record<string, string[]> = {};
       for (const [name, key] of [
         ["UNETLoader", "unet_name"],
@@ -51,6 +66,12 @@ export class ComfyClient {
           device: stats.devices?.[0]?.name,
           url: this.url,
           models,
+          modelFiles: files,
+          modelVerificationReason:
+            inventoryError ??
+            (changed
+              ? "Model content differs from validated weights"
+              : undefined),
           fingerprint: createHash("sha256")
             .update(
               JSON.stringify({
@@ -60,11 +81,17 @@ export class ComfyClient {
                 device: stats.devices?.[0]?.name,
                 models,
                 info,
+                files: files.map(({ filename, sha256 }) => ({
+                  filename,
+                  sha256,
+                })),
               }),
             )
             .digest("hex"),
           ...(!verified
-            ? { reason: "Desktop installation identity could not be verified" }
+            ? {
+                reason: "Desktop installation identity could not be verified",
+              }
             : {}),
         },
         info,

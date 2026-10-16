@@ -8,7 +8,11 @@ import { chooseRoute } from "../../../packages/routing/src/policy.js";
 import { manifest, graph } from "./workflow.js";
 import type { Store } from "./store.js";
 import type { ComfyClient } from "./comfy.js";
+import { randomUUID } from "node:crypto";
 export class Worker {
+  private owner = randomUUID();
+  private ownsLease = false;
+  private heartbeat: NodeJS.Timeout | undefined;
   private stopped = false;
   private busy = false;
   private socket: WebSocket | undefined;
@@ -84,7 +88,14 @@ export class Worker {
     }
   }
   async start() {
-    await this.recover();
+    this.ownsLease = this.store.lease(this.owner);
+    if (this.ownsLease) await this.recover();
+    this.heartbeat = setInterval(() => {
+      if (this.ownsLease && !this.store.lease(this.owner)) {
+        this.ownsLease = false;
+        this.stopped = true;
+      }
+    }, 5000);
     void this.loop();
   }
   private async loop() {
@@ -99,6 +110,11 @@ export class Worker {
   }
   async tick() {
     if (this.busy || this.stopped) return;
+    if (!this.ownsLease) {
+      this.ownsLease = this.store.lease(this.owner);
+      if (!this.ownsLease) return;
+      await this.recover();
+    }
     this.busy = true;
     try {
       const existing = this.store
@@ -224,7 +240,9 @@ export class Worker {
   }
   async stop() {
     this.stopped = true;
+    if (this.heartbeat) clearInterval(this.heartbeat);
     this.socket?.close();
     while (this.busy) await delay(50);
+    this.store.releaseLease(this.owner);
   }
 }

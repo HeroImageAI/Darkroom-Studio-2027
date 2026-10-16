@@ -17,10 +17,10 @@ Full Create controls, reference-based generation, variation review, multiple-mod
 
 ## TEST RESULTS
 
-- 27 unit/integration tests passed on Windows: semantic contracts, intent preservation, routing eligibility, real SQLite/filesystem round-trip, corrupt upload rejection, document conflicts, project isolation, deduplication, durable events, security boundary and restart/unknown-submission recovery.
+- 31 unit/integration tests passed on Windows: semantic contracts, intent preservation, routing eligibility, real SQLite/filesystem round-trip, corrupt upload rejection, document conflicts, project isolation, deduplication, durable events, security boundary and restart/unknown-submission recovery.
 - Strict TypeScript passed. Vite production interface build passed.
 - Three Chromium browser tests passed: shell/navigation/setup and brief reload; real PNG import/initial master/library reload; keyboard focus and 390 px layout without horizontal overflow.
-- Edge failed before page creation because of sandbox profile-file handling. Official Playwright Chromium Headless Shell launched and passed the suite. The final test run reused the same isolated E2E server after replacing a corrupt test fixture with a generated valid PNG. E2E storage is separate from normal application storage.
+- Edge failed before page creation because of sandbox profile-file handling. Official Playwright Chromium Headless Shell launched and passed the suite. A corrupt test fixture was replaced with a generated valid PNG. The final browser suite was rerun against a fresh isolated service on port 2029 after persistence/discovery hardening. E2E storage is separate from normal application storage.
 - CI configuration exists; remote CI results must be checked on the PR. Do not claim that local success establishes a passing GitHub run.
 
 ## LIVE RESULTS
@@ -36,15 +36,15 @@ Local raw evidence is under `data/live-foundation/evidence/` and `data/live-api-
 
 ## KNOWN ISSUES / DESIGN ADJUSTMENTS
 
-- Model discovery verifies current filename/options and engine capability fingerprints. Full weight-content hashes, current authoritative licence verification and file-change-aware validation caches remain to be implemented before broader routing claims. No commercial-use licence assurance is implied by an installed model.
+- Required weights have full SHA-256 content hashes recorded in the manifest. A first connection hashes the files; later checks cache against size/modification time and invalidate changed content. Current authoritative licence verification remains pending; no commercial-use licence assurance is implied by an installed model.
 - The small route is tied to this validated engine fingerprint; another installation/update requires revalidation. The Auto policy intentionally does not invent cross-model quality rankings.
-- Core model families are enumerated, but detailed installed/missing/optional capability cards and interactive connection selection are not complete. Configure the loopback endpoint through `.env`; discovery reads current Desktop installation identity and defaults to the known local port. Automatic bounded port discovery is still pending.
-- Foundation uses compact service modules (`store.ts`, `comfy.ts`, `worker.ts`, `app.ts`) rather than every separately named file in the proposed tree. Pure contracts/document/workflow/routing boundaries remain separate. SQLite has an initial transactional schema/version marker; forward migrations with backups are pending before schema evolution. Group/mask-layer schema expansion remains gated to editing work.
+- Setup reports required models as missing, installed/unvalidated or installed/verified, and Qwen as optional pending Phase 2 validation. A token-protected connection endpoint and `.env` accept only loopback origins. Discovery checks the configured address and bounded ports 8188–8198 against Desktop identity. The UI uses the configured connection; an interactive address editor is deferred.
+- Foundation uses compact service modules (`store.ts`, `comfy.ts`, `worker.ts`, `app.ts`) rather than every separately named file in the proposed tree. Pure contracts/document/workflow/routing boundaries remain separate. SQLite has numbered transactional migrations, consistent pre-upgrade database backups and tested rollback. Immutable file writes are flushed before rename and SQLite uses FULL synchronous writes. Group/mask-layer schema expansion remains gated to editing work.
 - Root dependency installation uses `--workspaces=false --install-links` because this Windows sandbox could not create npm workspace symlinks. Apps retain separate folders and package identity; internal modules use explicit source imports. One root lockfile pins dependencies. No desktop wrapper or installer is included.
-- Recovery tests simulate the engine forgetting jobs and application reopen. No real ComfyUI restart was forced, to avoid interrupting the user's running engine. Full multi-process worker leasing and weight-content validation are pending hardening items; run one normal workspace service instance.
+- Recovery tests simulate the engine forgetting jobs and application reopen. No real ComfyUI restart was forced, to avoid interrupting the user's running engine. Worker ownership is leased transactionally across database connections, heartbeated and safely released. Multiple services using the same data folder cannot concurrently own its queue. Other applications can still use ComfyUI; Darkroom waits on their queued work and never interrupts it.
 - Browser automation server teardown was unreliable in this sandbox. The isolated test server can remain until the execution session ends; production data is separate. This is not evidence of an engine/job failure.
 - The ten-category permanent golden set has metadata placeholders, not approved images or passed model outcomes. Acquire suitable owned/licensed fixtures before Phase 2 benchmarks.
-- Phase 1 therefore remains a reviewable candidate with the gaps above, not an unconditional pass of every proposed architecture gate. Branch protection has not been configured. GitHub CLI authentication is unavailable; publication uses the connected GitHub tools.
+- Phase 1 is a reviewable foundation candidate with the stated scope and validation limits. Branch protection has not been configured. GitHub CLI authentication is unavailable; publication uses the connected GitHub tools.
 
 ## GIT STATUS
 
@@ -52,4 +52,8 @@ Work is on `foundation`, stacked on `planning-baseline` because PR #1 is unmerge
 
 ## RECOMMENDATION
 
-Review the foundation and the explicit gate gaps. Complete forward-migration/backup support, bounded discovery, model-content inventory and multi-process queue ownership before declaring the entire Phase 1 gate passed. Do not silently begin Phase 2. The app shell, local persistence and the real semantic execution path are proven within the stated limits.
+Review the foundation before authorising Phase 2. The local automated/type/build/browser checks, migration backup/rollback, bounded discovery, exact model inventory and worker ownership checks pass. Real execution and visual inspection pass for the limited Klein smoke workflow. Check remote CI and review the limitations above before merging. Do not silently begin Phase 2.
+
+## Hardened verification follow-up
+
+After adding model hashes, the semantic smoke was rerun on the same engine: output hash stayed identical; 3,492 ms measured queue-to-output with warm/cache conditions and 20,547,703,448 bytes peak sampled whole-GPU usage. API/worker execution was rerun after migrations and leasing: 4,585 ms after the response, same output hash. Current local run.json files describe these follow-up runs; initial observations above are retained as historical measurements. Neither timing is a matched benchmark claim.

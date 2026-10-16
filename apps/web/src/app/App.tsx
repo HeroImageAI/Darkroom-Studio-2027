@@ -9,6 +9,8 @@ import { api } from "../lib/api.js";
 import { Button, Panel, Status } from "../components/Controls.js";
 type Page = "Create" | "Edit" | "Library";
 interface Setup {
+  requirements: { name: string; purpose: string; status: string }[];
+  optional: { name: string; status: string }[];
   engine: EngineStatus;
   workflow: { ready: boolean; reason: string };
 }
@@ -496,6 +498,21 @@ export function App() {
             <Button onClick={() => void refreshSetup()}>
               Check connection
             </Button>
+            <h3>Required for image creation</h3>
+            {setup?.requirements?.map((model) => (
+              <div key={model.name}>
+                <strong className="muted">{model.purpose}</strong>
+                <p className="model-name">{model.name}</p>
+                <p>{model.status}</p>
+              </div>
+            ))}
+            {setup?.optional?.map((model) => (
+              <p key={model.name}>
+                {model.name}
+                <br />
+                {model.status}
+              </p>
+            ))}
             <details>
               <summary>Installed image models</summary>
               {Object.entries(setup?.engine.models ?? {}).map(

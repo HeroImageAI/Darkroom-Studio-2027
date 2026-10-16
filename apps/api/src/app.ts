@@ -13,7 +13,7 @@ import { chooseRoute } from "../../../packages/routing/src/policy.js";
 import { Store, Conflict } from "./store.js";
 import { ComfyClient } from "./comfy.js";
 import { Worker } from "./worker.js";
-import { config } from "./config.js";
+import { config, loopbackUrl } from "./config.js";
 import { graph, manifest } from "./workflow.js";
 export async function createApp(
   options: {
@@ -94,15 +94,61 @@ export async function createApp(
           manifest.validationFingerprint === inspection.status.fingerprint;
         reason = workflowReady
           ? "Foundation workflow ready"
-          : "Installed; visual validation required";
+          : (inspection.status.modelVerificationReason ??
+            "Installed; visual validation required");
       } catch (e) {
         reason = (e as Error).message;
       }
     return {
       engine: inspection.status,
       workflow: { id: manifest.id, ready: workflowReady, reason },
+      requirements: manifest.models.map((m) => ({
+        name: m.filename,
+        purpose:
+          m.title === "DR_MODEL"
+            ? "Image generation"
+            : m.title === "DR_ENCODER"
+              ? "Prompt understanding"
+              : "Image decoding",
+        status: !Object.values(inspection.status.models).some((names) =>
+          names.includes(m.filename),
+        )
+          ? "Missing · required"
+          : inspection.status.modelFiles?.find((f) => f.filename === m.filename)
+                ?.sha256 === m.sha256
+            ? "Installed · verified"
+            : "Installed · unvalidated",
+      })),
+      optional: [
+        {
+          name: "Qwen-Image 2.1",
+          status: inspection.status.models.UNETLoader?.includes(
+            "qwen_image_2.1_int8_convrot.safetensors",
+          )
+            ? "Installed · optional · not yet validated"
+            : "Not installed · optional",
+        },
+      ],
       phase: 1,
     };
+  });
+  app.post("/api/setup/connection", async (req) => {
+    if (
+      store
+        .jobs()
+        .some(
+          (j) =>
+            !["succeeded", "failed", "cancelled", "interrupted"].includes(
+              j.state,
+            ),
+        )
+    )
+      throw new Conflict(
+        "Wait for current jobs before changing the connection",
+      );
+    const input = z.object({ url: z.string() }).strict().parse(req.body);
+    comfy.url = loopbackUrl(input.url);
+    return (await comfy.inspect()).status;
   });
   app.get("/api/projects", () => store.projects());
   app.post("/api/projects", async (req, reply) =>

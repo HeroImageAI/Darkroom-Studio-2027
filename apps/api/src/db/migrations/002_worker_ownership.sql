@@ -1,0 +1,1 @@
+CREATE TABLE worker_leases(id INTEGER PRIMARY KEY CHECK(id=1), owner TEXT NOT NULL, expiresAt INTEGER NOT NULL);

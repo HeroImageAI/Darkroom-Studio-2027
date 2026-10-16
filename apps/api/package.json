@@ -1,1 +1,6 @@
-{"name":"@darkroom/api","version":"0.1.0","private":true,"type":"module"}
+{
+  "name": "@darkroom/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module"
+}

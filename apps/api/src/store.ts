@@ -1,3 +1,4 @@
+import { migrate } from "./migrate.js";
 import { DatabaseSync } from "node:sqlite";
 import { createHash, randomUUID } from "node:crypto";
 import {
@@ -7,6 +8,9 @@ import {
   readFileSync,
   readdirSync,
   existsSync,
+  openSync,
+  fsyncSync,
+  closeSync,
 } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
@@ -30,21 +34,10 @@ export class Store {
     for (const p of ["assets", "documents", "tmp", "backups"])
       mkdirSync(join(root, p), { recursive: true });
     this.db = new DatabaseSync(join(root, "studio.sqlite"));
-    this.db.exec(`PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL;
-   BEGIN;
-   CREATE TABLE IF NOT EXISTS migrations(version INTEGER PRIMARY KEY);
-   CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY,name TEXT NOT NULL,createdAt TEXT NOT NULL);
-   CREATE TABLE IF NOT EXISTS assets(id TEXT PRIMARY KEY,hash TEXT NOT NULL,path TEXT NOT NULL,name TEXT NOT NULL,mime TEXT NOT NULL,width INTEGER NOT NULL,height INTEGER NOT NULL,alpha INTEGER NOT NULL,origin TEXT NOT NULL,createdAt TEXT NOT NULL);
-   CREATE TABLE IF NOT EXISTS project_assets(projectId TEXT REFERENCES projects(id),assetId TEXT REFERENCES assets(id),role TEXT NOT NULL,PRIMARY KEY(projectId,assetId));
-   CREATE TABLE IF NOT EXISTS documents(id TEXT PRIMARY KEY,projectId TEXT NOT NULL REFERENCES projects(id),originalAssetId TEXT NOT NULL REFERENCES assets(id),currentRevisionId TEXT);
-   CREATE TABLE IF NOT EXISTS revisions(id TEXT PRIMARY KEY,documentId TEXT NOT NULL REFERENCES documents(id),parentId TEXT REFERENCES revisions(id),path TEXT NOT NULL,hash TEXT NOT NULL,createdAt TEXT NOT NULL);
-   CREATE TABLE IF NOT EXISTS revision_assets(revisionId TEXT REFERENCES revisions(id),assetId TEXT REFERENCES assets(id),PRIMARY KEY(revisionId,assetId));
-   CREATE TABLE IF NOT EXISTS versions(id TEXT PRIMARY KEY,documentId TEXT REFERENCES documents(id),revisionId TEXT REFERENCES revisions(id),name TEXT NOT NULL,createdAt TEXT NOT NULL);
-   CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY,projectId TEXT NOT NULL REFERENCES projects(id),intent TEXT NOT NULL,state TEXT NOT NULL,promptId TEXT,error TEXT,resultId TEXT REFERENCES assets(id),createdAt TEXT NOT NULL,provenance TEXT,idempotencyKey TEXT NOT NULL UNIQUE);
-   CREATE TABLE IF NOT EXISTS events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,jobId TEXT REFERENCES jobs(id),type TEXT NOT NULL,payload TEXT NOT NULL,createdAt TEXT NOT NULL);
-   CREATE TABLE IF NOT EXISTS validations(id TEXT PRIMARY KEY,report TEXT NOT NULL,createdAt TEXT NOT NULL);
-   INSERT OR IGNORE INTO migrations VALUES(1);
-   COMMIT;`);
+    this.db.exec(
+      "PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;",
+    );
+    migrate(this.db, root);
   }
   transaction<T>(fn: () => T): T {
     this.db.exec("BEGIN IMMEDIATE");
@@ -76,7 +69,13 @@ export class Store {
   }
   private atomic(relative: string, bytes: Buffer) {
     const temp = join(this.root, "tmp", randomUUID());
-    writeFileSync(temp, bytes, { flag: "wx" });
+    const descriptor = openSync(temp, "wx");
+    try {
+      writeFileSync(descriptor, bytes);
+      fsyncSync(descriptor);
+    } finally {
+      closeSync(descriptor);
+    }
     renameSync(temp, join(this.root, relative));
   }
   async importAsset(
@@ -366,5 +365,29 @@ export class Store {
   }
   close() {
     this.db.close();
+  }
+  lease(owner: string, ttlMs = 30000) {
+    return this.transaction(() => {
+      const lease = this.db
+        .prepare("SELECT * FROM worker_leases WHERE id=1")
+        .get();
+      if (
+        lease &&
+        lease.owner !== owner &&
+        Number(lease.expiresAt) > Date.now()
+      )
+        return false;
+      this.db
+        .prepare(
+          "INSERT INTO worker_leases VALUES(1,?,?) ON CONFLICT(id) DO UPDATE SET owner=excluded.owner,expiresAt=excluded.expiresAt",
+        )
+        .run(owner, Date.now() + ttlMs);
+      return true;
+    });
+  }
+  releaseLease(owner: string) {
+    this.db
+      .prepare("DELETE FROM worker_leases WHERE id=1 AND owner=?")
+      .run(owner);
   }
 }

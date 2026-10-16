@@ -1,5 +1,12 @@
 import { beforeEach, afterEach, it, expect } from "vitest";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  rmSync,
+  mkdirSync,
+  writeFileSync,
+  readdirSync,
+} from "node:fs";
+import { migrate } from "../../apps/api/src/migrate.js";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
@@ -104,4 +111,43 @@ it("retains queued jobs and durable SSE events across restart", () => {
 it("reports orphan files without deleting them", () => {
   writeFileSync(join(root, "tmp", "interrupted"), "bytes");
   expect(store.reconcile().orphaned).toContain(join("tmp", "interrupted"));
+});
+it("backs up before a forward schema migration and rolls back invalid SQL", () => {
+  const p = store.createProject("Before migration");
+  const migrations = join(root, "future-migrations");
+  mkdirSync(migrations);
+  writeFileSync(
+    join(migrations, "003_description.sql"),
+    "ALTER TABLE projects ADD COLUMN description TEXT;",
+  );
+  migrate(store.db, root, migrations);
+  expect(readdirSync(join(root, "backups"))).toHaveLength(1);
+  expect(store.project(p.id)?.name).toBe("Before migration");
+  writeFileSync(
+    join(migrations, "004_broken.sql"),
+    "CREATE TABLE tentative(id INTEGER); THIS IS INVALID;",
+  );
+  expect(() => migrate(store.db, root, migrations)).toThrow();
+  expect(
+    store.db
+      .prepare("SELECT name FROM sqlite_master WHERE name='tentative'")
+      .get(),
+  ).toBeUndefined();
+  expect(
+    store.db.prepare("SELECT MAX(version) AS v FROM migrations").get()?.v,
+  ).toBe(3);
+});
+it("leases worker ownership across separate connections and releases safely", () => {
+  const second = new Store(root);
+  try {
+    expect(store.lease("first")).toBe(true);
+    expect(second.lease("second")).toBe(false);
+    expect(store.lease("first")).toBe(true);
+    second.releaseLease("second");
+    expect(second.lease("second")).toBe(false);
+    store.releaseLease("first");
+    expect(second.lease("second")).toBe(true);
+  } finally {
+    second.close();
+  }
 });
