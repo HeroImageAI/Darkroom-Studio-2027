@@ -29,8 +29,9 @@
 .edit-body {
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr) 210px;
-  height: min(72vh, 820px);
-  min-height: 480px;
+  height: calc(100dvh - 300px);
+  min-height: 360px;
+  max-height: 820px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;

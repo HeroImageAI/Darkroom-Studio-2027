@@ -101,13 +101,15 @@ export function EditWorkspace({
   }
   function undo() {
     if (blocked.current || !past.length || !current.current) return;
-    setFuture((f) => [current.current!, ...f]);
+    const before = current.current;
+    setFuture((f) => [before, ...f]);
     display(past[past.length - 1]!);
     setPast((p) => p.slice(0, -1));
   }
   function redo() {
     if (blocked.current || !future.length || !current.current) return;
-    setPast((p) => [...p, current.current!]);
+    const before = current.current;
+    setPast((p) => [...p, before]);
     display(future[0]!);
     setFuture((f) => f.slice(1));
   }

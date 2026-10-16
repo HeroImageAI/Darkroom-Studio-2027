@@ -68,6 +68,14 @@ test("real editable master persists transforms masks selection crop and keyboard
     .getByRole("img", { name: "Editable image canvas" })
     .screenshot();
   await drag(page, [0.4, 0.5], [0.6, 0.5]);
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Original copy · masked", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Redo", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Original copy · masked", exact: true }),
+  ).toBeVisible();
   const after = await page
     .getByRole("img", { name: "Editable image canvas" })
     .screenshot();
