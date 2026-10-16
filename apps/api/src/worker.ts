@@ -12,7 +12,10 @@ import { graphHash } from "../../../packages/workflows/src/bind.js";
 import sharp from "sharp";
 import { editRow } from "./edits.js";
 import { protectEdit } from "./edit-render.js";
-import { assertEditReady } from "../../../packages/routing/src/edit-policy.js";
+import {
+  assertEditReady,
+  editSignature,
+} from "../../../packages/routing/src/edit-policy.js";
 import type { Store } from "./store.js";
 import type { ComfyClient } from "./comfy.js";
 import { randomUUID } from "node:crypto";
@@ -91,7 +94,13 @@ export class Worker {
           continue;
         }
         if (history?.status?.completed) {
-          await this.collect(j.id, history);
+          try {
+            await this.collect(j.id, history);
+          } catch (e) {
+            this.store.updateJob(j.id, "failed", {
+              error: (e as Error).message,
+            });
+          }
           continue;
         }
         const started = this.store.jobStartedAt(j.id);
@@ -174,11 +183,12 @@ export class Worker {
             inspection.status.reason ?? "Verified Desktop engine required",
           );
         const edit = editRow(this.store, job.id);
-        if (edit)
-          assertEditReady(
-            JSON.parse(edit.requestJson).task,
-            inspection.status.fingerprint,
-          );
+        const editRoute = edit
+          ? assertEditReady(
+              JSON.parse(edit.requestJson).task,
+              inspection.status.fingerprint,
+            )
+          : undefined;
         job.intent = intentSchema.parse(job.intent);
         this.store.validateReferences(job.projectId, job.intent.references);
         const ready = new Set(
@@ -223,6 +233,19 @@ export class Worker {
           ),
         );
         const provenance = JSON.stringify({
+          edit: edit
+            ? {
+                request: JSON.parse(edit.requestJson),
+                baseRevisionId: edit.baseRevisionId,
+                sourceAssetId: edit.sourceAssetId,
+                maskAssetId: edit.maskAssetId,
+                sourceHash: this.store.asset(edit.sourceAssetId)!.hash,
+                maskHash: this.store.asset(edit.maskAssetId)!.hash,
+                route: editRoute,
+                implementationSha256: editSignature(),
+                compositorVersion: 2,
+              }
+            : undefined,
           intent: job.intent,
           workflowId: manifest.id,
           workflowVersion: manifest.version,
@@ -303,11 +326,14 @@ export class Worker {
     const edit = editRow(this.store, jobId);
     let resultBytes = bytes;
     if (edit) {
-      const raw = await this.store.importAsset(
+      if (recorded.edit?.implementationSha256 !== editSignature())
+        throw Error(
+          "Edit renderer changed while this job was running. The source is preserved; retry after reviewing the current version.",
+        );
+      const raw = await this.store.internalAsset(
         bytes,
         "Uncomposited AI proposal.png",
         job.projectId,
-        "generated",
       );
       this.store.db
         .prepare("UPDATE edit_requests SET rawAssetId=? WHERE jobId=?")
@@ -316,6 +342,8 @@ export class Worker {
         this.store.assetBytes(edit.sourceAssetId),
         this.store.assetBytes(edit.maskAssetId),
         bytes,
+        JSON.parse(edit.requestJson).task !== "Background",
+        JSON.parse(edit.requestJson).task !== "Expand",
       );
     }
     const asset = await this.store.importAsset(

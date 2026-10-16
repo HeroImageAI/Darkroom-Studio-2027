@@ -12,6 +12,17 @@ const svg = (w: number, h: number, body: string) =>
   Buffer.from(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${body}</svg>`,
   );
+function colour(value: string) {
+  if (
+    !/^(#[a-f0-9]{3,4}|#[a-f0-9]{6}|#[a-f0-9]{8}|none|transparent|black|white|red|green|blue)$/i.test(
+      value,
+    )
+  )
+    throw Error(
+      "AI flattening currently supports simple hex or basic named vector colours only.",
+    );
+  return escape(value);
+}
 export async function renderMaster(
   store: Store,
   doc: Snapshot,
@@ -48,7 +59,7 @@ export async function renderMaster(
         "AI editing a master with visible text layers is not validated yet. Hide that layer or use a raster master.",
       );
     } else {
-      const attrs = `fill="${escape(l.fill)}" stroke="${escape(l.stroke)}" stroke-width="${l.strokeWidth}"`;
+      const attrs = `fill="${colour(l.fill)}" stroke="${colour(l.stroke)}" stroke-width="${l.strokeWidth}"`;
       body =
         l.shape === "rectangle"
           ? `<rect width="${l.width}" height="${l.height}" ${attrs}/>`
@@ -128,6 +139,8 @@ export async function protectEdit(
   source: Buffer,
   maskPng: Buffer,
   generated: Buffer,
+  matchBoundary = true,
+  featherInside = true,
 ) {
   const base = await sharp(source)
     .ensureAlpha()
@@ -140,9 +153,78 @@ export async function protectEdit(
     .raw()
     .toBuffer();
   const mask = await sharp(maskPng).removeAlpha().greyscale().raw().toBuffer();
+  if (mask.length !== width * height)
+    throw Error("Edit mask dimensions do not match the frozen source.");
+  // Match the generated boundary colour to the protected side, fading the
+  // correction inward. This changes only allowed pixels, including new margins.
+  const distance = new Uint16Array(mask.length).fill(65535),
+    nearest = new Int32Array(mask.length).fill(-1);
   for (let i = 0; i < mask.length; i++)
-    if (mask[i] === 0) base.data.copy(pixels, i * 4, i * 4, i * 4 + 4);
-  return sharp(pixels, { raw: { width, height, channels: 4 } })
+    if (mask[i] === 0) {
+      distance[i] = 0;
+      nearest[i] = i;
+    }
+  function from(i: number, j: number) {
+    if (distance[j]! + 1 < distance[i]!) {
+      distance[i] = distance[j]! + 1;
+      nearest[i] = nearest[j]!;
+    }
+  }
+  for (let y = 0; y < height; y++)
+    for (let x = 0; x < width; x++) {
+      const i = y * width + x;
+      if (x) from(i, i - 1);
+      if (y) from(i, i - width);
+    }
+  for (let y = height - 1; y >= 0; y--)
+    for (let x = width - 1; x >= 0; x--) {
+      const i = y * width + x;
+      if (x + 1 < width) from(i, i + 1);
+      if (y + 1 < height) from(i, i + width);
+    }
+  const delta = [0, 0, 0];
+  let samples = 0;
+  for (let i = 0; i < mask.length; i++)
+    if (distance[i] === 1) {
+      const n = nearest[i]!;
+      if (
+        n >= 0 &&
+        [0, 1, 2].every(
+          (c) => Math.abs(base.data[n * 4 + c]! - pixels[n * 4 + c]!) <= 40,
+        )
+      ) {
+        samples++;
+        for (let c = 0; c < 3; c++)
+          delta[c]! += base.data[n * 4 + c]! - pixels[n * 4 + c]!;
+      }
+    }
+  const output = Buffer.from(pixels);
+  for (let i = 0; i < mask.length; i++) {
+    if (mask[i] === 0) {
+      base.data.copy(output, i * 4, i * 4, i * 4 + 4);
+      continue;
+    }
+    const weight = Math.max(0, 1 - distance[i]! / 64);
+    if (matchBoundary && samples && weight)
+      for (let c = 0; c < 3; c++)
+        output[i * 4 + c] = Math.max(
+          0,
+          Math.min(
+            255,
+            Math.round(pixels[i * 4 + c]! + (delta[c]! / samples) * weight),
+          ),
+        );
+  }
+  if (matchBoundary && featherInside)
+    for (let i = 0; i < mask.length; i++)
+      if (mask[i] === 255 && distance[i]! < 8) {
+        const t = distance[i]! / 8;
+        for (let c = 0; c < 4; c++)
+          output[i * 4 + c] = Math.round(
+            output[i * 4 + c]! * t + base.data[i * 4 + c]! * (1 - t),
+          );
+      }
+  return sharp(output, { raw: { width, height, channels: 4 } })
     .png()
     .toBuffer();
 }

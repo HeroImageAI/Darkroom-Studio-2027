@@ -36,6 +36,11 @@ export const editRequestSchema = z
   })
   .strict()
   .superRefine((r, ctx) => {
+    if (r.area === "whole" && r.task !== "Instruct")
+      ctx.addIssue({
+        code: "custom",
+        message: "Whole-image editing is available only for Instruct.",
+      });
     if (
       r.task === "Expand" &&
       (!r.expand || Object.values(r.expand).every((v) => v === 0))

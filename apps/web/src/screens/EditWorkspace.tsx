@@ -51,6 +51,7 @@ export function EditWorkspace({
   onRefresh: () => Promise<void>;
 }) {
   const [record, setRecord] = useState<Document>();
+  const [aiPreview, setAiPreview] = useState<string>();
   const [doc, setDoc] = useState<Snapshot>();
   const current = useRef<Snapshot | undefined>(undefined);
   const revision = useRef("");
@@ -291,6 +292,7 @@ export function EditWorkspace({
     return { documentId: documentId!, expectedRevision: revision.current };
   }
   async function adoptAI(id: string) {
+    setAiPreview(undefined);
     await onRefresh();
     if (id !== documentId) {
       onDocument(id);
@@ -699,6 +701,19 @@ export function EditWorkspace({
           ))}
         </aside>
         <div className="edit-stage" data-testid="edit-stage">
+          {aiPreview && (
+            <div className="ai-canvas-review" aria-label="AI result review">
+              <div>
+                <strong>
+                  AI result review · master unchanged until accepted
+                </strong>
+                <Button onClick={() => setAiPreview(undefined)}>
+                  Back to editing
+                </Button>
+              </div>
+              <img src={"/api/assets/" + aiPreview} alt="AI review on canvas" />
+            </div>
+          )}
           <div
             className="edit-paper"
             style={{
@@ -869,6 +884,7 @@ export function EditWorkspace({
             hasSelection={!!doc.selection}
             prepare={prepareAI}
             onApplied={adoptAI}
+            onPreview={setAiPreview}
           />
           <h2>{chosen?.name ?? "Select a layer"}</h2>
           {chosen && (

@@ -46,9 +46,14 @@ export function editHistory(store: Store, documentId: string) {
       };
     });
 }
-export function editPrompt(request: EditRequest) {
-  return `Edit image 1 according to the instruction below. Image 2 is ONLY an edit-region guide: white pixels may change, black pixels must remain unchanged. Return the complete edited image 1 at the same framing and dimensions. Do not draw the guide, mask, borders, captions or annotations. Preserve all other subjects, identities, product shapes, labels and visible text. ${request.task === "Expand" ? "The grey margins in image 1 are new canvas: continue the existing photograph into these margins naturally. Keep all original image content intact." : ""}\nAction: ${request.task}\nVerbatim user instruction:\n${request.instruction}`;
-}
+export {
+  editWorkflowId,
+  editPrompt,
+} from "../../../packages/routing/src/edit-template.js";
+import {
+  editWorkflowId,
+  editPrompt,
+} from "../../../packages/routing/src/edit-template.js";
 export async function submitEdit(
   store: Store,
   client: ComfyClient,
@@ -91,21 +96,23 @@ export async function submitEdit(
     seed: request.seed,
     quality: "Final" as const,
     model: "Qwen" as const,
-    references: [randomUUID(), randomUUID()],
+    references: editWorkflowId(request.task).endsWith("1ref")
+      ? [randomUUID()]
+      : [randomUUID(), randomUUID()],
   };
   const route = chooseRoute(
     check,
     workflows.map((w) => w.manifest),
     ready,
   );
-  if (route.workflow.id !== "create.qwen.2ref")
+  if (route.workflow.id !== editWorkflowId(request.task))
     throw Error("Validated edit graph unavailable");
-  const source = await store.importAsset(
+  const source = await store.internalAsset(
     prepared.source,
     "AI edit input.png",
     doc.projectId,
   );
-  const mask = await store.importAsset(
+  const mask = await store.internalAsset(
     prepared.maskPng,
     "AI edit region.png",
     doc.projectId,
@@ -138,7 +145,12 @@ export async function submitEdit(
       throw Error("Queue full. Wait for current work to finish.");
     const job = store.enqueue(
       doc.projectId,
-      { ...check, references: [source.id, mask.id] },
+      {
+        ...check,
+        references: editWorkflowId(request.task).endsWith("1ref")
+          ? [source.id]
+          : [source.id, mask.id],
+      },
       randomUUID(),
     );
     store.db

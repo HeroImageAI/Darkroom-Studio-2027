@@ -227,3 +227,31 @@
 .ai-review-actions .button {
   white-space: normal;
 }
+
+.edit-stage {
+  position: relative;
+}
+.ai-canvas-review {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--surface-app);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+}
+.ai-canvas-review > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+.ai-canvas-review img {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  object-fit: contain;
+  margin-top: var(--space-2);
+}

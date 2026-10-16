@@ -21,11 +21,13 @@ export function AIEditPanel({
   hasSelection,
   prepare,
   onApplied,
+  onPreview,
 }: {
   documentId: string;
   hasSelection: boolean;
   prepare: () => Promise<{ documentId: string; expectedRevision: string }>;
   onApplied: (id: string) => Promise<void>;
+  onPreview: (assetId: string | undefined) => void;
 }) {
   const [instruction, setInstruction] = useState(
     () => localStorage.getItem("darkroom.aiBrief." + documentId) ?? "",
@@ -49,7 +51,7 @@ export function AIEditPanel({
   async function refresh() {
     const list = await api<Entry[]>("/documents/" + documentId + "/edits");
     setEntries(list);
-    setSelected(id=>id || list[0]?.jobId || "");
+    setSelected((id) => id || list[0]?.jobId || "");
     return list;
   }
   useEffect(() => {
@@ -76,6 +78,10 @@ export function AIEditPanel({
     };
   }, [documentId]);
   const entry = entries.find((e) => e.jobId === selected) ?? entries[0];
+  useEffect(() => {
+    if (entry?.job.resultId && entry.disposition === "candidate")
+      onPreview(entry.job.resultId);
+  }, [entry?.jobId, entry?.job.resultId]);
   async function apply() {
     setBusy(true);
     setError("");
@@ -141,7 +147,10 @@ export function AIEditPanel({
         <select
           aria-label="AI edit action"
           value={task}
-          onChange={(e) => setTask(e.target.value as EditRequest["task"])}
+          onChange={(e) => {
+            setTask(e.target.value as EditRequest["task"]);
+            setArea(e.target.value === "Background" ? "outside" : "selection");
+          }}
         >
           {editTasks.map((t) => (
             <option key={t} value={t}>
@@ -290,7 +299,14 @@ export function AIEditPanel({
               )}
               {entry.job.resultId && (
                 <>
-                  <Button onClick={() => setCompare((v) => !v)}>
+                  <Button
+                    onClick={() => {
+                      setCompare((v) => !v);
+                      onPreview(
+                        compare ? entry.job.resultId! : entry.sourceAssetId,
+                      );
+                    }}
+                  >
                     {compare ? "Show result" : "Compare with before"}
                   </Button>
                   <figure>

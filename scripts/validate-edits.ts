@@ -8,7 +8,7 @@ import { ComfyClient } from "../apps/api/src/comfy.js";
 import { config } from "../apps/api/src/config.js";
 import { workflowById } from "../apps/api/src/workflow.js";
 import { prepareEdit, protectEdit } from "../apps/api/src/edit-render.js";
-import { editPrompt } from "../apps/api/src/edits.js";
+import { editPrompt, editWorkflowId } from "../apps/api/src/edits.js";
 import {
   bind,
   preflight,
@@ -24,7 +24,7 @@ const client = new ComfyClient(config.comfyUrl, config.instance);
 const inspection = await client.inspect();
 if (!inspection.status.verified)
   throw Error(inspection.status.reason ?? "Verified Desktop required");
-const { graph, manifest } = workflowById("create.qwen.2ref");
+
 const reports: any[] = existsSync(root + "/runs.json")
   ? JSON.parse(readFileSync(root + "/runs.json", "utf8"))
   : [];
@@ -54,6 +54,7 @@ const instructions: Record<string, string> = {
     "Make the orange sphere on the left green. Keep the black NOIR bottle unchanged.",
 };
 for (const task of editTasks) {
+  const { graph, manifest } = workflowById(editWorkflowId(task));
   if (process.env.DR_EDIT_QA_TASK && task !== process.env.DR_EDIT_QA_TASK)
     continue;
   if (
@@ -61,7 +62,8 @@ for (const task of editTasks) {
       (r) =>
         r.task === task &&
         r.engineFingerprint === inspection.status.fingerprint &&
-        r.templateVersion === 1,
+        r.templateVersion === 2 &&
+        (r.caseVersion ?? 1) === (task === "Background" ? 2 : 1),
     )
   )
     continue;
@@ -77,11 +79,21 @@ for (const task of editTasks) {
   const selected =
     task === "Background"
       ? [
-          { x: 270, y: 85 },
-          { x: 500, y: 85 },
-          { x: 500, y: 710 },
-          { x: 270, y: 710 },
-        ]
+          [313, 100],
+          [455, 100],
+          [455, 185],
+          [470, 198],
+          [482, 220],
+          [482, 615],
+          [470, 650],
+          [445, 665],
+          [323, 665],
+          [298, 650],
+          [286, 615],
+          [286, 220],
+          [298, 198],
+          [313, 185],
+        ].map(([x, y]) => ({ x: x!, y: y! }))
       : [
           { x: 60, y: 460 },
           { x: 260, y: 460 },
@@ -118,7 +130,7 @@ for (const task of editTasks) {
     seed: request.seed,
     steps: 40,
     reference1: refs[0]!,
-    reference2: refs[1]!,
+    ...(editWorkflowId(task).endsWith("2ref") ? { reference2: refs[1]! } : {}),
   };
   const compiled = bind(graph, manifest, values);
   preflight(
@@ -142,7 +154,13 @@ for (const task of editTasks) {
     if (h?.status?.completed) {
       const [out] = byTitle(compiled, "DR_OUTPUT");
       const raw = await client.image(h.outputs[out].images[0]);
-      const result = await protectEdit(prepared.source, prepared.maskPng, raw);
+      const result = await protectEdit(
+        prepared.source,
+        prepared.maskPng,
+        raw,
+        task !== "Background",
+        task !== "Expand",
+      );
       writeFileSync(root + "/" + task + ".raw.png", raw);
       writeFileSync(root + "/" + task + ".result.png", result);
       const a = await sharp(prepared.source).ensureAlpha().raw().toBuffer(),
@@ -164,7 +182,9 @@ for (const task of editTasks) {
       reports.push({
         task,
         request,
-        templateVersion: 1,
+        templateVersion: 2,
+        caseVersion: task === "Background" ? 2 : 1,
+        compositorVersion: 2,
         workflow: manifest.id,
         workflowHash: manifest.graphSha256,
         executionHash: graphHash(compiled),
