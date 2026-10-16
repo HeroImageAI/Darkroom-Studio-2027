@@ -295,6 +295,26 @@ export function CreateWorkspace(p: Props) {
             ＋ Import an image
           </Button>
           <span>{p.references.length}/3 references · drop or paste images</span>
+          {p.references.length < 3 &&
+            p.assets.some((a) => !p.references.includes(a.id)) && (
+              <select
+                aria-label="Add saved reference"
+                value=""
+                onChange={(e) => {
+                  if (e.target.value)
+                    p.onReferences([...p.references, e.target.value]);
+                }}
+              >
+                <option value="">Use saved image…</option>
+                {p.assets
+                  .filter((a) => !p.references.includes(a.id))
+                  .map((a) => (
+                    <option value={a.id} key={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+              </select>
+            )}
           <Button
             primary
             disabled={pending || !p.projectId || !p.prompt.trim()}

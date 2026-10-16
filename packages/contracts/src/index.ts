@@ -17,7 +17,19 @@ export const intentSchema = z
     quality: z.enum(["Draft", "Final"]).default("Draft"),
     references: z.array(z.string().uuid()).max(3).default([]),
   })
-  .strict();
+  .strict()
+  .superRefine((intent, ctx) => {
+    if (intent.width * intent.height > 1572864)
+      ctx.addIssue({
+        code: "custom",
+        message: "Custom dimensions exceed the validated 1,572,864 pixel limit",
+      });
+    if (new Set(intent.references).size !== intent.references.length)
+      ctx.addIssue({
+        code: "custom",
+        message: "Use distinct reference images",
+      });
+  });
 export type Intent = z.infer<typeof intentSchema>;
 export type IntentInput = z.input<typeof intentSchema>;
 export const createRequestSchema = z

@@ -158,6 +158,8 @@ export async function createApp(
   );
   app.post("/api/create", async (req, reply) => {
     const input = createRequestSchema.parse(req.body);
+    if (store.batchForKey(input.idempotencyKey))
+      return reply.code(202).send(store.createBatch(input));
     store.validateReferences(input.projectId, input.intent.references);
     const inspection = await comfy.inspect();
     const ready = new Set(

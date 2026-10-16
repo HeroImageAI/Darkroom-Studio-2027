@@ -75,7 +75,11 @@
     }
   ],
   "maxPixels": 1572864,
-  "validationEvidenceId": null,
-  "validationFingerprint": null,
-  "enabled": false
+  "validationEvidenceId": "create-synthetic-2026-10-16",
+  "validationFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+  "enabled": true,
+  "validatedQualities": [
+    "Draft",
+    "Final"
+  ]
 }

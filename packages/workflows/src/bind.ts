@@ -66,12 +66,15 @@ export function preflight(
         const metadata = grow?.[1] as
           | {
               names?: string[];
-              template?: { input: { required: Record<string, unknown[]> } };
+              template?: {
+                names?: string[];
+                input: { required: Record<string, unknown[]> };
+              };
             }
           | undefined;
         if (
           grow?.[0] === "COMFY_AUTOGROW_V3" &&
-          metadata?.names?.includes(name!)
+          (metadata?.names ?? metadata?.template?.names)?.includes(name!)
         )
           declaration = metadata.template?.input.required.image;
       }

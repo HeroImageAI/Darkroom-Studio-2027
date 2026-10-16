@@ -32,6 +32,7 @@ export function readiness(status: EngineStatus, info: ObjectInfo) {
       id: w.manifest.id,
       model: w.manifest.modelFamily,
       references: w.manifest.referenceCount ?? 0,
+      qualities: w.manifest.validatedQualities ?? [],
       ready,
       reason,
     };

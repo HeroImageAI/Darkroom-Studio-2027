@@ -68,7 +68,33 @@ export function App() {
   }, []);
   useEffect(() => {
     setReferences([]);
-    if (project) void refresh(project).catch((e) => setError(e.message));
+    let live = true;
+    if (project)
+      void api<Asset[]>("/projects/" + project + "/assets")
+        .then((list) => {
+          if (!live) return;
+          setAssets(list);
+          try {
+            const saved = JSON.parse(
+              localStorage.getItem("darkroom.references." + project) ?? "[]",
+            );
+            if (Array.isArray(saved))
+              setReferences(
+                saved
+                  .filter(
+                    (id: unknown) =>
+                      typeof id === "string" && list.some((a) => a.id === id),
+                  )
+                  .slice(0, 3),
+              );
+          } catch {
+            /* Ignore an invalid browser draft, never send it to the engine. */
+          }
+        })
+        .catch((e) => setError(e.message));
+    return () => {
+      live = false;
+    };
   }, [project]);
   useEffect(() => {
     const events = new EventSource("/api/events");
@@ -84,6 +110,12 @@ export function App() {
   async function importFiles(files: File[]) {
     const imported: Asset[] = [];
     if (!project || !files.length) return;
+    if (page === "Create" && references.length + files.length > 3) {
+      setError(
+        "Create supports up to three references. Remove a reference or import fewer images.",
+      );
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -99,9 +131,16 @@ export function App() {
       }
       await refresh();
       if (page === "Create")
-        setReferences((ids) =>
-          [...new Set([...ids, ...imported.map((a) => a.id)])].slice(0, 3),
-        );
+        setReferences((ids) => {
+          const next = [
+            ...new Set([...ids, ...imported.map((a) => a.id)]),
+          ].slice(0, 3);
+          localStorage.setItem(
+            "darkroom.references." + project,
+            JSON.stringify(next),
+          );
+          return next;
+        });
       setNotice(
         `${files.length === 1 ? "Image" : "Images"} saved locally. Original files preserved.`,
       );
@@ -123,7 +162,7 @@ export function App() {
     };
     window.addEventListener("paste", paste);
     return () => window.removeEventListener("paste", paste);
-  }, [project]);
+  }, [project, page, references]);
   async function createMaster() {
     if (!selected) return;
     setBusy(true);
@@ -313,7 +352,19 @@ export function App() {
                 projectId={project}
                 assets={assets}
                 references={references}
-                onReferences={setReferences}
+                onReferences={(ids) => {
+                  setReferences(ids);
+                  try {
+                    localStorage.setItem(
+                      "darkroom.references." + project,
+                      JSON.stringify(ids),
+                    );
+                  } catch {
+                    setError(
+                      "Reference draft could not be saved in this browser.",
+                    );
+                  }
+                }}
                 prompt={prompt}
                 onPrompt={setPrompt}
                 onImport={() => upload.current?.click()}

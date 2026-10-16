@@ -356,6 +356,11 @@ export class Store {
       )
         throw Error("Reference image does not belong to this project");
   }
+  batchForKey(key: string) {
+    return this.db
+      .prepare("SELECT id FROM create_batches WHERE idempotencyKey=?")
+      .get(key)?.id;
+  }
   createBatch(request: CreateRequest) {
     const json = JSON.stringify(request);
     const existing = this.db
