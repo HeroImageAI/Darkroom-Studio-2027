@@ -5,7 +5,11 @@ import {
   byTitle,
 } from "../../../packages/workflows/src/bind.js";
 import { chooseRoute } from "../../../packages/routing/src/policy.js";
-import { manifest, graph } from "./workflow.js";
+import { graph, workflows, workflowById } from "./workflow.js";
+import { readiness } from "./readiness.js";
+import { intentSchema } from "../../../packages/contracts/src/index.js";
+import { graphHash } from "../../../packages/workflows/src/bind.js";
+import sharp from "sharp";
 import type { Store } from "./store.js";
 import type { ComfyClient } from "./comfy.js";
 import { randomUUID } from "node:crypto";
@@ -138,32 +142,56 @@ export class Worker {
           throw Error(
             inspection.status.reason ?? "Verified Desktop engine required",
           );
-        preflight(graph, manifest, inspection.info);
-        const ready =
-          manifest.validationFingerprint === inspection.status.fingerprint;
+        job.intent = intentSchema.parse(job.intent);
+        this.store.validateReferences(job.projectId, job.intent.references);
+        const ready = new Set(
+          readiness(inspection.status, inspection.info)
+            .filter((w) => w.ready)
+            .map((w) => w.id),
+        );
         const route = chooseRoute(
           job.intent,
-          [manifest],
-          new Set(ready ? [manifest.id] : []),
+          workflows.map((w) => w.manifest),
+          ready,
         );
+        const { manifest, graph } = workflowById(route.workflow.id);
         const q = await this.client.queue();
         if (q.queue_running.length || q.queue_pending.length) {
           this.store.updateJob(job.id, "queued");
           return;
         }
-        const values = {
+        const values: Record<string, string | number> = {
           prompt: job.intent.prompt,
           width: job.intent.width,
           height: job.intent.height,
           seed: job.intent.seed,
+          steps: manifest.qualitySteps?.[job.intent.quality] ?? 4,
         };
+        for (let i = 0; i < job.intent.references.length; i++)
+          values["reference" + (i + 1)] = await this.client.uploadReference(
+            this.store.assetBytes(job.intent.references[i]!),
+          );
         const compiled = bind(graph, manifest, values);
+        const currentInfo = job.intent.references.length
+          ? await this.client.json("/object_info")
+          : inspection.info;
+        preflight(
+          compiled,
+          { ...manifest, graphSha256: graphHash(compiled) },
+          currentInfo,
+          new Set(
+            Object.entries(values)
+              .filter(([key]) => key.startsWith("reference"))
+              .map(([, value]) => String(value)),
+          ),
+        );
         const provenance = JSON.stringify({
           intent: job.intent,
           workflowId: manifest.id,
           workflowVersion: manifest.version,
           graphHash: manifest.graphSha256,
           graph: compiled,
+          executionHash: graphHash(compiled),
           engine: inspection.status,
           route,
           submittedAt: new Date().toISOString(),
@@ -222,21 +250,28 @@ export class Worker {
   }
   private async collect(jobId: string, history: any) {
     const job = this.store.job(jobId)!;
-    const [outputId] = byTitle(graph, manifest.outputs[0]!.title);
+    const recorded = job.provenance ? JSON.parse(job.provenance) : {};
+    const [outputId] = byTitle(recorded.graph ?? graph, "DR_OUTPUT");
     const images = history.outputs?.[outputId]?.images;
     if (!Array.isArray(images) || images.length !== 1)
       throw Error("Expected exactly one output image");
     this.store.updateJob(jobId, "collecting");
     const bytes = await this.client.image(images[0]);
+    const metadata = await sharp(bytes).metadata();
+    if (
+      metadata.width !== job.intent.width ||
+      metadata.height !== job.intent.height
+    )
+      throw Error("Output dimensions do not match request");
     const asset = await this.store.importAsset(
       bytes,
-      "Foundation image",
+      "Variation " + ((job.variationIndex ?? 0) + 1) + ".png",
       job.projectId,
       "generated",
     );
     if (asset.width !== job.intent.width || asset.height !== job.intent.height)
       throw Error("Output dimensions do not match request");
-    this.store.updateJob(jobId, "succeeded", { resultId: asset.id });
+    this.store.completeJob(jobId, asset.id);
   }
   async stop() {
     this.stopped = true;

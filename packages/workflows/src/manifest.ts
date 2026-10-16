@@ -5,6 +5,8 @@ export interface GraphNode {
 }
 export type Graph = Record<string, GraphNode>;
 export interface Manifest {
+  referenceCount?: number;
+  qualitySteps?: { Draft: number; Final: number };
   schemaVersion: 1;
   id: string;
   version: string;

@@ -117,14 +117,14 @@ it("backs up before a forward schema migration and rolls back invalid SQL", () =
   const migrations = join(root, "future-migrations");
   mkdirSync(migrations);
   writeFileSync(
-    join(migrations, "003_description.sql"),
+    join(migrations, "004_description.sql"),
     "ALTER TABLE projects ADD COLUMN description TEXT;",
   );
   migrate(store.db, root, migrations);
   expect(readdirSync(join(root, "backups"))).toHaveLength(1);
   expect(store.project(p.id)?.name).toBe("Before migration");
   writeFileSync(
-    join(migrations, "004_broken.sql"),
+    join(migrations, "005_broken.sql"),
     "CREATE TABLE tentative(id INTEGER); THIS IS INVALID;",
   );
   expect(() => migrate(store.db, root, migrations)).toThrow();
@@ -135,7 +135,7 @@ it("backs up before a forward schema migration and rolls back invalid SQL", () =
   ).toBeUndefined();
   expect(
     store.db.prepare("SELECT MAX(version) AS v FROM migrations").get()?.v,
-  ).toBe(3);
+  ).toBe(4);
 });
 it("leases worker ownership across separate connections and releases safely", () => {
   const second = new Store(root);

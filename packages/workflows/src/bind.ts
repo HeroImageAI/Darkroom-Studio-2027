@@ -34,7 +34,12 @@ export function bind(
   }
   return copy;
 }
-export function preflight(graph: Graph, manifest: Manifest, info: ObjectInfo) {
+export function preflight(
+  graph: Graph,
+  manifest: Manifest,
+  info: ObjectInfo,
+  uploadedImages = new Set<string>(),
+) {
   if (graphHash(graph) !== manifest.graphSha256)
     throw Error("Workflow graph hash mismatch");
   for (const b of Object.values(manifest.bindings)) {
@@ -48,10 +53,29 @@ export function preflight(graph: Graph, manifest: Manifest, info: ObjectInfo) {
     if (!spec) throw Error(`Missing node class ${n.class_type}`);
     const all = { ...spec.input.required, ...spec.input.optional };
     for (const required of Object.keys(spec.input.required ?? {}))
-      if (!(required in n.inputs))
+      if (
+        !(required in n.inputs) &&
+        spec.input.required?.[required]?.[0] !== "COMFY_AUTOGROW_V3"
+      )
         throw Error(`Missing required input ${n.class_type}.${required}`);
     for (const [key, value] of Object.entries(n.inputs)) {
-      const type = all[key]?.[0];
+      let declaration = all[key];
+      if (!declaration && key.includes(".")) {
+        const [group, name] = key.split(".");
+        const grow = all[group!];
+        const metadata = grow?.[1] as
+          | {
+              names?: string[];
+              template?: { input: { required: Record<string, unknown[]> } };
+            }
+          | undefined;
+        if (
+          grow?.[0] === "COMFY_AUTOGROW_V3" &&
+          metadata?.names?.includes(name!)
+        )
+          declaration = metadata.template?.input.required.image;
+      }
+      const type = declaration?.[0];
       if (!type) throw Error(`Unknown node input ${n.class_type}.${key}`);
       if (
         Array.isArray(value) &&
@@ -68,10 +92,29 @@ export function preflight(graph: Graph, manifest: Manifest, info: ObjectInfo) {
         )
           throw Error(`Incompatible graph link ${id}.${key}`);
       } else if (Array.isArray(type)) {
+        const placeholder =
+          n.class_type === "LoadImage" &&
+          typeof value === "string" &&
+          /^__REFERENCE_[1-3]__$/.test(value) &&
+          Object.values(manifest.bindings).some(
+            (b) => b.title === n._meta.title && b.input === key,
+          );
+        const uploaded =
+          n.class_type === "LoadImage" &&
+          typeof value === "string" &&
+          uploadedImages.has(value) &&
+          Object.values(manifest.bindings).some(
+            (b) => b.title === n._meta.title && b.input === key,
+          );
+        if (placeholder || uploaded) continue;
         if (!type.includes(value))
           throw Error(
             `Unavailable option/model ${n.class_type}.${key}: ${value}`,
           );
+      } else if (type === "COMBO") {
+        const options = (declaration?.[1] as { options?: unknown[] })?.options;
+        if (!options?.includes(value))
+          throw Error(`Unavailable option ${n.class_type}.${key}`);
       } else if (
         (type === "STRING" && typeof value !== "string") ||
         (type === "INT" && !Number.isSafeInteger(value)) ||

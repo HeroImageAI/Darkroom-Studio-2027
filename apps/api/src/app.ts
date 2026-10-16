@@ -6,7 +6,10 @@ import { resolve } from "node:path";
 import { existsSync } from "node:fs";
 import type { ServerResponse } from "node:http";
 import { z, ZodError } from "zod";
-import { intentSchema } from "../../../packages/contracts/src/index.js";
+import {
+  intentSchema,
+  createRequestSchema,
+} from "../../../packages/contracts/src/index.js";
 import { snapshotSchema } from "../../../packages/document/src/schema.js";
 import { preflight } from "../../../packages/workflows/src/bind.js";
 import { chooseRoute } from "../../../packages/routing/src/policy.js";
@@ -14,7 +17,8 @@ import { Store, Conflict } from "./store.js";
 import { ComfyClient } from "./comfy.js";
 import { Worker } from "./worker.js";
 import { config, loopbackUrl } from "./config.js";
-import { graph, manifest } from "./workflow.js";
+import { graph, manifest, workflows } from "./workflow.js";
+import { readiness } from "./readiness.js";
 export async function createApp(
   options: {
     dataDir?: string;
@@ -83,26 +87,22 @@ export async function createApp(
   }));
   app.get("/api/setup", async () => {
     const inspection = await comfy.inspect();
-    let workflowReady = false;
-    let reason = "Engine not verified";
-    if (inspection.status.verified)
-      try {
-        preflight(graph, manifest, inspection.info);
-        workflowReady =
-          manifest.enabled &&
-          !!manifest.validationEvidenceId &&
-          manifest.validationFingerprint === inspection.status.fingerprint;
-        reason = workflowReady
-          ? "Foundation workflow ready"
-          : (inspection.status.modelVerificationReason ??
-            "Installed; visual validation required");
-      } catch (e) {
-        reason = (e as Error).message;
-      }
+    const routes = readiness(inspection.status, inspection.info);
+    const workflowReady = routes.some((w) => w.ready);
+    const reason = workflowReady
+      ? "Create workflows ready"
+      : (routes[0]?.reason ?? "Local setup required");
     return {
       engine: inspection.status,
       workflow: { id: manifest.id, ready: workflowReady, reason },
-      requirements: manifest.models.map((m) => ({
+      routes,
+      requirements: [
+        ...new Map(
+          workflows
+            .flatMap((w) => w.manifest.models)
+            .map((m) => [m.filename, m]),
+        ).values(),
+      ].map((m) => ({
         name: m.filename,
         purpose:
           m.title === "DR_MODEL"
@@ -125,11 +125,13 @@ export async function createApp(
           status: inspection.status.models.UNETLoader?.includes(
             "qwen_image_2.1_int8_convrot.safetensors",
           )
-            ? "Installed · optional · not yet validated"
+            ? routes.some((r) => r.model === "Qwen" && r.ready)
+              ? "Installed · validated"
+              : "Installed · validation required"
             : "Not installed · optional",
         },
       ],
-      phase: 1,
+      phase: 2,
     };
   });
   app.post("/api/setup/connection", async (req) => {
@@ -151,6 +153,37 @@ export async function createApp(
     return (await comfy.inspect()).status;
   });
   app.get("/api/projects", () => store.projects());
+  app.get<{ Params: { id: string } }>("/api/projects/:id/create", async (req) =>
+    store.batches(req.params.id),
+  );
+  app.post("/api/create", async (req, reply) => {
+    const input = createRequestSchema.parse(req.body);
+    store.validateReferences(input.projectId, input.intent.references);
+    const inspection = await comfy.inspect();
+    const ready = new Set(
+      readiness(inspection.status, inspection.info)
+        .filter((w) => w.ready)
+        .map((w) => w.id),
+    );
+    chooseRoute(
+      input.intent,
+      workflows.map((w) => w.manifest),
+      ready,
+    );
+    return reply.code(202).send(store.createBatch(input));
+  });
+  app.post<{ Params: { id: string } }>(
+    "/api/candidates/:id/review",
+    async (req) => {
+      const { action } = z
+        .object({
+          action: z.enum(["accept", "keep-version", "send-to-edit", "reject"]),
+        })
+        .strict()
+        .parse(req.body);
+      return store.review(req.params.id, action);
+    },
+  );
   app.post("/api/projects", async (req, reply) =>
     reply.code(201).send(
       store.createProject(
@@ -241,14 +274,14 @@ export async function createApp(
     const inspection = await comfy.inspect();
     if (!inspection.status.verified)
       throw Error(inspection.status.reason ?? "Desktop engine not verified");
-    preflight(graph, manifest, inspection.info);
+    store.validateReferences(b.projectId, b.intent.references);
     chooseRoute(
       b.intent,
-      [manifest],
+      workflows.map((w) => w.manifest),
       new Set(
-        manifest.validationFingerprint === inspection.status.fingerprint
-          ? [manifest.id]
-          : [],
+        readiness(inspection.status, inspection.info)
+          .filter((w) => w.ready)
+          .map((w) => w.id),
       ),
     );
     const queued = store

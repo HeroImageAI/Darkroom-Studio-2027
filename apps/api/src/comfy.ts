@@ -7,7 +7,8 @@ import type {
 import { loopbackUrl } from "./config.js";
 import { discoverDesktop } from "./discovery.js";
 import { modelInventory } from "./inventory.js";
-import { manifest } from "./workflow.js";
+import { manifest, workflows } from "./workflow.js";
+import sharp from "sharp";
 export class ComfyClient {
   readonly clientId = randomUUID();
   constructor(
@@ -80,7 +81,7 @@ export class ComfyClient {
                 packages: stats.system?.comfy_package_versions,
                 device: stats.devices?.[0]?.name,
                 models,
-                info,
+                info: stableCapabilities(info),
                 files: files.map(({ filename, sha256 }) => ({
                   filename,
                   sha256,
@@ -128,6 +129,31 @@ export class ComfyClient {
       promptId
     ];
   }
+  async uploadReference(bytes: Buffer) {
+    const png = await sharp(bytes, { limitInputPixels: 40_000_000 })
+      .rotate()
+      .png()
+      .toBuffer();
+    const body = new FormData();
+    body.append(
+      "image",
+      new Blob([new Uint8Array(png)], { type: "image/png" }),
+      randomUUID() + ".png",
+    );
+    body.append("subfolder", "darkroom-studio-2027/references");
+    body.append("type", "input");
+    body.append("overwrite", "false");
+    const r = await fetch(this.url + "/upload/image", {
+      method: "POST",
+      body,
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!r.ok) throw Error("Reference upload failed");
+    const image = (await r.json()) as { name: string; subfolder?: string };
+    if (!image.name || image.name.includes(".."))
+      throw Error("Invalid reference upload response");
+    return image.subfolder ? image.subfolder + "/" + image.name : image.name;
+  }
   async queue() {
     return this.json("/queue");
   }
@@ -159,4 +185,22 @@ export class ComfyClient {
     if (bytes.length > 30 * 1024 * 1024) throw Error("Engine image too large");
     return bytes;
   }
+}
+export function stableCapabilities(info: ObjectInfo) {
+  const classes = new Set(
+    workflows.flatMap((w) => Object.values(w.graph).map((n) => n.class_type)),
+  );
+  const copy = structuredClone(
+    Object.fromEntries(
+      Object.entries(info).filter(([name]) => classes.has(name)),
+    ),
+  );
+  for (const spec of Object.values(copy))
+    for (const declaration of Object.values({
+      ...spec.input.required,
+      ...spec.input.optional,
+    }))
+      if ((declaration[1] as { image_upload?: boolean })?.image_upload)
+        declaration[0] = ["<uploaded-image>"];
+  return copy;
 }

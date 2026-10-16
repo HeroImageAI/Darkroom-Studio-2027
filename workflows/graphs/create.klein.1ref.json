@@ -1,0 +1,281 @@
+{
+  "model": {
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "DR_MODEL"
+    },
+    "inputs": {
+      "unet_name": "flux-2-klein-9b-fp8.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "encoder": {
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "DR_ENCODER"
+    },
+    "inputs": {
+      "clip_name": "qwen_3_8b_fp8mixed.safetensors",
+      "type": "flux2",
+      "device": "default"
+    }
+  },
+  "vae": {
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "DR_VAE"
+    },
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    }
+  },
+  "prompt": {
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "DR_PROMPT"
+    },
+    "inputs": {
+      "text": "",
+      "clip": [
+        "encoder",
+        0
+      ]
+    }
+  },
+  "negative": {
+    "class_type": "ConditioningZeroOut",
+    "_meta": {
+      "title": "DR_NEGATIVE"
+    },
+    "inputs": {
+      "conditioning": [
+        "prompt",
+        0
+      ]
+    }
+  },
+  "width": {
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "DR_WIDTH"
+    },
+    "inputs": {
+      "value": 512
+    }
+  },
+  "height": {
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "DR_HEIGHT"
+    },
+    "inputs": {
+      "value": 512
+    }
+  },
+  "latent": {
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "DR_LATENT"
+    },
+    "inputs": {
+      "width": [
+        "width",
+        0
+      ],
+      "height": [
+        "height",
+        0
+      ],
+      "batch_size": 1
+    }
+  },
+  "schedule": {
+    "class_type": "Flux2Scheduler",
+    "_meta": {
+      "title": "DR_SCHEDULE"
+    },
+    "inputs": {
+      "steps": 4,
+      "width": [
+        "width",
+        0
+      ],
+      "height": [
+        "height",
+        0
+      ]
+    }
+  },
+  "sampler": {
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "DR_SAMPLER"
+    },
+    "inputs": {
+      "sampler_name": "euler"
+    }
+  },
+  "noise": {
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "DR_SEED"
+    },
+    "inputs": {
+      "noise_seed": 2027
+    }
+  },
+  "guider": {
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "DR_GUIDER"
+    },
+    "inputs": {
+      "model": [
+        "model",
+        0
+      ],
+      "positive": [
+        "pos1",
+        0
+      ],
+      "negative": [
+        "neg1",
+        0
+      ],
+      "cfg": 1
+    }
+  },
+  "sample": {
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "DR_SAMPLE"
+    },
+    "inputs": {
+      "noise": [
+        "noise",
+        0
+      ],
+      "guider": [
+        "guider",
+        0
+      ],
+      "sampler": [
+        "sampler",
+        0
+      ],
+      "sigmas": [
+        "schedule",
+        0
+      ],
+      "latent_image": [
+        "latent",
+        0
+      ]
+    }
+  },
+  "decode": {
+    "class_type": "VAEDecodeTiled",
+    "_meta": {
+      "title": "DR_DECODE"
+    },
+    "inputs": {
+      "samples": [
+        "sample",
+        0
+      ],
+      "vae": [
+        "vae",
+        0
+      ],
+      "tile_size": 512,
+      "overlap": 64,
+      "temporal_size": 64,
+      "temporal_overlap": 8
+    }
+  },
+  "output": {
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "DR_OUTPUT"
+    },
+    "inputs": {
+      "images": [
+        "decode",
+        0
+      ],
+      "filename_prefix": "darkroom-studio-2027/create"
+    }
+  },
+  "ref1": {
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "DR_REF_1"
+    },
+    "inputs": {
+      "image": "__REFERENCE_1__"
+    }
+  },
+  "scale1": {
+    "class_type": "ImageScaleToTotalPixels",
+    "_meta": {
+      "title": "DR_SCALE_1"
+    },
+    "inputs": {
+      "image": [
+        "ref1",
+        0
+      ],
+      "upscale_method": "lanczos",
+      "megapixels": 0.6,
+      "resolution_steps": 16
+    }
+  },
+  "encode1": {
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "DR_ENCODE_1"
+    },
+    "inputs": {
+      "pixels": [
+        "scale1",
+        0
+      ],
+      "vae": [
+        "vae",
+        0
+      ]
+    }
+  },
+  "pos1": {
+    "class_type": "ReferenceLatent",
+    "_meta": {
+      "title": "DR_POS_1"
+    },
+    "inputs": {
+      "conditioning": [
+        "prompt",
+        0
+      ],
+      "latent": [
+        "encode1",
+        0
+      ]
+    }
+  },
+  "neg1": {
+    "class_type": "ReferenceLatent",
+    "_meta": {
+      "title": "DR_NEG_1"
+    },
+    "inputs": {
+      "conditioning": [
+        "negative",
+        0
+      ],
+      "latent": [
+        "encode1",
+        0
+      ]
+    }
+  }
+}
