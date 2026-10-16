@@ -1,6 +1,6 @@
 # Phase 4 — Intelligent Edit
 
-16 October 2026. Draft review candidate stacked on Edit foundation. No merge or Phase 5 work. The final manual Accept click remains pending approval after automatic approval review blocked it.
+16 October 2026. Draft review candidate stacked on Edit foundation. No merge or Phase 5 work. The final manual Accept/reload check passed after specific user approval.
 
 ## IMPLEMENTED
 
@@ -43,9 +43,9 @@ Compositor re-evaluation took approximately 155–305 ms per saved case. Model t
 
 A separate real HTTP → durable job → worker → ComfyUI → collection run recoloured the orange sphere blue in 69.655 seconds including initial setup/queue overhead. Replay returned the same job. All 545,824 protected pixels and original bytes were unchanged. The working master's revision remained unchanged before review. Live browser comparison showed the original orange sphere and the proposed blue sphere with the protected bottle/label intact.
 
-The live Accept click was blocked by automatic approval review because it commits the AI candidate into a working master and required specific user approval. No alternate route was used to accept that candidate. It remains ready for review in the final preview. Acceptance/conflict behaviour passed automated tests; manual live acceptance/reload is the remaining gate.
+Automatic approval review initially blocked the live Accept click. The user then explicitly approved accepting this synthetic test result. Accept was clicked in the live browser, the result became a generated layer and named version, and reload reopened the accepted master with All changes saved. The original bytes and retained source layer were verified intact; the accepted revision matches the named version. No alternate route was used to bypass the initial block.
 
-Local raw evidence remains ignored: data/edit-qa/runs.json and before/mask/raw/result PNGs; data/ai-edit-final/evidence/live.json and live-result.png. Screenshot: outputs/darkroom-ai-edit-review.png outside the source repository. The implementation signature, workflow hashes, engine fingerprint and scoped evidence ID are committed in workflows/edit-validation.json.
+Local raw evidence remains ignored: data/edit-qa/runs.json and before/mask/raw/result PNGs; data/ai-edit-final/evidence/live.json and live-result.png. Screenshots: outputs/darkroom-ai-edit-review.png and outputs/darkroom-ai-edit-accepted.png outside the source repository. The implementation signature, workflow hashes, engine fingerprint and scoped evidence ID are committed in workflows/edit-validation.json.
 
 ## KNOWN ISSUES
 
@@ -59,4 +59,4 @@ Branch intelligent-edit, based on the unmerged edit-workspace branch. Logical co
 
 ## RECOMMENDATION
 
-Review the six scoped edit actions and approve the synthetic live candidate's Accept click to finish the manual acceptance gate. Do not proceed to Phase 5 until that gate and this phase review are complete. The next phase is Finish; this implementation does not claim finishing/export capability.
+The manual acceptance gate is complete. Review the six scoped edit actions and their documented limits before authorising Phase 5. The next phase is Finish; this implementation does not claim finishing/export capability.

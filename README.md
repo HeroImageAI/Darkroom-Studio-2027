@@ -50,6 +50,6 @@ For current Create validation, use `npx tsx scripts/validate-create.ts` for the 
 
 `main` is the reviewed baseline. Planning and implementation changes use feature branches and pull requests. HeroImageAI/Darkroom is read-only reference material; no legacy UI, runtime data, model weights or repository history is imported here.
 
-Phase 4 was authorised in chat; its PR is stacked on the unmerged edit-workspace branch. The synthetic live Accept click requires approval after automatic review blocked it. Do not proceed to Phase 5 or merge automatically. See the build plan for explicit acceptance criteria.
+Phase 4 was authorised in chat; its PR is stacked on the unmerged edit-workspace branch. The synthetic live Accept/reload check passed after specific user approval. Do not proceed to Phase 5 or merge automatically. See the build plan for explicit acceptance criteria.
 
 For scoped AI-edit QA, `npx tsx scripts/validate-edits.ts` creates owned-fixture model candidates; `npx tsx scripts/recompose-edit-qa.ts` rechecks saved raw output after compositor changes. Neither enables actions automatically. `npx tsx scripts/live-edit.ts` exercises a separately running isolated service (default port 2037) and leaves its result awaiting review. See the Phase 4 report before changing validation pins.
