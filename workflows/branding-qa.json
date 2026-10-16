@@ -1,0 +1,62 @@
+{
+  "rights": "Original Darkroom mark and owned geometric/text fixture",
+  "projectId": "0f3c426d-e67a-47fa-817a-c12171a8804f",
+  "documentId": "a9306149-34eb-44a5-a252-16fddebb9929",
+  "baseRevision": "129991d3-4040-46ad-8b6a-5e5a9c06da2d",
+  "assetId": "9a5f458d-3808-402b-9c0d-d5058ebf2a19",
+  "visualAssessment": "PASS scoped original Darkroom brand fixture",
+  "deliveries": {
+    "svg": {
+      "id": "07936375-80ee-4c02-abe8-120b20fabe45",
+      "path": "outputs/darkroom-branding-artwork.svg",
+      "sha256": "ead7ca4c5158d8deeb9f108d7cf84b006ea86ebaec4fcf157480d8647fcd921d",
+      "size": 29771
+    },
+    "project": {
+      "id": "648f4562-c1b2-4686-8c07-1baa13a0afa1",
+      "path": "outputs/darkroom-branding.darkroom.json",
+      "sha256": "c8b9ba2b2594c801206a264ef8bf2fc0c841177a46ef05c92017e7b802f277fb",
+      "size": 6779
+    },
+    "png": {
+      "id": "06059000-0679-42d5-a96c-b69ee2d4a0f7",
+      "path": "outputs/darkroom-branding-artwork.png",
+      "sha256": "1cbc6b3255933d2587aa72949e6d8dcb0bd09120b23fe0d0f2b84e06dc8dd134",
+      "size": 25982
+    }
+  },
+  "svgEmbeddedRasterImages": 0,
+  "svgTextOutlined": true,
+  "svgPngPixelsEqual": true,
+  "editedTitleSizeThroughUI": 72,
+  "currentSourceRevision": "1a8f269e-c9a6-4277-a406-85e66238eccb",
+  "importedProjectId": "87a5074e-2ed5-41e9-a8da-b6c1a86a337a",
+  "importedDocumentId": "5d1f8db9-a243-4ec2-9fd2-04815a81b1b1",
+  "roundTripPixelsEqual": true,
+  "roundTripAssetsEqual": true,
+  "reopenedThroughUI": true,
+  "titleSizeAfterReopen": 72,
+  "fontHashes": {
+    "Darkroom Sans": "e20fa0b4fd2dd26e4d14b3ac3cc922509c3a63fa5e910e90c614544aa042dd45",
+    "Darkroom Sans Bold": "7c5ed5655730de337704d3fc94628515cd7e3d8d32368871709bf56ac0397e7a"
+  },
+  "affinitySvg": "PASS: actual SVG opened at 185% zoom; logo, outlined text, rule and ellipse visually match the fixture; no missing-font dialog",
+  "implementationHashes": {
+    "apps/api/src/branding.ts": "530af2948b1e664800286de4e55567c20c5b970c42f417d390f3271c5bdc942f",
+    "apps/api/src/handoff.ts": "68ba35bcaae5da6a158034fcbe3c8cae2840f7f1663a0ce0df6457e7e104c6c6",
+    "packages/document/src/svg.ts": "628581168a2c2b9f06653f9da93eba063b8d57aa8d0ea5bf5356cf89af04ee36"
+  },
+  "finalRelease": {
+    "port": 2046,
+    "dataDir": "data/branding-final",
+    "projectId": "5f6062ca-c964-46a8-9ac6-88b7a55afc34",
+    "documentId": "d2a0d4c4-be0b-44e5-a6e9-3e0086446cb1",
+    "revisionId": "35dac76b-f708-4015-9b37-3c229a876036",
+    "svg": "16af1280-720d-4298-a8c4-05b145e46c82",
+    "png": "f2e14889-f33a-438f-a085-28fb9915c313",
+    "reviewedSvgBytesIdentical": true,
+    "reviewedPngBytesIdentical": true
+  },
+  "date": "2026-10-16",
+  "scope": "Owned geometric/Latin text fixture and restricted static SVG; not general typography or arbitrary SVG certification"
+}

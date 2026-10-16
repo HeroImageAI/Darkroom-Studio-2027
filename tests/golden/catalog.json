@@ -15,7 +15,10 @@
     },
     {
       "category": "artwork-logo",
-      "status": "fixture-pending"
+      "status": "active-owned-vector-scoped",
+      "generator": "scripts/validate-branding.ts",
+      "evidence": "workflows/branding-qa.json",
+      "rubric": "docs/PHASE_7_REPORT.md"
     },
     {
       "category": "person",
