@@ -1,15 +1,52 @@
 {
   "schemaVersion": 1,
   "cases": [
-    { "category": "product", "status": "fixture-pending" },
-    { "category": "garment", "status": "fixture-pending" },
-    { "category": "artwork-logo", "status": "fixture-pending" },
-    { "category": "person", "status": "fixture-pending" },
-    { "category": "environment", "status": "fixture-pending" },
-    { "category": "text-sensitive", "status": "fixture-pending" },
-    { "category": "transparent-object", "status": "fixture-pending" },
-    { "category": "composite", "status": "fixture-pending" },
-    { "category": "low-quality-image", "status": "fixture-pending" },
-    { "category": "sketch", "status": "fixture-pending" }
+    {
+      "category": "product",
+      "status": "active-synthetic-scoped",
+      "generator": "scripts/validate-create.ts",
+      "evidence": "data/create-qa/runs.json",
+      "rubric": "docs/PHASE_2_REPORT.md",
+      "inputHash": "b20fb24279433cc19af18ee7fd6c37b8e5eae24531b89112dea88bbf629ccebf"
+    },
+    {
+      "category": "garment",
+      "status": "fixture-pending"
+    },
+    {
+      "category": "artwork-logo",
+      "status": "fixture-pending"
+    },
+    {
+      "category": "person",
+      "status": "fixture-pending"
+    },
+    {
+      "category": "environment",
+      "status": "fixture-pending"
+    },
+    {
+      "category": "text-sensitive",
+      "status": "active-synthetic-scoped",
+      "generator": "scripts/validate-create.ts",
+      "evidence": "data/create-qa/runs.json",
+      "rubric": "docs/PHASE_2_REPORT.md"
+    },
+    {
+      "category": "transparent-object",
+      "status": "fixture-pending"
+    },
+    {
+      "category": "composite",
+      "status": "fixture-pending"
+    },
+    {
+      "category": "low-quality-image",
+      "status": "fixture-pending"
+    },
+    {
+      "category": "sketch",
+      "status": "fixture-pending"
+    }
   ]
 }

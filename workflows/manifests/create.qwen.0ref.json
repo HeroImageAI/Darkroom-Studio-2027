@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "create.qwen.0ref",
+  "version": "1.0.0",
+  "modelFamily": "Qwen",
+  "referenceCount": 0,
+  "qualitySteps": {
+    "Draft": 25,
+    "Final": 40
+  },
+  "graphSha256": "7a588c404ae3350443064e4a1b8a9f5e5bbd56637c4efb70c9388cd662235537",
+  "bindings": {
+    "prompt": {
+      "title": "DR_PROMPT",
+      "input": "prompt",
+      "type": "string"
+    },
+    "width": {
+      "title": "DR_WIDTH",
+      "input": "value",
+      "type": "integer"
+    },
+    "height": {
+      "title": "DR_HEIGHT",
+      "input": "value",
+      "type": "integer"
+    },
+    "seed": {
+      "title": "DR_SAMPLE",
+      "input": "seed",
+      "type": "integer"
+    },
+    "steps": {
+      "title": "DR_SAMPLE",
+      "input": "steps",
+      "type": "integer"
+    }
+  },
+  "outputs": [
+    {
+      "title": "DR_OUTPUT",
+      "kind": "image",
+      "alpha": false
+    }
+  ],
+  "models": [
+    {
+      "title": "DR_MODEL",
+      "input": "unet_name",
+      "filename": "qwen_image_2.1_int8_convrot.safetensors",
+      "source": "Existing ComfyUI Desktop installation",
+      "licenceStatus": "Verify authoritative terms for intended use",
+      "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+    },
+    {
+      "title": "DR_ENCODER",
+      "input": "clip_name",
+      "filename": "qwen3vl_8b_int8_convrot.safetensors",
+      "source": "Existing ComfyUI Desktop installation",
+      "licenceStatus": "Verify authoritative terms for intended use",
+      "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+    },
+    {
+      "title": "DR_VAE",
+      "input": "vae_name",
+      "filename": "qwen_image_2.1_vae_bf16.safetensors",
+      "source": "Existing ComfyUI Desktop installation",
+      "licenceStatus": "Verify authoritative terms for intended use",
+      "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+    }
+  ],
+  "maxPixels": 1572864,
+  "validationEvidenceId": "create-synthetic-2026-10-16",
+  "validationFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+  "enabled": true,
+  "validatedQualities": [
+    "Draft",
+    "Final"
+  ]
+}

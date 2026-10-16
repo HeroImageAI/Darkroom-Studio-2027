@@ -20,7 +20,11 @@ import type {
   Job,
   Intent,
   JobState,
+  IntentInput,
+  CreateRequest,
+  Candidate,
 } from "../../../packages/contracts/src/index.js";
+import { intentSchema } from "../../../packages/contracts/src/index.js";
 import {
   snapshotSchema,
   initialSnapshot,
@@ -40,6 +44,7 @@ export class Store {
     migrate(this.db, root);
   }
   transaction<T>(fn: () => T): T {
+    if (this.db.isTransaction) return fn();
     this.db.exec("BEGIN IMMEDIATE");
     try {
       const result = fn();
@@ -284,7 +289,15 @@ export class Store {
   job(id: string) {
     return this.jobs().find((j) => j.id === id);
   }
-  enqueue(projectId: string, intent: Intent, key: string) {
+  jobStartedAt(id: string) {
+    return this.db
+      .prepare(
+        "SELECT MIN(createdAt) AS started FROM events WHERE jobId=? AND type='state' AND json_extract(payload,'$.state')='running'",
+      )
+      .get(id)?.started;
+  }
+  enqueue(projectId: string, input: IntentInput, key: string) {
+    const intent = intentSchema.parse(input);
     const old = this.db
       .prepare("SELECT * FROM jobs WHERE idempotencyKey=?")
       .get(key);
@@ -297,7 +310,7 @@ export class Store {
     this.transaction(() => {
       this.db
         .prepare(
-          "INSERT INTO jobs VALUES(?,?,?,'queued',NULL,NULL,NULL,?,NULL,?)",
+          "INSERT INTO jobs(id,projectId,intent,state,promptId,error,resultId,createdAt,provenance,idempotencyKey) VALUES(?,?,?,'queued',NULL,NULL,NULL,?,NULL,?)",
         )
         .run(id, projectId, JSON.stringify(intent), now(), key);
       this.event(id, "state", { state: "queued" });
@@ -338,6 +351,154 @@ export class Store {
         "INSERT INTO events(jobId,type,payload,createdAt) VALUES(?,?,?,?)",
       )
       .run(jobId, type, JSON.stringify(payload), now());
+  }
+  validateReferences(projectId: string, references: string[]) {
+    for (const id of references)
+      if (
+        !this.db
+          .prepare(
+            "SELECT 1 FROM project_assets WHERE projectId=? AND assetId=?",
+          )
+          .get(projectId, id)
+      )
+        throw Error("Reference image does not belong to this project");
+  }
+  batchForKey(key: string) {
+    return this.db
+      .prepare("SELECT id FROM create_batches WHERE idempotencyKey=?")
+      .get(key)?.id;
+  }
+  createBatch(request: CreateRequest) {
+    const json = JSON.stringify(request);
+    const existing = this.db
+      .prepare("SELECT * FROM create_batches WHERE idempotencyKey=?")
+      .get(request.idempotencyKey);
+    if (existing) {
+      if (existing.requestJson !== json)
+        throw new Conflict("Idempotency key used for a different request");
+      return this.batch(String(existing.id));
+    }
+    if (!this.project(request.projectId)) throw Error("Project not found");
+    this.validateReferences(request.projectId, request.intent.references);
+    if (
+      this.jobs().filter((j) =>
+        [
+          "queued",
+          "validating",
+          "running",
+          "submitting",
+          "collecting",
+          "uncertain",
+        ].includes(j.state),
+      ).length +
+        request.variations >
+      8
+    )
+      throw Error("Queue full; wait for current work to finish");
+    return this.transaction(() => {
+      const id = randomUUID();
+      this.db
+        .prepare("INSERT INTO create_batches VALUES(?,?,?,?,?)")
+        .run(id, request.projectId, json, request.idempotencyKey, now());
+      for (let i = 0; i < request.variations; i++) {
+        const job = this.enqueue(
+          request.projectId,
+          { ...request.intent, seed: (request.intent.seed + i) % 2 ** 32 },
+          randomUUID(),
+        );
+        this.db
+          .prepare("UPDATE jobs SET batchId=?,variationIndex=? WHERE id=?")
+          .run(id, i, job.id);
+      }
+      return this.batch(id);
+    });
+  }
+  batch(id: string) {
+    const b = this.db
+      .prepare("SELECT * FROM create_batches WHERE id=?")
+      .get(id);
+    if (!b) throw Error("Creation not found");
+    const jobs = this.jobs()
+      .filter((j) => j.batchId === id)
+      .map(({ provenance, ...j }) => {
+        const latest = this.db
+          .prepare(
+            "SELECT payload FROM events WHERE jobId=? AND type='progress' ORDER BY sequence DESC LIMIT 1",
+          )
+          .get(j.id);
+        return {
+          ...j,
+          progress: latest ? JSON.parse(String(latest.payload)) : null,
+        };
+      });
+    return {
+      id,
+      projectId: String(b.projectId),
+      request: JSON.parse(String(b.requestJson)) as CreateRequest,
+      createdAt: String(b.createdAt),
+      jobs,
+      candidates: this.candidates().filter((c) =>
+        jobs.some((j) => j.id === c.jobId),
+      ),
+    };
+  }
+  batches(projectId: string) {
+    return this.db
+      .prepare(
+        "SELECT id FROM create_batches WHERE projectId=? ORDER BY createdAt DESC",
+      )
+      .all(projectId)
+      .map((b) => this.batch(String(b.id)));
+  }
+  candidates() {
+    return this.db
+      .prepare("SELECT * FROM candidates")
+      .all() as unknown as Candidate[];
+  }
+  completeJob(jobId: string, assetId: string) {
+    return this.transaction(() => {
+      const job = this.job(jobId)!;
+      const old = this.candidates().find((c) => c.jobId === jobId);
+      if (!old)
+        this.db
+          .prepare(
+            "INSERT INTO candidates VALUES(?,?,?,?,'candidate',NULL,NULL)",
+          )
+          .run(randomUUID(), jobId, assetId, job.variationIndex ?? 0);
+      this.updateJob(jobId, "succeeded", { resultId: old?.assetId ?? assetId });
+    });
+  }
+  review(
+    id: string,
+    action: "accept" | "keep-version" | "send-to-edit" | "reject",
+  ) {
+    return this.transaction(() => {
+      const c = this.candidates().find((c) => c.id === id);
+      if (!c) throw Error("Candidate not found");
+      if (action === "reject") {
+        this.db
+          .prepare("UPDATE candidates SET disposition='rejected' WHERE id=?")
+          .run(id);
+        return this.candidates().find((v) => v.id === id)!;
+      }
+      let documentId = c.documentId,
+        versionId = c.versionId;
+      if (!documentId) {
+        const job = this.job(c.jobId)!;
+        const doc = this.createDocument(job.projectId, c.assetId);
+        documentId = doc.id;
+        versionId = this.version(
+          doc.id,
+          "Generated variation " + (c.variationIndex + 1),
+        ).id;
+      }
+      this.db
+        .prepare(
+          "UPDATE candidates SET disposition='accepted',documentId=?,versionId=? WHERE id=?",
+        )
+        .run(documentId, versionId, id);
+      return this.candidates().find((v) => v.id === id)!;
+    });
   }
   events(after: number) {
     return this.db

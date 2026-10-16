@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "id": "create.klein.1ref",
+  "version": "1.0.0",
+  "modelFamily": "Klein",
+  "referenceCount": 1,
+  "qualitySteps": {
+    "Draft": 4,
+    "Final": 4
+  },
+  "graphSha256": "8ca35ca8f8e5fb9ad3ecc8534d4fda24eac21c8da50d50be0e48b84b09533106",
+  "bindings": {
+    "prompt": {
+      "title": "DR_PROMPT",
+      "input": "text",
+      "type": "string"
+    },
+    "width": {
+      "title": "DR_WIDTH",
+      "input": "value",
+      "type": "integer"
+    },
+    "height": {
+      "title": "DR_HEIGHT",
+      "input": "value",
+      "type": "integer"
+    },
+    "seed": {
+      "title": "DR_SEED",
+      "input": "noise_seed",
+      "type": "integer"
+    },
+    "steps": {
+      "title": "DR_SCHEDULE",
+      "input": "steps",
+      "type": "integer"
+    },
+    "reference1": {
+      "title": "DR_REF_1",
+      "input": "image",
+      "type": "string"
+    }
+  },
+  "outputs": [
+    {
+      "title": "DR_OUTPUT",
+      "kind": "image",
+      "alpha": false
+    }
+  ],
+  "models": [
+    {
+      "title": "DR_MODEL",
+      "input": "unet_name",
+      "filename": "flux-2-klein-9b-fp8.safetensors",
+      "source": "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B",
+      "licenceStatus": "Source/licence terms must be reviewed for intended use; no download performed",
+      "sha256": "865ba09f5b4c3cbd3468a4bd3acb9fcb2f8740c54317482f0bcd4ed1d3655cee"
+    },
+    {
+      "title": "DR_ENCODER",
+      "input": "clip_name",
+      "filename": "qwen_3_8b_fp8mixed.safetensors",
+      "source": "Existing local ComfyUI installation",
+      "licenceStatus": "Existing local weight; licence not independently verified",
+      "sha256": "abad16806e0cbabc54e0325d6565847443fe396d5f0be38bb3cd3fe75a1201d6"
+    },
+    {
+      "title": "DR_VAE",
+      "input": "vae_name",
+      "filename": "flux2-vae.safetensors",
+      "source": "Existing local ComfyUI installation",
+      "licenceStatus": "Existing local weight; licence not independently verified",
+      "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
+    }
+  ],
+  "maxPixels": 1572864,
+  "validationEvidenceId": "create-synthetic-2026-10-16",
+  "validationFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+  "enabled": true,
+  "validatedQualities": [
+    "Draft",
+    "Final"
+  ]
+}

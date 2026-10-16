@@ -5,6 +5,8 @@ import type {
   EngineStatus,
   Job,
 } from "../../../../packages/contracts/src/index.js";
+import { CreateWorkspace } from "../screens/CreateWorkspace.js";
+import "../styles/create.css";
 import { api } from "../lib/api.js";
 import { Button, Panel, Status } from "../components/Controls.js";
 type Page = "Create" | "Edit" | "Library";
@@ -28,8 +30,9 @@ export function App() {
   const [prompt, setPrompt] = useState(
     () => localStorage.getItem("darkroom.brief") ?? "",
   );
-  const [briefSaved, setBriefSaved] = useState(true);
+  const [references, setReferences] = useState<string[]>([]);
   const [selected, setSelected] = useState<Asset>();
+  const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const upload = useRef<HTMLInputElement>(null);
   async function refresh(id = project) {
@@ -65,7 +68,34 @@ export function App() {
     };
   }, []);
   useEffect(() => {
-    if (project) void refresh(project).catch((e) => setError(e.message));
+    setReferences([]);
+    let live = true;
+    if (project)
+      void api<Asset[]>("/projects/" + project + "/assets")
+        .then((list) => {
+          if (!live) return;
+          setAssets(list);
+          try {
+            const saved = JSON.parse(
+              localStorage.getItem("darkroom.references." + project) ?? "[]",
+            );
+            if (Array.isArray(saved))
+              setReferences(
+                saved
+                  .filter(
+                    (id: unknown) =>
+                      typeof id === "string" && list.some((a) => a.id === id),
+                  )
+                  .slice(0, 3),
+              );
+          } catch {
+            /* Ignore an invalid browser draft, never send it to the engine. */
+          }
+        })
+        .catch((e) => setError(e.message));
+    return () => {
+      live = false;
+    };
   }, [project]);
   useEffect(() => {
     const events = new EventSource("/api/events");
@@ -79,7 +109,14 @@ export function App() {
     return () => events.close();
   }, [project]);
   async function importFiles(files: File[]) {
+    const imported: Asset[] = [];
     if (!project || !files.length) return;
+    if (page === "Create" && references.length + files.length > 3) {
+      setError(
+        "Create supports up to three references. Remove a reference or import fewer images.",
+      );
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -91,8 +128,21 @@ export function App() {
           body: form,
         });
         setSelected(asset);
+        setSelectedDocument(null);
+        imported.push(asset);
       }
       await refresh();
+      if (page === "Create")
+        setReferences((ids) => {
+          const next = [
+            ...new Set([...ids, ...imported.map((a) => a.id)]),
+          ].slice(0, 3);
+          localStorage.setItem(
+            "darkroom.references." + project,
+            JSON.stringify(next),
+          );
+          return next;
+        });
       setNotice(
         `${files.length === 1 ? "Image" : "Images"} saved locally. Original files preserved.`,
       );
@@ -114,7 +164,7 @@ export function App() {
     };
     window.addEventListener("paste", paste);
     return () => window.removeEventListener("paste", paste);
-  }, [project]);
+  }, [project, page, references]);
   async function createMaster() {
     if (!selected) return;
     setBusy(true);
@@ -127,6 +177,7 @@ export function App() {
         "Editable master saved locally. Canvas tools arrive in the next editing phase.",
       );
       localStorage.setItem("darkroom.lastDocument", doc.id);
+      setSelectedDocument(doc.id);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -161,6 +212,7 @@ export function App() {
             key={a.id}
             onClick={() => {
               setSelected(a);
+              setSelectedDocument(null);
               setPage("Edit");
             }}
           >
@@ -282,7 +334,7 @@ export function App() {
                 : "Engine not connected"}
             </Status>
           </div>
-          <small className="foundation-label">FOUNDATION PREVIEW · 0.1</small>
+          <small className="foundation-label">CREATE PREVIEW · 0.2</small>
         </aside>
         <main id="workspace" tabIndex={-1}>
           {error && (
@@ -299,84 +351,43 @@ export function App() {
           )}
           {page === "Create" && (
             <>
-              <div className="hero">
-                <div className="eyebrow">
-                  LOCAL AI. A NEW CREATIVE PERSPECTIVE.
-                </div>
-                <h1>
-                  What do you want
-                  <br />
-                  to <span>create?</span>
-                </h1>
-                <p>Begin with an idea. Bring something worth exploring.</p>
-                <svg
-                  className="exposure"
-                  viewBox="0 0 600 240"
-                  aria-hidden="true"
-                >
-                  <defs>
-                    <linearGradient id="light">
-                      <stop stopColor="var(--deep-crimson)" stopOpacity="0" />
-                      <stop offset=".6" stopColor="var(--crimson)" />
-                      <stop
-                        offset="1"
-                        stopColor="var(--deep-crimson)"
-                        stopOpacity="0"
-                      />
-                    </linearGradient>
-                  </defs>
-                  <path d="M-20 225 C140 250 130 70 290 100 S440 230 630 30" />
-                  <path d="M-20 235 C145 255 150 90 300 115 S460 210 640 48" />
-                </svg>
-              </div>
-              <Panel className="composer">
-                <label htmlFor="brief" className="field-label">
-                  YOUR CREATIVE BRIEF
-                </label>
-                <textarea
-                  id="brief"
-                  value={prompt}
-                  onChange={(e) => {
-                    setPrompt(e.target.value);
-                    setBriefSaved(false);
-                  }}
-                  placeholder="A sculptural bottle on dark stone. Soft edge lighting. A little unexpected…"
-                />
-                <div className="composer-actions">
-                  <Button
-                    onClick={() => upload.current?.click()}
-                    disabled={busy || !project}
-                  >
-                    ＋ Import an image
-                  </Button>
-                  <span>or drop / paste an image</span>
-                  <Button
-                    primary
-                    onClick={() => {
-                      try {
-                        localStorage.setItem("darkroom.brief", prompt);
-                        setBriefSaved(true);
-                        setNotice("Brief saved on this browser.");
-                      } catch {
-                        setError(
-                          "Browser storage is full; copy your brief before closing.",
-                        );
-                      }
-                    }}
-                  >
-                    {briefSaved ? "Save brief" : "Save brief · unsaved"}
-                  </Button>
-                </div>
-              </Panel>
-              <div className="phase-note">
-                <span>01 / FOUNDATION</span>
-                <p>
-                  Your local workspace is taking shape. Save a brief or import
-                  an image.
-                  <br />
-                  Image creation and result review are the next phase.
-                </p>
-              </div>
+              <CreateWorkspace
+                key={project}
+                projectId={project}
+                assets={assets}
+                references={references}
+                onReferences={(ids) => {
+                  setReferences(ids);
+                  try {
+                    localStorage.setItem(
+                      "darkroom.references." + project,
+                      JSON.stringify(ids),
+                    );
+                  } catch {
+                    setError(
+                      "Reference draft could not be saved in this browser.",
+                    );
+                  }
+                }}
+                prompt={prompt}
+                onPrompt={setPrompt}
+                onImport={() => upload.current?.click()}
+                onSetup={() => {
+                  setShowSetup(true);
+                  void refreshSetup();
+                }}
+                onEdit={async (assetId, documentId) => {
+                  const list = await api<Asset[]>(
+                    "/projects/" + project + "/assets",
+                  );
+                  setAssets(list);
+                  setSelected(list.find((a) => a.id === assetId));
+                  localStorage.setItem("darkroom.lastDocument", documentId);
+                  setSelectedDocument(documentId);
+                  setPage("Edit");
+                  setNotice("Generated version saved and opened in Edit.");
+                }}
+              />
               <div className="section-heading">
                 <h2>Recent work</h2>
                 <Button className="quiet" onClick={() => setPage("Library")}>
@@ -417,9 +428,13 @@ export function App() {
                       Original preserved
                     </small>
                   </div>
-                  <Button onClick={() => void createMaster()} disabled={busy}>
-                    Save initial master
-                  </Button>
+                  {selectedDocument ? (
+                    <Status ok>Master saved</Status>
+                  ) : (
+                    <Button onClick={() => void createMaster()} disabled={busy}>
+                      Save initial master
+                    </Button>
+                  )}
                   <a
                     className="button"
                     href={"/api/assets/" + selected.id}

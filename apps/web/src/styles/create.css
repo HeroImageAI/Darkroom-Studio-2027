@@ -1,0 +1,242 @@
+.create-controls {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 20px 0 36px;
+}
+.create-controls label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+select,
+.create-controls input[type="number"] {
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+}
+.advanced {
+  margin-left: auto;
+  position: relative;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.advanced summary,
+.request-details summary {
+  cursor: pointer;
+}
+.advanced > div {
+  position: absolute;
+  right: 0;
+  top: 30px;
+  z-index: 3;
+  width: 275px;
+  padding: 20px;
+  background: var(--surface-panel);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.advanced label {
+  margin-bottom: 14px;
+  justify-content: space-between;
+}
+.advanced input[type="number"] {
+  width: 130px;
+}
+.advanced p,
+.advanced small {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.reference-strip {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.reference {
+  position: relative;
+  width: 90px;
+  height: 90px;
+}
+.reference img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--control-border);
+}
+.reference > span {
+  position: absolute;
+  bottom: 5px;
+  left: 6px;
+  background: var(--surface-app);
+  padding: 0 5px;
+  font-size: 11px;
+}
+.reference button {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  border: 0;
+  background: var(--surface-app);
+  color: var(--text-primary);
+  border-radius: 4px;
+}
+.reference .ref-move {
+  top: auto;
+  bottom: 4px;
+}
+.results {
+  margin: 10px 0 40px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.results > .section-heading label {
+  font-size: 11px;
+}
+.results select {
+  max-width: 260px;
+  margin-left: 10px;
+}
+.job-list {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: 11px;
+  margin-bottom: 18px;
+}
+.job-list > div {
+  flex: 1;
+  min-width: 150px;
+  max-width: 450px;
+}
+.job-list progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  accent-color: var(--crimson);
+  margin-top: 10px;
+}
+.job-list small {
+  display: block;
+}
+.error-text {
+  color: var(--danger);
+}
+.result-stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  background: var(--surface-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  gap: 2px;
+}
+.result-stage.comparing {
+  grid-template-columns: 1fr 1fr;
+}
+.result-stage figure {
+  margin: 0;
+  min-width: 0;
+  text-align: center;
+}
+.result-stage img {
+  width: 100%;
+  height: 480px;
+  object-fit: contain;
+  padding: 16px;
+}
+.result-stage figcaption {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 0 12px 14px;
+}
+.candidate-strip {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+.candidate-strip button {
+  padding: 0;
+  border: 1px solid var(--control-border);
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.candidate-strip button[aria-pressed="true"] {
+  outline: 2px solid var(--crimson);
+  outline-offset: 2px;
+  color: var(--text-primary);
+}
+.candidate-strip img {
+  width: 90px;
+  height: 75px;
+  object-fit: contain;
+  display: block;
+}
+.candidate-strip span {
+  display: block;
+  font-size: 10px;
+  padding: 4px;
+}
+.review-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.review-actions .button {
+  font-size: 12px;
+  padding: 10px 12px;
+}
+.request-details {
+  max-width: 70%;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.request-details p {
+  white-space: pre-wrap;
+}
+.composer .section-heading {
+  margin: 0 0 8px;
+}
+.composer .section-heading .field-label {
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .create-controls {
+    gap: 14px;
+  }
+  .advanced {
+    margin-left: 0;
+  }
+  .advanced > div {
+    left: 0;
+    right: auto;
+  }
+  .results > .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .results select {
+    max-width: 230px;
+  }
+  .result-stage img {
+    height: 300px;
+  }
+  .review-actions .button {
+    flex: 1;
+  }
+  .result-stage.comparing {
+    grid-template-columns: 1fr;
+  }
+  .result-stage.comparing img {
+    height: 250px;
+  }
+}

@@ -19,6 +19,12 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 class Fake extends ComfyClient {
+  override async inspect() {
+    return {
+      status: { connected: true, verified: true, url: this.url, models: {} },
+      info: {},
+    };
+  }
   historyResult: any;
   queueResult = { queue_running: [] as any[], queue_pending: [] as any[] };
   submitted = 0;
@@ -99,6 +105,9 @@ it("does not retry a submission with unknown acknowledgement", async () => {
   const j = job();
   store.updateJob(j.id, "submitting");
   const fake = new Fake();
+  fake.json = async () => {
+    throw Error("offline");
+  };
   await new Worker(store, fake).recover();
   expect(store.job(j.id)?.state).toBe("uncertain");
   expect(fake.submitted).toBe(0);
@@ -121,4 +130,36 @@ it("records an engine-reported failure instead of collecting it", async () => {
   fake.historyResult = { status: { completed: true, status_str: "error" } };
   await new Worker(store, fake).recover();
   expect(store.job(j.id)?.state).toBe("failed");
+});
+it("preserves context while the Desktop identity cannot be verified", async () => {
+  const j = job();
+  store.updateJob(j.id, "running", { promptId: "retained" });
+  const fake = new Fake();
+  fake.inspect = async () => ({
+    status: { connected: false, verified: false, url: fake.url, models: {} },
+    info: {},
+  });
+  await new Worker(store, fake).recover();
+  expect(store.job(j.id)?.state).toBe("running");
+  expect(fake.submitted).toBe(0);
+});
+it("releases an unacknowledged job only after a verified history/queue check", async () => {
+  const j = job();
+  store.updateJob(j.id, "submitting");
+  const fake = new Fake();
+  await new Worker(store, fake).recover();
+  expect(store.job(j.id)?.state).toBe("interrupted");
+  expect(fake.submitted).toBe(0);
+});
+it("detects a stalled recovered job without globally interrupting the engine", async () => {
+  const j = job();
+  store.updateJob(j.id, "running", { promptId: "stalled" });
+  store.db
+    .prepare("UPDATE events SET createdAt=? WHERE jobId=?")
+    .run(new Date(Date.now() - 11 * 60 * 1000).toISOString(), j.id);
+  const fake = new Fake();
+  fake.queueResult.queue_running = [[1, "stalled", {}, {}]];
+  await new Worker(store, fake).recover();
+  expect(store.job(j.id)?.state).toBe("interrupted");
+  expect(fake.submitted).toBe(0);
 });

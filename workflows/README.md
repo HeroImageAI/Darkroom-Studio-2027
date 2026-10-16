@@ -1,5 +1,7 @@
 # Semantic image workflows
 
+Phase 2 adds eight Create graph variants (Klein/Qwen × 0–3 references) listed in create-index.json. Their validated quality lists are authoritative: Qwen/three-reference/Draft failed the synthetic lighting-guide test and is excluded. Qwen/three-reference/Final passed that test; Auto uses Klein for three-reference Draft. See docs/PHASE_2_REPORT.md. The foundation graph below is retained for its original harness/history, not the current Create routing registry.
+
 Phase 1 contains one small Klein text-to-image graph, independently assembled from core node contracts after reading the legacy graph for lessons. Filenames were checked against the current engine; no legacy graph files or UI were imported wholesale.
 
 The graph uses named semantic nodes; product code resolves titles rather than depending on node IDs. The manifest pins its content hash and records model source/licence-review status. The validated route is scoped to a foundation generation test, not all image tasks. Auto does not yet rank multiple model families. Engine/capability fingerprint changes invalidate readiness.

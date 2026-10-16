@@ -2,7 +2,7 @@ import { readFileSync, createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { manifest } from "./workflow.js";
+import { workflows } from "./workflow.js";
 type FileEvidence = {
   filename: string;
   sha256: string;
@@ -40,7 +40,12 @@ function roots() {
 }
 async function scan() {
   const output: FileEvidence[] = [];
-  for (const model of manifest.models) {
+  const models = [
+    ...new Map(
+      workflows.flatMap((w) => w.manifest.models).map((m) => [m.filename, m]),
+    ).values(),
+  ];
+  for (const model of models) {
     const folder =
       model.title === "DR_MODEL"
         ? "diffusion_models"
@@ -78,10 +83,7 @@ async function scan() {
       found = true;
       break;
     }
-    if (!found)
-      throw Error(
-        `Cannot locate model file for verification: ${model.filename}`,
-      );
+    // Missing optional-family weights must not hide another family's inventory.
   }
   return output;
 }
