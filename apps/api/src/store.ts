@@ -492,10 +492,14 @@ export class Store {
       if (!c) throw Error("Candidate not found");
       if (
         this.db
-          .prepare("SELECT 1 FROM edit_requests WHERE jobId=?")
-          .get(c.jobId)
+          .prepare(
+            "SELECT 1 FROM edit_requests WHERE jobId=? UNION ALL SELECT 1 FROM finish_requests WHERE jobId=?",
+          )
+          .get(c.jobId, c.jobId)
       )
-        throw Error("Review AI edits from their source master.");
+        throw Error(
+          "Review AI edits and Finish results from their source master.",
+        );
       if (action === "reject") {
         this.db
           .prepare("UPDATE candidates SET disposition='rejected' WHERE id=?")

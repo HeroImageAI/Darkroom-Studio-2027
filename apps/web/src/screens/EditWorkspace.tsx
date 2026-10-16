@@ -13,6 +13,7 @@ import {
   type Point,
 } from "../../../../packages/document/src/edit.js";
 import { AIEditPanel } from "./AIEditPanel.js";
+import { FinishPanel } from "./FinishPanel.js";
 import { api } from "../lib/api.js";
 import { Button } from "../components/Controls.js";
 import "../styles/edit.css";
@@ -879,6 +880,17 @@ export function EditWorkspace({
           </div>
         </div>
         <aside className="edit-properties" aria-label="Layer properties">
+          <FinishPanel
+            hasSelection={!!doc.selection}
+            key={documentId}
+            documentId={documentId}
+            width={doc.width}
+            height={doc.height}
+            prepare={prepareAI}
+            onCrop={() => setTool("Crop")}
+            onApplied={adoptAI}
+            onPreview={setAiPreview}
+          />
           <AIEditPanel
             documentId={documentId}
             hasSelection={!!doc.selection}

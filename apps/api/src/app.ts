@@ -22,6 +22,11 @@ import { submitEdit, editHistory, reviewEdit } from "./edits.js";
 import { editRequestSchema } from "../../../packages/contracts/src/edit.js";
 import { editEvidence } from "../../../packages/routing/src/edit-policy.js";
 import { readiness } from "./readiness.js";
+import { createExport, exportHistory, exportRecord } from "./finish.js";
+import { exportRequestSchema } from "../../../packages/contracts/src/finish.js";
+import { finishRequestSchema } from "../../../packages/contracts/src/finish.js";
+import { submitFinish, finishHistory, reviewFinish } from "./finish-jobs.js";
+import { finishEvidence } from "./finish-readiness.js";
 export async function createApp(
   options: {
     dataDir?: string;
@@ -134,7 +139,7 @@ export async function createApp(
             : "Not installed · optional",
         },
       ],
-      phase: 4,
+      phase: 5,
     };
   });
   app.post("/api/setup/connection", async (req) => {
@@ -265,6 +270,53 @@ export async function createApp(
         .parse(req.body);
       return store.version(req.params.id, body.name, body.expectedRevision);
     },
+  );
+  app.post("/api/exports", async (req, reply) =>
+    reply
+      .code(201)
+      .send(await createExport(store, exportRequestSchema.parse(req.body))),
+  );
+  app.get<{ Params: { id: string } }>("/api/documents/:id/exports", (req) =>
+    exportHistory(store, req.params.id),
+  );
+  app.get<{ Params: { id: string } }>(
+    "/api/exports/:id/download",
+    (req, reply) => {
+      const record = exportRecord(store, req.params.id);
+      if (!record) return reply.code(404).send({ error: "Export not found" });
+      return reply
+        .type(record.format === "png" ? "image/png" : "image/jpeg")
+        .header(
+          "Content-Disposition",
+          `attachment; filename="${record.filename}"`,
+        )
+        .send(store.assetBytes(record.assetId));
+    },
+  );
+  app.get("/api/finish-capabilities", () => ({
+    tasks: finishEvidence().enabledTasks,
+    limits:
+      "AI Finish: up to 2048 pixels per side. Restore supports up to 1024 pixels per side and keeps your selected details unchanged.",
+  }));
+  app.post("/api/finish", async (req, reply) =>
+    reply
+      .code(202)
+      .send(
+        await submitFinish(store, comfy, finishRequestSchema.parse(req.body)),
+      ),
+  );
+  app.get<{ Params: { id: string } }>("/api/documents/:id/finish", (req) =>
+    finishHistory(store, req.params.id),
+  );
+  app.post<{ Params: { id: string } }>("/api/finish/:id/review", (req) =>
+    reviewFinish(
+      store,
+      req.params.id,
+      z
+        .object({ action: z.enum(["accept", "keep-version", "reject"]) })
+        .strict()
+        .parse(req.body).action,
+    ),
   );
   app.get("/api/edit-capabilities", () => editEvidence());
   app.get<{ Params: { id: string } }>("/api/documents/:id/edits", (req) =>
