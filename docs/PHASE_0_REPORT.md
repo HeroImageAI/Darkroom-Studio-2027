@@ -22,7 +22,7 @@ Connected GitHub read access verified. New empty public repository and push perm
 
 ## KNOWN ISSUES
 
-No supplied branding image was present, so brand specification uses the written direction. Historical benchmarks and qualitative recommendations require live reproduction. GitHub CLI reported unavailable API access/invalid saved authentication; connected GitHub tools provide an alternative publication path. Branch protection is proposed, not configured. Exact runtime dependency versions and Node LTS pinning belong to Phase 1 setup.
+The branding reference was subsequently supplied and visually reviewed; the brand specification now records its visual language and what must remain original. This resolves the missing-reference issue. Historical benchmarks and qualitative recommendations require live reproduction. GitHub CLI reported unavailable API access/invalid saved authentication; connected GitHub tools provide an alternative publication path. Branch protection is proposed, not configured. Exact runtime dependency versions and Node LTS pinning belong to Phase 1 setup.
 
 ## GIT STATUS
 

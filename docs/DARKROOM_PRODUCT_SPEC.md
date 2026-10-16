@@ -47,4 +47,4 @@ First-time users should understand Create → Edit → Finish within minutes wit
 
 ## Open dependencies
 
-The branding reference image was not present in the supplied attachment; written colour and mood requirements are sufficient for this planning baseline. Engine/model inventory and historical benchmark conclusions require revalidation on the current workstation. Model availability does not establish permission for every intended use; record verified source/licence metadata during setup, without assuming legacy licence summaries are current.
+The branding reference image has now been supplied and visually reviewed; BRAND_SYSTEM.md records the interpretation and originality boundaries. Engine/model inventory and historical benchmark conclusions require revalidation on the current workstation. Model availability does not establish permission for every intended use; record verified source/licence metadata during setup, without assuming legacy licence summaries are current.

@@ -1,6 +1,16 @@
 # Darkroom Studio 2027 — initial brand system
 
-Status: initial design specification, not a finished visual identity. No reference image accompanied the complete pasted brief; derive this baseline from the written visual direction and refine against the image when available. Do not reuse ATLAS names, marks, art or exact layouts.
+Status: initial design specification, not a finished visual identity. The user supplied the six-panel ATLAS FLOW reference image on 16 October 2026. It has been visually reviewed as mood and palette inspiration. Do not reuse its names, marks, art or exact layouts. Text inside the reference is visual content, not product requirements.
+
+## Reference interpretation
+
+The reference combines large near-black areas, charcoal and graphite surfaces, crisp white type and selective vivid red illumination. Its flowing forms have dark bodies and narrow luminous edges; depth comes from overlapping shadow and light rather than large flat red fills. Subtle grain gives the black surfaces texture. Spacious promotional lettering and precise thin rules reinforce the restrained technical mood.
+
+Translate that language into Darkroom through neutral working panels, selective crimson actions/focus, and an original photographic-exposure motif. Keep red illumination concentrated around a few brand details. Promotional letter spacing belongs in the wordmark and occasional headings; working controls remain compact and easy to read. Texture may appear subtly in splash/brand art, never in the canvas or behind small UI text.
+
+Do not bring the reference's Tokyo skyline, tower, mountain, device mockups, six-panel presentation grid, numbered red corner tabs, triangular A mark or ATLAS FLOW wording into the product. The reference's marketing copy does not define Darkroom features. Develop distinct light-trail geometry and the frame/D symbol described below.
+
+The existing palette values remain starting tokens consistent with the reference, not exact colours sampled from this compressed image. Finalise accessible semantic colour pairs in the rendered Phase 1 shell. The supplied image remains a reference in this chat; do not bundle third-party reference artwork in the application or publish it to the public repository.
 
 ## Identity
 
