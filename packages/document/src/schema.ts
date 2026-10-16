@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sanitizeSvg } from "./svg.js";
 const transform = z
   .object({
     x: z.number().finite(),
@@ -31,6 +32,18 @@ const raster = z
     ...base,
     type: z.enum(["raster", "generated", "paint"]),
     assetId: z.string().uuid(),
+    vectorSvg: z
+      .string()
+      .max(256000)
+      .refine((s) => {
+        try {
+          sanitizeSvg(s);
+          return true;
+        } catch {
+          return false;
+        }
+      }, "Unsupported SVG logo")
+      .optional(),
     maskAssetId: z.string().uuid().optional(),
     maskStrokes: z.array(maskStroke).max(500).optional(),
   })

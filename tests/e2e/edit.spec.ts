@@ -4,7 +4,7 @@ async function open(page: Page) {
   await page.goto("/");
   await expect(page.locator("#project")).not.toHaveValue("");
   await page.getByRole("button", { name: "Edit", exact: true }).click();
-  await page.locator("input[type=file]").setInputFiles({
+  await page.getByLabel("Import image files", { exact: true }).setInputFiles({
     name: "edit-fixture.png",
     mimeType: "image/png",
     buffer: await sharp({

@@ -12,6 +12,7 @@ import {
   type Layer,
   type Point,
 } from "../../../../packages/document/src/edit.js";
+import { TextArtwork } from "./TextArtwork.js";
 import { AIEditPanel } from "./AIEditPanel.js";
 import { FinishPanel } from "./FinishPanel.js";
 import { api } from "../lib/api.js";
@@ -58,6 +59,7 @@ export function EditWorkspace({
   const [paintBusy, setPaintBusy] = useState(false);
   const painting = useRef(false);
   const placeInput = useRef<HTMLInputElement>(null);
+  const logoInput = useRef<HTMLInputElement>(null);
   const allAssets = [
     ...assets,
     ...placedAssets.filter((a) => !assets.some((v) => v.id === a.id)),
@@ -554,6 +556,92 @@ export function EditWorkspace({
     setSelected(l.id);
     setTool("Move");
   }
+  function addBranding(kind: "text" | "rectangle" | "ellipse") {
+    if (!current.current || painting.current || blocked.current) return;
+    const layer = {
+      id: crypto.randomUUID(),
+      name:
+        kind === "text"
+          ? "Text"
+          : kind === "rectangle"
+            ? "Rectangle"
+            : "Ellipse",
+      visible: true,
+      locked: false,
+      opacity: 1,
+      transform: {
+        x: current.current.width * 0.1,
+        y: current.current.height * 0.1,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+      },
+      ...(kind === "text"
+        ? {
+            type: "text" as const,
+            text: "YOUR BRAND",
+            fontFamily: "Darkroom Sans",
+            fontSize: 48,
+            fill: "#f2f2f3",
+          }
+        : {
+            type: "vector" as const,
+            shape: kind,
+            width: 200,
+            height: 100,
+            fill: "#e31824",
+            stroke: "#000000",
+            strokeWidth: 0,
+          }),
+    };
+    commit({ ...current.current, layers: [...current.current.layers, layer] });
+    setSelected(layer.id);
+    setTool("Move");
+  }
+  async function importSvgLogo(file?: File) {
+    if (!file || !current.current) return;
+    const target = current.current.id;
+    try {
+      if (file.size > 256000)
+        throw Error("SVG logo exceeds 256 KB. Simplify the artwork first.");
+      const imported = await api<{ asset: Asset; svg: string }>("/logos", {
+        method: "POST",
+        body: JSON.stringify({ projectId, svg: await file.text() }),
+      });
+      if (current.current?.id !== target) return;
+      setPlacedAssets((list) => [...list, imported.asset]);
+      const a = imported.asset,
+        d = current.current,
+        scale = Math.min(
+          1,
+          (d.width * 0.5) / a.width,
+          (d.height * 0.5) / a.height,
+        );
+      const layer = {
+        id: crypto.randomUUID(),
+        name: file.name.slice(0, 200),
+        type: "raster" as const,
+        assetId: a.id,
+        vectorSvg: imported.svg,
+        visible: true,
+        locked: false,
+        opacity: 1,
+        transform: {
+          x: (d.width - a.width * scale) / 2,
+          y: (d.height - a.height * scale) / 2,
+          scaleX: scale,
+          scaleY: scale,
+          rotation: 0,
+        },
+      };
+      commit({ ...d, layers: [...d.layers, layer] });
+      setSelected(layer.id);
+      setTool("Move");
+      await onRefresh();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
   async function importLayer(file?: File) {
     if (!file) return;
     const targetDocument = current.current?.id;
@@ -809,6 +897,56 @@ export function EditWorkspace({
             </Button>
           </details>
           {paintBusy && <p role="status">Saving paint stroke�</p>}
+          <details>
+            <summary>Add branding</summary>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => addBranding("text")}
+            >
+              Add text
+            </Button>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => addBranding("rectangle")}
+            >
+              Add rectangle
+            </Button>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => addBranding("ellipse")}
+            >
+              Add ellipse
+            </Button>
+            <input
+              type="file"
+              accept="image/svg+xml,.svg"
+              hidden
+              ref={logoInput}
+              aria-label="Import SVG logo file"
+              onChange={(e) => {
+                void importSvgLogo(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => logoInput.current?.click()}
+            >
+              Import SVG logo
+            </Button>
+            <p>
+              Static paths and shapes only. Outline text and simplify gradients,
+              clipping or effects before import.
+            </p>
+          </details>
           <p className="muted">Top layer appears in front.</p>
           {[...doc.layers].reverse().map((l) => (
             <div
@@ -1028,20 +1166,28 @@ export function EditWorkspace({
                     >
                       {a ? (
                         <image
-                          href={"/api/assets/" + a.id}
+                          href={
+                            "vectorSvg" in l &&
+                            l.vectorSvg &&
+                            !l.maskAssetId &&
+                            !l.maskStrokes?.length
+                              ? "data:image/svg+xml," +
+                                encodeURIComponent(l.vectorSvg)
+                              : "/api/assets/" + a.id
+                          }
                           width={a.width}
                           height={a.height}
                           preserveAspectRatio="none"
                           mask={`url(#mask-${l.id})`}
                         />
                       ) : l.type === "text" ? (
-                        <text
+                        <TextArtwork
+                          text={l.text}
                           fontFamily={l.fontFamily}
                           fontSize={l.fontSize}
                           fill={l.fill}
-                        >
-                          {l.text}
-                        </text>
+                          selected={l.id === selected}
+                        />
                       ) : l.type === "vector" ? (
                         l.shape === "rectangle" ? (
                           <rect
@@ -1159,6 +1305,142 @@ export function EditWorkspace({
                 />
                 <output>{Math.round(chosen.opacity * 100)}%</output>
               </label>
+              {chosen.type === "text" && (
+                <fieldset disabled={locked}>
+                  <legend>Exact text</legend>
+                  <label>
+                    Text
+                    <input
+                      aria-label="Text content"
+                      maxLength={500}
+                      value={chosen.text}
+                      onChange={(e) =>
+                        changeLayer({ text: e.target.value } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Font
+                    <select
+                      aria-label="Text font"
+                      value={chosen.fontFamily}
+                      onChange={(e) =>
+                        changeLayer({
+                          fontFamily: e.target.value,
+                        } as Partial<Layer>)
+                      }
+                    >
+                      <option>Darkroom Sans</option>
+                      <option>Darkroom Sans Bold</option>
+                    </select>
+                  </label>
+                  <label>
+                    Size
+                    <input
+                      aria-label="Text size"
+                      type="number"
+                      min="1"
+                      max="512"
+                      value={chosen.fontSize}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        if (n >= 1 && n <= 512)
+                          changeLayer({ fontSize: n } as Partial<Layer>);
+                      }}
+                    />
+                  </label>
+                  <label>
+                    Text colour
+                    <input
+                      aria-label="Text colour"
+                      type="color"
+                      value={chosen.fill}
+                      onChange={(e) =>
+                        changeLayer({ fill: e.target.value } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <p>
+                    Bundled Inter Latin outlines. Text stays editable in the
+                    project; SVG handoff outlines it. Visible text layers must
+                    be hidden before AI editing.
+                  </p>
+                </fieldset>
+              )}
+              {chosen.type === "vector" && (
+                <fieldset disabled={locked}>
+                  <legend>Shape</legend>
+                  {(["width", "height"] as const).map((k) => (
+                    <label key={k}>
+                      {k}
+                      <input
+                        aria-label={"Shape " + k}
+                        type="number"
+                        min="1"
+                        max="16384"
+                        value={chosen[k]}
+                        onChange={(e) => {
+                          const n = Number(e.target.value);
+                          if (n >= 1 && n <= 16384)
+                            changeLayer({ [k]: n } as Partial<Layer>);
+                        }}
+                      />
+                    </label>
+                  ))}
+                  <label>
+                    Fill
+                    <input
+                      aria-label="Shape fill"
+                      type="color"
+                      value={chosen.fill === "none" ? "#000000" : chosen.fill}
+                      onChange={(e) =>
+                        changeLayer({ fill: e.target.value } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      aria-label="Shape no fill"
+                      checked={chosen.fill === "none"}
+                      onChange={(e) =>
+                        changeLayer({
+                          fill: e.target.checked ? "none" : "#e31824",
+                        } as Partial<Layer>)
+                      }
+                    />
+                    No fill
+                  </label>
+                  <label>
+                    Stroke
+                    <input
+                      aria-label="Shape stroke"
+                      type="color"
+                      value={chosen.stroke}
+                      onChange={(e) =>
+                        changeLayer({
+                          stroke: e.target.value,
+                        } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Stroke width
+                    <input
+                      aria-label="Shape stroke width"
+                      type="number"
+                      min="0"
+                      max="512"
+                      value={chosen.strokeWidth}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        if (n >= 0 && n <= 512)
+                          changeLayer({ strokeWidth: n } as Partial<Layer>);
+                      }}
+                    />
+                  </label>
+                </fieldset>
+              )}
               <fieldset disabled={locked}>
                 <legend>Transform</legend>
                 {(["x", "y", "scaleX", "scaleY", "rotation"] as const).map(

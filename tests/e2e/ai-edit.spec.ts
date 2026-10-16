@@ -20,7 +20,7 @@ async function setup(page: Page, loseResponse = false) {
   await page.goto("/");
   await expect(page.locator("#project")).not.toHaveValue("");
   await page.getByRole("button", { name: "Edit", exact: true }).click();
-  await page.locator("input[type=file]").setInputFiles({
+  await page.getByLabel("Import image files", { exact: true }).setInputFiles({
     name: "AI edit fixture.png",
     mimeType: "image/png",
     buffer: await sharp({
