@@ -24,6 +24,9 @@ const common = new Set([
   "transform",
 ]);
 const geometry: Record<string, string[]> = {
+  svg: ["x", "y", "width", "height", "viewBox", "xmlns", "preserveAspectRatio"],
+  title: [],
+  desc: [],
   g: [],
   path: ["d"],
   rect: ["x", "y", "width", "height", "rx", "ry"],
@@ -40,6 +43,7 @@ export function sanitizeSvg(input: string) {
       "Use a static SVG without declarations, scripts, linked images or fonts",
     );
   const parser = new SaxesParser({ xmlns: false });
+  const elements: string[] = [];
   let depth = 0,
     count = 0,
     rootSeen = false,
@@ -51,6 +55,7 @@ export function sanitizeSvg(input: string) {
     throw e;
   });
   parser.on("opentag", (node) => {
+    elements.push(node.name);
     if (++count > 5000 || ++depth > 30) throw Error("SVG is too complex");
     const attrs = node.attributes as Record<string, string>;
     if (depth === 1) {
@@ -58,10 +63,24 @@ export function sanitizeSvg(input: string) {
         throw Error("Choose an SVG document");
       rootSeen = true;
       for (const name of Object.keys(attrs))
-        if (!["xmlns", "width", "height", "viewBox", ...common].includes(name))
+        if (
+          ![
+            "xmlns",
+            "xmlns:xlink",
+            "width",
+            "height",
+            "viewBox",
+            ...common,
+          ].includes(name)
+        )
           throw Error("Unsupported SVG attribute: " + name);
       if (attrs.xmlns && attrs.xmlns !== "http://www.w3.org/2000/svg")
         throw Error("Invalid SVG namespace");
+      if (
+        attrs["xmlns:xlink"] &&
+        attrs["xmlns:xlink"] !== "http://www.w3.org/1999/xlink"
+      )
+        throw Error("Invalid SVG link namespace");
       const vb = attrs.viewBox?.trim().split(/[ ,]+/).map(Number);
       if (
         vb &&
@@ -113,7 +132,26 @@ export function sanitizeSvg(input: string) {
         if (!common.has(k) && !allowed.has(k))
           throw Error("Unsupported SVG attribute: " + k);
         if (k === "fill" || k === "stroke") safePaint(v);
-        else if (k === "d") {
+        else if (k === "xmlns") {
+          if (v !== "http://www.w3.org/2000/svg")
+            throw Error("Invalid SVG namespace");
+        } else if (k === "viewBox") {
+          const values = v.trim().split(/[ ,]+/).map(Number);
+          if (
+            values.length !== 4 ||
+            values.some((n) => !Number.isFinite(n) || Math.abs(n) > 32768) ||
+            values[2]! <= 0 ||
+            values[3]! <= 0
+          )
+            throw Error("Invalid SVG viewBox");
+        } else if (k === "preserveAspectRatio") {
+          if (
+            !/^(none|x(?:Min|Mid|Max)Y(?:Min|Mid|Max)(?: (?:meet|slice))?)$/.test(
+              v,
+            )
+          )
+            throw Error("Invalid SVG aspect ratio");
+        } else if (k === "d") {
           if (
             v.length > 100000 ||
             !/^[MmLlHhVvCcSsQqTtAaZz0-9eE+.,\s-]*$/.test(v)
@@ -150,9 +188,11 @@ export function sanitizeSvg(input: string) {
   parser.on("closetag", (node) => {
     body += depth === 1 ? "</g>" : `</${node.name}>`;
     depth--;
+    elements.pop();
   });
   parser.on("text", (s) => {
-    if (s.trim()) throw Error("SVG text must be outlined before import");
+    if (["title", "desc"].includes(elements.at(-1) ?? "")) body += xmlEscape(s);
+    else if (s.trim()) throw Error("SVG text must be outlined before import");
   });
   parser.write(input).close();
   if (!rootSeen || depth) throw Error("Invalid SVG document");

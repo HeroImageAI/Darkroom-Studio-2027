@@ -77,6 +77,7 @@ export async function createHandoff(
         ),
       ]),
     ];
+    let decodedBytes = 0;
     const bundle = {
       format: "darkroom-project",
       version: 1,
@@ -86,12 +87,22 @@ export async function createHandoff(
       fonts: fontIdentity(),
       assets: ids.map((id) => {
         const a = store.asset(id)!;
+        const imageBytes = store.assetBytes(id);
+        decodedBytes += imageBytes.length;
+        if (decodedBytes > 20 * 1024 * 1024)
+          throw Error(
+            "Project copy exceeds the 20 MB image limit required for reopening. Use a smaller master.",
+          );
+        if (hash(imageBytes) !== a.hash)
+          throw Error(
+            "Project source checksum failed. The saved source needs recovery before exporting.",
+          );
         return {
           id,
           name: a.name,
           hash: a.hash,
           origin: a.origin,
-          base64: store.assetBytes(id).toString("base64"),
+          base64: imageBytes.toString("base64"),
         };
       }),
     };

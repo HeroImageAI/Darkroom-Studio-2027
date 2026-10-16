@@ -75,7 +75,7 @@ export function BrandingHandoff({
       <p>
         Project copy keeps the current editable master, original images and
         hidden layers. Earlier revisions and export history are not included.
-        Maximum 30 MB.
+        Maximum 30 MB, including at most 20 MB of image data.
       </p>
       <Button disabled={busy} onClick={() => void run("darkroom")}>
         Prepare Darkroom project

@@ -43,17 +43,17 @@
   "affinitySvg": "PASS: actual SVG opened at 185% zoom; logo, outlined text, rule and ellipse visually match the fixture; no missing-font dialog",
   "implementationHashes": {
     "apps/api/src/branding.ts": "530af2948b1e664800286de4e55567c20c5b970c42f417d390f3271c5bdc942f",
-    "apps/api/src/handoff.ts": "68ba35bcaae5da6a158034fcbe3c8cae2840f7f1663a0ce0df6457e7e104c6c6",
-    "packages/document/src/svg.ts": "628581168a2c2b9f06653f9da93eba063b8d57aa8d0ea5bf5356cf89af04ee36"
+    "apps/api/src/handoff.ts": "cff6dd7dda97d471426321c7fe2b5d1b0393ce6c728cd9947df665f8ddaea628",
+    "packages/document/src/svg.ts": "30b03544297675532d021d46d408dec33ecf0e8f1945333a56a3d521f736db29"
   },
   "finalRelease": {
-    "port": 2046,
-    "dataDir": "data/branding-final",
-    "projectId": "5f6062ca-c964-46a8-9ac6-88b7a55afc34",
-    "documentId": "d2a0d4c4-be0b-44e5-a6e9-3e0086446cb1",
-    "revisionId": "35dac76b-f708-4015-9b37-3c229a876036",
-    "svg": "16af1280-720d-4298-a8c4-05b145e46c82",
-    "png": "f2e14889-f33a-438f-a085-28fb9915c313",
+    "port": 2048,
+    "dataDir": "data/branding-reviewed",
+    "projectId": "a4b6a15e-df4f-42da-abca-e4091d316fe3",
+    "documentId": "1bcd377a-88dc-4652-a3a5-b30024c76786",
+    "revisionId": "ab05e3b2-a2ae-4002-8e36-2beacd8b27e5",
+    "svg": "2d86404f-ecf2-4d3d-953d-34f2a89226ff",
+    "png": "f8b2bb3d-1290-46ff-bb80-5eadcb8e534a",
     "reviewedSvgBytesIdentical": true,
     "reviewedPngBytesIdentical": true
   },

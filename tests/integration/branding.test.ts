@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, it, expect } from "vitest";
+import { beforeEach, afterEach, it, expect, vi } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -287,4 +287,43 @@ it("matches the placed logo viewport when SVG dimensions round to raster pixels"
   expect(alpha(imported.asset.width * 10 + 2, 100)).toBe(0);
   expect(alpha(100, imported.asset.height * 10 - 2)).toBe(255);
   expect(alpha(100, imported.asset.height * 10 + 2)).toBe(0);
+});
+
+it("vector-only SVG delivery can be imported as genuine logo geometry without changing its pixels", async () => {
+  const { project, doc } = await fixture();
+  const source = await documentSvg(store, doc.snapshot);
+  expect(source.rasterImages).toBe(0);
+  const imported = await importLogo(store, project.id, source.bytes.toString());
+  expect(imported.svg).toContain("<title>");
+  expect(imported.svg).not.toContain("data:image/");
+  expect(
+    await sharp(store.assetBytes(imported.asset.id))
+      .ensureAlpha()
+      .raw()
+      .toBuffer(),
+  ).toEqual(await sharp(source.bytes).ensureAlpha().raw().toBuffer());
+});
+it("refuses to export a native copy above its reopenable image budget", async () => {
+  const { doc, a } = await fixture();
+  const actual = store.assetBytes.bind(store);
+  const mock = vi
+    .spyOn(store, "assetBytes")
+    .mockImplementation((id) =>
+      id === a.id ? Buffer.alloc(20 * 1024 * 1024 + 1) : actual(id),
+    );
+  try {
+    await expect(
+      createHandoff(store, {
+        documentId: doc.id,
+        expectedRevision: doc.currentRevisionId,
+        idempotencyKey: randomUUID(),
+        format: "darkroom",
+      }),
+    ).rejects.toThrow("20 MB image limit");
+    expect(
+      store.db.prepare("SELECT count(*) AS n FROM handoffs").get()!.n,
+    ).toBe(0);
+  } finally {
+    mock.mockRestore();
+  }
 });
