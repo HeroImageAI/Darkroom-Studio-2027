@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    { "category": "product", "status": "fixture-pending" },
+    { "category": "garment", "status": "fixture-pending" },
+    { "category": "artwork-logo", "status": "fixture-pending" },
+    { "category": "person", "status": "fixture-pending" },
+    { "category": "environment", "status": "fixture-pending" },
+    { "category": "text-sensitive", "status": "fixture-pending" },
+    { "category": "transparent-object", "status": "fixture-pending" },
+    { "category": "composite", "status": "fixture-pending" },
+    { "category": "low-quality-image", "status": "fixture-pending" },
+    { "category": "sketch", "status": "fixture-pending" }
+  ]
+}

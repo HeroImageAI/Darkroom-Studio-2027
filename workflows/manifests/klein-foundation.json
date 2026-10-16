@@ -57,6 +57,7 @@
     }
   ],
   "maxPixels": 1048576,
-  "validationEvidenceId": null,
-  "enabled": false
+  "validationEvidenceId": "foundation-klein-2026-10-16",
+  "enabled": true,
+  "validationFingerprint": "de3158cc83dc66776a0e95b19639dc8baa4f0ceea3f2344881e40b7029919825"
 }
