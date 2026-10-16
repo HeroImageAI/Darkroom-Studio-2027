@@ -29,7 +29,8 @@
 .edit-body {
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr) 210px;
-  min-height: 620px;
+  height: min(72vh, 820px);
+  min-height: 480px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
@@ -40,6 +41,7 @@
   background: var(--surface-panel);
   min-width: 0;
   overflow-wrap: anywhere;
+  overflow-y: auto;
 }
 .edit-layers h2,
 .edit-properties h2 {
@@ -89,17 +91,18 @@
   padding: var(--space-2);
 }
 .edit-stage {
-  display: flex;
+  display: grid;
+  container-type: size;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   padding: var(--space-6);
-  min-height: 420px;
+  min-height: 0;
   background: var(--surface-app);
 }
 .edit-paper {
   flex-shrink: 0;
-  max-height: 75vh;
+  max-height: 100%;
   transform-origin: center;
   background: repeating-conic-gradient(
       var(--graphite) 0% 25%,
@@ -143,12 +146,15 @@
 @media (max-width: 1250px) {
   .edit-body {
     grid-template-columns: 150px minmax(0, 1fr);
+    grid-template-rows: minmax(400px, 60vh) auto;
+    height: auto;
   }
   .edit-properties {
     grid-column: 1/-1;
     display: flex;
     gap: var(--space-3);
     flex-wrap: wrap;
+    max-height: 360px;
   }
   .edit-properties > * {
     max-width: 210px;
@@ -160,7 +166,7 @@
   }
   .edit-stage {
     grid-row: 1;
-    min-height: 320px;
+    min-height: 0;
     padding: var(--space-3);
   }
   .edit-layers {
@@ -174,4 +180,15 @@
   .edit-heading .save-state {
     margin-left: 0;
   }
+}
+.edit-properties input:not([type="checkbox"]):not([type="range"]) {
+  background: var(--surface-app);
+  color: var(--text-primary);
+  border: 1px solid var(--control-border);
+  padding: var(--space-2);
+  border-radius: var(--radius);
+}
+.edit-body input[type="range"],
+.edit-body input[type="checkbox"] {
+  accent-color: var(--crimson);
 }

@@ -34,6 +34,68 @@ const image = () =>
   })
     .png()
     .toBuffer();
+it("keeps camera-oriented originals intact and uses their displayed dimensions", async () => {
+  const p = store.createProject("Camera");
+  const bytes = await sharp(await image())
+    .jpeg()
+    .withMetadata({ orientation: 6 })
+    .toBuffer();
+  const asset = await store.importAsset(bytes, "camera.jpg", p.id);
+  expect(asset.width).toBe(48);
+  expect(asset.height).toBe(64);
+  expect(store.assetBytes(asset.id)).toEqual(bytes);
+  expect(store.createDocument(p.id, asset.id).snapshot).toMatchObject({
+    width: 48,
+    height: 64,
+  });
+});
+it("recovers editable masks selection and transforms from immutable revisions after restart", async () => {
+  const p = store.createProject("Edit");
+  const bytes = await image();
+  const a = await store.importAsset(bytes, "original.png", p.id);
+  const doc = store.createDocument(p.id, a.id);
+  const next = structuredClone(doc.snapshot);
+  const layer = next.layers[0]!;
+  layer.locked = false;
+  layer.transform = { x: -8, y: 12, rotation: 33, scaleX: 0.7, scaleY: 1.4 };
+  layer.opacity = 0.8;
+  if ("assetId" in layer)
+    layer.maskStrokes = [
+      {
+        size: 12,
+        reveal: false,
+        points: [
+          { x: 10, y: 12 },
+          { x: 20, y: 18 },
+        ],
+      },
+    ];
+  next.selection = [
+    { x: 0, y: 0 },
+    { x: 10, y: 0 },
+    { x: 10, y: 10 },
+  ];
+  const saved = store.saveDocument(doc.id, doc.currentRevisionId, next);
+  const v = store.version(doc.id, "Masked master");
+  expect(() =>
+    store.version(doc.id, "Stale version", doc.currentRevisionId),
+  ).toThrow(Conflict);
+  expect(
+    store.version(doc.id, "Current version", saved.currentRevisionId)
+      .revisionId,
+  ).toBe(saved.currentRevisionId);
+  store.close();
+  store = new Store(root);
+  expect(store.document(doc.id)?.snapshot).toEqual(next);
+  expect(store.document(doc.id)?.currentRevisionId).toBe(v.revisionId);
+  expect(store.assetBytes(a.id)).toEqual(bytes);
+  expect(() =>
+    store.saveDocument(doc.id, doc.currentRevisionId, doc.snapshot),
+  ).toThrow(Conflict);
+  expect(store.document(doc.id)?.currentRevisionId).toBe(
+    saved.currentRevisionId,
+  );
+});
 it("preserves exact original bytes and metadata across reopen", async () => {
   const p = store.createProject("Test");
   const bytes = await image();

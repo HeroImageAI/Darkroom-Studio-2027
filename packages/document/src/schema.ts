@@ -69,6 +69,20 @@ export const snapshotSchema = z
   })
   .strict()
   .superRefine((doc, ctx) => {
+    const points = doc.layers.reduce(
+      (sum, layer) =>
+        sum +
+        ("maskStrokes" in layer
+          ? (layer.maskStrokes ?? []).reduce((n, s) => n + s.points.length, 0)
+          : 0),
+      doc.selection?.length ?? 0,
+    );
+    if (points > 20000)
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "This master has reached its 20,000 editable mask/selection point limit. Clear unused masks or start a separate master.",
+      });
     if (new Set(doc.layers.map((l) => l.id)).size !== doc.layers.length)
       ctx.addIssue({ code: "custom", message: "Layer IDs must be unique" });
   });

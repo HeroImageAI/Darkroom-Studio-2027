@@ -193,10 +193,25 @@ export function App() {
           <button
             className="asset-card"
             key={a.id}
-            onClick={() => {
-              setSelected(a);
-              setSelectedDocument(null);
-              setPage("Edit");
+            onClick={async () => {
+              try {
+                const docs = await api<
+                  { id: string; originalAssetId: string }[]
+                >("/projects/" + project + "/documents");
+                const existing = docs
+                  .filter((d) => d.originalAssetId === a.id)
+                  .at(-1);
+                setSelected(a);
+                setSelectedDocument(existing?.id ?? null);
+                if (existing)
+                  localStorage.setItem(
+                    "darkroom.lastDocument." + project,
+                    existing.id,
+                  );
+                setPage("Edit");
+              } catch (e) {
+                setError((e as Error).message);
+              }
             }}
           >
             <img src={"/api/assets/" + a.id} alt={a.name} loading="lazy" />

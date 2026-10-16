@@ -55,7 +55,12 @@ test("imports a real image, saves a master and survives reload", async ({
     .first()
     .click();
   await page.getByRole("button", { name: "Save initial master" }).click();
-  await expect(page.getByRole("status")).toContainText("master saved");
+  await expect(
+    page.getByRole("region", { name: "Image editor" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("All changes saved", { exact: true }),
+  ).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Library", exact: true }).click();
   await expect(

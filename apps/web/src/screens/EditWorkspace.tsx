@@ -87,6 +87,11 @@ export function EditWorkspace({
   function commit(next: Snapshot) {
     const before = current.current;
     if (!before || blocked.current) return;
+    const checked = snapshotSchema.safeParse(next);
+    if (!checked.success) {
+      setError(checked.error.issues[0]?.message ?? "Invalid edit");
+      return;
+    }
     setPast((p) => historyCommit(p, before, next));
     setFuture([]);
     display(next);
@@ -213,13 +218,12 @@ export function EditWorkspace({
     }
   }
   useEffect(() => {
-    if (
-      !doc ||
-      JSON.stringify(doc) === saved.current ||
-      blocked.current ||
-      gesture.current
-    )
+    if (!doc || blocked.current || gesture.current) return;
+    if (JSON.stringify(doc) === saved.current) {
+      localStorage.removeItem(key);
+      setStatus("All changes saved");
       return;
+    }
     try {
       localStorage.setItem(
         key,
@@ -665,7 +669,7 @@ export function EditWorkspace({
           <div
             className="edit-paper"
             style={{
-              width: `min(100%, ${doc.width}px)`,
+              width: `min(100cqw, calc(100cqh * ${doc.width / doc.height}))`,
               aspectRatio: `${doc.width}/${doc.height}`,
               transform: `translate(${pan.x}px,${pan.y}px) scale(${zoom})`,
             }}
@@ -991,9 +995,16 @@ export function EditWorkspace({
               setVersionBusy(true);
               try {
                 if (await save()) {
+                  if (JSON.stringify(current.current) !== saved.current)
+                    throw Error(
+                      "Changes are still saving. Try keeping the version again.",
+                    );
                   await api("/documents/" + documentId + "/versions", {
                     method: "POST",
-                    body: JSON.stringify({ name: versionName.trim() }),
+                    body: JSON.stringify({
+                      name: versionName.trim(),
+                      expectedRevision: revision.current,
+                    }),
                   });
                   setVersionName("");
                   setStatus("Named version saved");
