@@ -134,7 +134,7 @@ export async function createApp(
             : "Not installed · optional",
         },
       ],
-      phase: 2,
+      phase: 4,
     };
   });
   app.post("/api/setup/connection", async (req) => {
