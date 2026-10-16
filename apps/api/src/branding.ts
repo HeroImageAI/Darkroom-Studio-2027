@@ -113,7 +113,13 @@ export async function documentSvg(store: Store, doc: Snapshot) {
       const a = store.asset(l.assetId);
       if (!a) throw Error("Layer image missing");
       if (l.vectorSvg && !l.maskAssetId && !l.maskStrokes?.length) {
-        body = sanitizeSvg(l.vectorSvg).svg;
+        const logo = sanitizeSvg(l.vectorSvg);
+        // Match the browser's image viewport even when SVG intrinsic dimensions
+        // are fractional and its raster preview rounds to whole pixels.
+        body =
+          logo.width === a.width && logo.height === a.height
+            ? logo.svg
+            : `<g transform="scale(${a.width / logo.width} ${a.height / logo.height})">${logo.svg}</g>`;
       } else {
         rasterImages++;
         const png = await sharp(store.assetBytes(a.id))

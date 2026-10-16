@@ -252,3 +252,39 @@ it("rejects active, linked, font-dependent and unsupported SVG instead of stripp
   ).toThrow();
   expect(() => sanitizeSvg('<svg width="100%" height="80"></svg>')).toThrow();
 });
+
+it("matches the placed logo viewport when SVG dimensions round to raster pixels", async () => {
+  const { project, doc } = await fixture();
+  const imported = await importLogo(
+    store,
+    project.id,
+    '<svg width="50.5" height="20.5" viewBox="0 0 50.5 20.5"><rect width="50.5" height="20.5" fill="#e31824"/></svg>',
+  );
+  const layer = {
+    ...doc.snapshot.layers[0]!,
+    id: randomUUID(),
+    visible: true,
+    locked: false,
+    assetId: imported.asset.id,
+    vectorSvg: imported.svg,
+    transform: { x: 0, y: 0, scaleX: 10, scaleY: 10, rotation: 0 },
+  };
+  const rendered = await sharp(
+    (
+      await documentSvg(store, {
+        ...doc.snapshot,
+        width: 600,
+        height: 300,
+        layers: [layer],
+      })
+    ).bytes,
+  )
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  const alpha = (x: number, y: number) => rendered[(y * 600 + x) * 4 + 3];
+  expect(alpha(imported.asset.width * 10 - 2, 100)).toBe(255);
+  expect(alpha(imported.asset.width * 10 + 2, 100)).toBe(0);
+  expect(alpha(100, imported.asset.height * 10 - 2)).toBe(255);
+  expect(alpha(100, imported.asset.height * 10 + 2)).toBe(0);
+});
