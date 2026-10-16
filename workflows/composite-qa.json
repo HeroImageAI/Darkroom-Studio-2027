@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-16",
+  "scope": "Owned synthetic product composition only; manual close lasso. Not general scene, person or garment certification.",
+  "implementation": "Existing Qwen Instruct route, outside-selection compositing; no engine or compositor change.",
+  "runs": [
+    {
+      "at": "2026-10-16T19:23:50.827Z",
+      "rights": "Owned synthetic NOIR cutout, background and guidance paint",
+      "projectId": "0c419577-1018-453d-8fbf-36828502f731",
+      "documentId": "acd21a17-3ed3-4809-85ad-ab5a312c7e05",
+      "jobId": "5752c13b-62bc-46c5-85f5-96068ae0b07f",
+      "baseRevisionId": "4df6479e-dfe7-4c62-a466-81eb338c31c7",
+      "elapsedMs": 30583,
+      "protectedPixels": 126500,
+      "changedPixels": 462664,
+      "sourceHash": "53f85be88a3e2ba38a26c9b25455d43456c4d0d533d6b12a7243b7ba53df1385",
+      "outputHash": "6525248a36f24ec67008a40e6b87ca12be97fe1801eca2701ddb4ecd266c32ce",
+      "originalPreserved": true,
+      "masterUnchangedBeforeReview": true,
+      "visualAssessment": "FAIL: broad rectangle preserved rough paint and background, causing a visible rectangular shadow seam. Not accepted.",
+      "workflow": {
+        "id": "create.qwen.2ref",
+        "graphHash": "d73445730c4c2bbefec6ca6c8460abedc6548b34ae91eeaaba2c309c85e6b1f7",
+        "editEvidence": {
+          "request": {
+            "documentId": "acd21a17-3ed3-4809-85ad-ab5a312c7e05",
+            "expectedRevision": "4df6479e-dfe7-4c62-a466-81eb338c31c7",
+            "instruction": "Make this composition look like one coherent professional product photograph. Harmonise the lighting, colour, contact shadows and joins around the selected black NOIR perfume bottle. Keep the selected product, lettering and design exactly unchanged. Turn the rough dark painted line underneath into a soft realistic contact shadow on the slate surface. Keep the dark blue-grey studio background and existing framing. Do not add objects or text.",
+            "area": "outside",
+            "task": "Instruct",
+            "seed": 2027,
+            "idempotencyKey": "418a036c-450a-472d-85a8-8d7633ca4f5e"
+          },
+          "baseRevisionId": "4df6479e-dfe7-4c62-a466-81eb338c31c7",
+          "sourceAssetId": "3c3f9036-97fb-4e92-a54b-80881cdb8982",
+          "maskAssetId": "9dbac251-0ae1-43c8-b40a-2771f1efbe6e",
+          "sourceHash": "53f85be88a3e2ba38a26c9b25455d43456c4d0d533d6b12a7243b7ba53df1385",
+          "maskHash": "beb960a776740dc480bbe95e791e6188fa793ff52da7f40c27e02259c1a3c956",
+          "route": {
+            "workflowId": "create.qwen.2ref",
+            "quality": "Final",
+            "evidenceId": "edit-synthetic-scoped-2026-10-16",
+            "templateVersion": 2,
+            "reason": "Validated Qwen instruction route with a second reference showing the allowed edit region; exact compositing protects pixels outside it."
+          },
+          "implementationSha256": "b7b8bb66330484fc0c44ae2f6a333e4b3a33a76a0b41f2750059b9f21d2cd27b",
+          "compositorVersion": 2
+        },
+        "engine": {
+          "version": "0.41.2",
+          "device": "cuda:0 NVIDIA GeForce RTX 3090 : cudaMallocAsync",
+          "fingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36"
+        }
+      },
+      "localEvidence": "data/composite-live/evidence"
+    },
+    {
+      "at": "2026-10-16T19:25:22.116Z",
+      "rights": "Owned synthetic NOIR cutout, background and guidance paint",
+      "projectId": "3637f65f-06a3-4f72-985a-6af6301a66f4",
+      "documentId": "158a1e00-c2b8-47ed-9935-5eaccbc5d8d8",
+      "jobId": "2bf50dbc-7971-4ed6-bb25-3bb064aec939",
+      "baseRevisionId": "3f52ac21-105c-4404-904c-90d9826e0f30",
+      "elapsedMs": 24313,
+      "protectedPixels": 105654,
+      "changedPixels": 484058,
+      "sourceHash": "53f85be88a3e2ba38a26c9b25455d43456c4d0d533d6b12a7243b7ba53df1385",
+      "outputHash": "1a2f927c26c8b7474044ea1002030d51828b10267138b8e7fe6a1c9a5746e4b9",
+      "originalPreserved": true,
+      "masterUnchangedBeforeReview": true,
+      "visualAssessment": "PASS scoped fixture: product silhouette and printed NOIR/EAU DE PARFUM remain exact within the close selection; surrounding scene and contact shadow coherent, broad rectangle artefact absent. Protected product is deliberately not relit.",
+      "acceptedDocumentId": "368463e6-45f3-41e3-978d-5f1a4bb15fd2",
+      "versionId": "9e17d7cd-f9ea-4526-8789-dc7cf792e22f",
+      "sourceMasterUnchanged": true,
+      "export": {
+        "id": "a5b1d9fb-117c-423e-a33c-de5a33a60a02",
+        "documentId": "368463e6-45f3-41e3-978d-5f1a4bb15fd2",
+        "revisionId": "b980dd5b-fb81-4ad7-801c-40f2292d59c9",
+        "assetId": "21221f72-2e5f-4233-8f6f-b82dc7175e9a",
+        "filename": "darkroom-768x768-a5b1d9fb.png",
+        "sha256": "5303c6f3bb41636b39be82931fee006c054ab8845dc1932228aac40ced8c2aad",
+        "width": 768,
+        "height": 768,
+        "format": "png",
+        "transparent": true,
+        "createdAt": "2026-10-16T19:26:35.470Z"
+      },
+      "workflow": {
+        "id": "create.qwen.2ref",
+        "graphHash": "d73445730c4c2bbefec6ca6c8460abedc6548b34ae91eeaaba2c309c85e6b1f7",
+        "editEvidence": {
+          "request": {
+            "documentId": "158a1e00-c2b8-47ed-9935-5eaccbc5d8d8",
+            "expectedRevision": "3f52ac21-105c-4404-904c-90d9826e0f30",
+            "instruction": "Make this composition look like one coherent professional product photograph. Harmonise the lighting, colour, contact shadows and joins around the selected black NOIR perfume bottle. Keep the selected product, lettering and design exactly unchanged. Turn the rough dark painted line underneath into a soft realistic contact shadow on the slate surface. Keep the dark blue-grey studio background and existing framing. Do not add objects or text.",
+            "area": "outside",
+            "task": "Instruct",
+            "seed": 2027,
+            "idempotencyKey": "48051fcc-1dab-41d5-9661-fb4196434c9c"
+          },
+          "baseRevisionId": "3f52ac21-105c-4404-904c-90d9826e0f30",
+          "sourceAssetId": "3b3d1129-4bd4-47c7-899d-19c7850e1f86",
+          "maskAssetId": "90bf46bd-aeeb-4c0f-8455-9250066fd89f",
+          "sourceHash": "53f85be88a3e2ba38a26c9b25455d43456c4d0d533d6b12a7243b7ba53df1385",
+          "maskHash": "c7be597652a6969c11ac20fdc264f82a7dc66527c90ee5b8b087088c5097d498",
+          "route": {
+            "workflowId": "create.qwen.2ref",
+            "quality": "Final",
+            "evidenceId": "edit-synthetic-scoped-2026-10-16",
+            "templateVersion": 2,
+            "reason": "Validated Qwen instruction route with a second reference showing the allowed edit region; exact compositing protects pixels outside it."
+          },
+          "implementationSha256": "b7b8bb66330484fc0c44ae2f6a333e4b3a33a76a0b41f2750059b9f21d2cd27b",
+          "compositorVersion": 2
+        },
+        "engine": {
+          "version": "0.41.2",
+          "device": "cuda:0 NVIDIA GeForce RTX 3090 : cudaMallocAsync",
+          "fingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36"
+        }
+      },
+      "localEvidence": "data/composite-live/tight-selection"
+    }
+  ]
+}

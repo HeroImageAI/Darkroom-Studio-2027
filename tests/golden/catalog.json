@@ -38,7 +38,11 @@
     },
     {
       "category": "composite",
-      "status": "fixture-pending"
+      "status": "active-synthetic-scoped",
+      "generator": "scripts/validate-composite.ts",
+      "evidence": "workflows/composite-qa.json",
+      "rubric": "docs/PHASE_6_REPORT.md",
+      "inputHash": "53f85be88a3e2ba38a26c9b25455d43456c4d0d533d6b12a7243b7ba53df1385"
     },
     {
       "category": "low-quality-image",
