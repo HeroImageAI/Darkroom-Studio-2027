@@ -220,7 +220,7 @@ export function App() {
               <small>
                 {a.width} × {a.height}{" "}
                 <span>
-                  {a.origin === "generated" ? "AI result" : "Original"}
+                  {a.origin === "generated" ? "Created image" : "Original"}
                 </span>
               </small>
             </div>
@@ -339,7 +339,7 @@ export function App() {
                 : "Engine not connected"}
             </Status>
           </div>
-          <small className="foundation-label">FINISH PREVIEW · 0.5</small>
+          <small className="foundation-label">COMPOSITE PREVIEW · 0.6</small>
         </aside>
         <main id="workspace" tabIndex={-1}>
           {error && (

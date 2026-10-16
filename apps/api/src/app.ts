@@ -27,6 +27,7 @@ import { exportRequestSchema } from "../../../packages/contracts/src/finish.js";
 import { finishRequestSchema } from "../../../packages/contracts/src/finish.js";
 import { submitFinish, finishHistory, reviewFinish } from "./finish-jobs.js";
 import { finishEvidence } from "./finish-readiness.js";
+import { paintStroke } from "./paint.js";
 export async function createApp(
   options: {
     dataDir?: string;
@@ -317,6 +318,11 @@ export async function createApp(
         .strict()
         .parse(req.body).action,
     ),
+  );
+  app.post<{ Params: { id: string } }>(
+    "/api/documents/:id/paint",
+    async (req, reply) =>
+      reply.code(201).send(await paintStroke(store, req.params.id, req.body)),
   );
   app.get("/api/edit-capabilities", () => editEvidence());
   app.get<{ Params: { id: string } }>("/api/documents/:id/edits", (req) =>

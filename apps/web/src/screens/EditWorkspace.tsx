@@ -24,7 +24,8 @@ type Document = {
   currentRevisionId: string;
   snapshot: Snapshot;
 };
-type Tool = "Move" | "Pan" | "Select" | "Lasso" | "Mask" | "Crop";
+type Tool =
+  "Move" | "Pan" | "Select" | "Lasso" | "Mask" | "Crop" | "Paint" | "Erase";
 type Gesture = {
   start: Point;
   last: Point;
@@ -51,6 +52,20 @@ export function EditWorkspace({
   onImport: () => void;
   onRefresh: () => Promise<void>;
 }) {
+  const [placedAssets, setPlacedAssets] = useState<Asset[]>([]);
+  const [placeId, setPlaceId] = useState("");
+  const [paintColour, setPaintColour] = useState("#808080");
+  const [paintBusy, setPaintBusy] = useState(false);
+  const painting = useRef(false);
+  const placeInput = useRef<HTMLInputElement>(null);
+  const allAssets = [
+    ...assets,
+    ...placedAssets.filter((a) => !assets.some((v) => v.id === a.id)),
+  ];
+  useEffect(() => {
+    setPlacedAssets([]);
+    setPlaceId("");
+  }, [projectId]);
   const [record, setRecord] = useState<Document>();
   const [aiPreview, setAiPreview] = useState<string>();
   const [doc, setDoc] = useState<Snapshot>();
@@ -91,7 +106,7 @@ export function EditWorkspace({
   }
   function commit(next: Snapshot) {
     const before = current.current;
-    if (!before || blocked.current) return;
+    if (!before || blocked.current || painting.current) return;
     const checked = snapshotSchema.safeParse(next);
     if (!checked.success) {
       setError(checked.error.issues[0]?.message ?? "Invalid edit");
@@ -105,14 +120,21 @@ export function EditWorkspace({
     if (current.current) commit(updateLayer(current.current, selected, change));
   }
   function undo() {
-    if (blocked.current || !past.length || !current.current) return;
+    if (painting.current || blocked.current || !past.length || !current.current)
+      return;
     const before = current.current;
     setFuture((f) => [before, ...f]);
     display(past[past.length - 1]!);
     setPast((p) => p.slice(0, -1));
   }
   function redo() {
-    if (blocked.current || !future.length || !current.current) return;
+    if (
+      painting.current ||
+      blocked.current ||
+      !future.length ||
+      !current.current
+    )
+      return;
     const before = current.current;
     setPast((p) => [...p, before]);
     display(future[0]!);
@@ -281,7 +303,9 @@ export function EditWorkspace({
     window.addEventListener("keydown", keyboard);
     return () => window.removeEventListener("keydown", keyboard);
   });
-  async function prepareAI() {
+  async function prepareAI(forPaint = false) {
+    if (painting.current && !forPaint)
+      throw Error("Wait for the paint stroke to save.");
     if (
       blocked.current ||
       !(await save()) ||
@@ -331,7 +355,7 @@ export function EditWorkspace({
     return { x: p.x, y: p.y };
   }
   function down(e: React.PointerEvent<SVGSVGElement>) {
-    if (!doc || blocked.current || e.button !== 0) return;
+    if (!doc || blocked.current || painting.current || e.button !== 0) return;
     const p = point(e);
     e.currentTarget.setPointerCapture(e.pointerId);
     const hit = (e.target as Element)
@@ -350,6 +374,7 @@ export function EditWorkspace({
       client: { x: e.clientX, y: e.clientY },
     };
     if (tool === "Crop") setCrop(undefined);
+    if (tool === "Paint" || tool === "Erase") setStroke([p]);
     if (tool === "Mask" && chosen && !chosen.locked && "assetId" in chosen)
       setStroke([localPoint(p, chosen.transform)]);
   }
@@ -380,7 +405,12 @@ export function EditWorkspace({
         width: Math.abs(p.x - g.start.x),
         height: Math.abs(p.y - g.start.y),
       });
-    else if (tool === "Lasso" || tool === "Mask") {
+    else if (
+      tool === "Lasso" ||
+      tool === "Mask" ||
+      tool === "Paint" ||
+      tool === "Erase"
+    ) {
       if (g.points.length < 2000) g.points.push(p);
       setStroke(
         tool === "Mask" && g.layer
@@ -407,7 +437,9 @@ export function EditWorkspace({
       setCrop(undefined);
       return;
     }
-    if (tool === "Move" && current.current) {
+    if (tool === "Paint" || tool === "Erase") {
+      void finishPaint(g);
+    } else if (tool === "Move" && current.current) {
       const next = current.current;
       display(g.before);
       commit(next);
@@ -433,6 +465,112 @@ export function EditWorkspace({
     } else if ((tool === "Select" || tool === "Lasso") && stroke.length >= 3)
       commit({ ...g.before, selection: stroke });
     setStroke([]);
+  }
+  async function finishPaint(g: Gesture) {
+    if (painting.current) return;
+    const paintLayer = g.layer?.type === "paint" ? g.layer : undefined;
+    if (paintLayer?.locked || (tool === "Erase" && !paintLayer)) {
+      setError(
+        "Choose an unlocked paint layer before erasing or painting on it.",
+      );
+      return;
+    }
+    painting.current = true;
+    setPaintBusy(true);
+    try {
+      const prepared = await prepareAI(true);
+      setStatus("Saving paint stroke…");
+      const a = await api<Asset>(`/documents/${documentId}/paint`, {
+        method: "POST",
+        body: JSON.stringify({
+          expectedRevision: prepared.expectedRevision,
+          layerId: paintLayer?.id,
+          colour: paintColour,
+          erase: tool === "Erase",
+          size,
+          points: paintLayer
+            ? g.points.map((p) => localPoint(p, paintLayer.transform))
+            : g.points,
+        }),
+      });
+      if (current.current?.id !== prepared.documentId) return;
+      setPlacedAssets((list) => [...list, a]);
+      const next = paintLayer
+        ? updateLayer(current.current!, paintLayer.id, {
+            assetId: a.id,
+          } as Partial<Layer>)
+        : {
+            ...current.current!,
+            layers: [
+              ...current.current!.layers,
+              {
+                id: crypto.randomUUID(),
+                name: "Guidance paint",
+                type: "paint" as const,
+                assetId: a.id,
+                visible: true,
+                locked: false,
+                opacity: 1,
+                transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 },
+              },
+            ],
+          };
+      painting.current = false;
+      commit(next);
+      setSelected(paintLayer?.id ?? next.layers.at(-1)!.id);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      painting.current = false;
+      setPaintBusy(false);
+      setSaveEpoch((n) => n + 1);
+    }
+  }
+  function placeImage(a: Asset) {
+    if (!current.current || painting.current || blocked.current) return;
+    const d = current.current;
+    const scale = Math.min(
+      1,
+      (d.width * 0.8) / a.width,
+      (d.height * 0.8) / a.height,
+    );
+    const l = {
+      id: crypto.randomUUID(),
+      name: a.name,
+      type: "raster" as const,
+      assetId: a.id,
+      visible: true,
+      locked: false,
+      opacity: 1,
+      transform: {
+        x: (d.width - a.width * scale) / 2,
+        y: (d.height - a.height * scale) / 2,
+        scaleX: scale,
+        scaleY: scale,
+        rotation: 0,
+      },
+    };
+    commit({ ...d, layers: [...d.layers, l] });
+    setSelected(l.id);
+    setTool("Move");
+  }
+  async function importLayer(file?: File) {
+    if (!file) return;
+    const targetDocument = current.current?.id;
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const a = await api<Asset>("/assets?projectId=" + projectId, {
+        method: "POST",
+        body: form,
+      });
+      if (current.current?.id !== targetDocument) return;
+      setPlacedAssets((list) => [...list, a]);
+      placeImage(a);
+      await onRefresh();
+    } catch (e) {
+      setError((e as Error).message);
+    }
   }
   async function recoverCopy() {
     if (!record || !current.current) return;
@@ -500,9 +638,9 @@ export function EditWorkspace({
   if (!doc) return <p role="status">{error || status}</p>;
   const rasterAsset =
     chosen && "assetId" in chosen
-      ? assets.find((a) => a.id === chosen.assetId)
+      ? allAssets.find((a) => a.id === chosen.assetId)
       : undefined;
-  const locked = !chosen || chosen.locked || blocked.current;
+  const locked = !chosen || chosen.locked || blocked.current || paintBusy;
   const path = (ps: Point[]) => ps.map((p) => `${p.x},${p.y}`).join(" ");
   return (
     <section className="edit-workspace" aria-label="Image editor">
@@ -552,20 +690,30 @@ export function EditWorkspace({
         </div>
       )}
       <div className="edit-toolbar" aria-label="Canvas tools">
-        {(["Move", "Pan", "Select", "Lasso", "Mask", "Crop"] as Tool[]).map(
-          (t) => (
-            <Button
-              key={t}
-              aria-pressed={tool === t}
-              onClick={() => {
-                setTool(t);
-                setCrop(undefined);
-              }}
-            >
-              {t}
-            </Button>
-          ),
-        )}
+        {(
+          [
+            "Move",
+            "Pan",
+            "Select",
+            "Lasso",
+            "Mask",
+            "Paint",
+            "Erase",
+            "Crop",
+          ] as Tool[]
+        ).map((t) => (
+          <Button
+            key={t}
+            disabled={paintBusy}
+            aria-pressed={tool === t}
+            onClick={() => {
+              setTool(t);
+              setCrop(undefined);
+            }}
+          >
+            {t}
+          </Button>
+        ))}
         <Button onClick={undo} disabled={!past.length || blocked.current}>
           Undo
         </Button>
@@ -598,6 +746,69 @@ export function EditWorkspace({
       <div className="edit-body">
         <aside className="edit-layers" aria-label="Layers">
           <h2>Layers</h2>
+          <details>
+            <summary>Add to this canvas</summary>
+            <label>
+              Saved image
+              <select
+                aria-label="Image to place"
+                value={placeId}
+                onChange={(e) => setPlaceId(e.target.value)}
+              >
+                <option value="">Choose an image�</option>
+                {allAssets.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Button
+              disabled={
+                !placeId ||
+                paintBusy ||
+                blocked.current ||
+                doc.layers.length >= 100
+              }
+              onClick={() => {
+                const a = allAssets.find((a) => a.id === placeId);
+                if (a) placeImage(a);
+              }}
+            >
+              Place image
+            </Button>
+            <input
+              ref={placeInput}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+              aria-label="Import canvas layer"
+              onChange={(e) => {
+                void importLayer(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => placeInput.current?.click()}
+            >
+              Import as layer
+            </Button>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => {
+                setSelected("");
+                setTool("Paint");
+              }}
+            >
+              New paint layer
+            </Button>
+          </details>
+          {paintBusy && <p role="status">Saving paint stroke�</p>}
           <p className="muted">Top layer appears in front.</p>
           {[...doc.layers].reverse().map((l) => (
             <div
@@ -744,7 +955,7 @@ export function EditWorkspace({
               <defs>
                 {doc.layers.map((l) => {
                   if (!("assetId" in l)) return null;
-                  const a = assets.find((a) => a.id === l.assetId);
+                  const a = allAssets.find((a) => a.id === l.assetId);
                   if (!a) return null;
                   const strokes = [
                     ...(l.maskStrokes ?? []),
@@ -802,7 +1013,7 @@ export function EditWorkspace({
                 .map((l) => {
                   const a =
                     "assetId" in l
-                      ? assets.find((a) => a.id === l.assetId)
+                      ? allAssets.find((a) => a.id === l.assetId)
                       : undefined;
                   const t = l.transform;
                   return (
@@ -866,6 +1077,27 @@ export function EditWorkspace({
                     </g>
                   );
                 })}
+              {(tool === "Paint" || tool === "Erase") &&
+                stroke.length > 0 &&
+                (stroke.length === 1 ? (
+                  <circle
+                    cx={stroke[0]!.x}
+                    cy={stroke[0]!.y}
+                    r={size / 2}
+                    fill={tool === "Erase" ? "#ffffff" : paintColour}
+                    pointerEvents="none"
+                  />
+                ) : (
+                  <polyline
+                    points={path(stroke)}
+                    fill="none"
+                    stroke={tool === "Erase" ? "#ffffff" : paintColour}
+                    strokeWidth={size}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    pointerEvents="none"
+                  />
+                ))}
               {doc.selection && (
                 <polygon
                   points={path(doc.selection)}
@@ -974,6 +1206,36 @@ export function EditWorkspace({
                 </p>
               )}
             </>
+          )}
+          {(tool === "Paint" || tool === "Erase") && (
+            <fieldset disabled={paintBusy || blocked.current}>
+              <legend>Rough guidance paint</legend>
+              <p>
+                Sketch light, shadow or colour for the AI. Paint stays on its
+                own layer. Select a paint layer to add strokes or erase.
+              </p>
+              <label>
+                Paint colour
+                <input
+                  type="color"
+                  aria-label="Paint colour"
+                  value={paintColour}
+                  onChange={(e) => setPaintColour(e.target.value)}
+                />
+              </label>
+              <label>
+                Brush size
+                <input
+                  type="range"
+                  aria-label="Paint brush size"
+                  min="1"
+                  max="512"
+                  value={size}
+                  onChange={(e) => setSize(Number(e.target.value))}
+                />
+                <output>{size} px</output>
+              </label>
+            </fieldset>
           )}
           {tool === "Mask" && (
             <fieldset disabled={locked}>
