@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "image.generate.klein.foundation",
+  "version": "1.0.0",
+  "modelFamily": "Klein",
+  "graphSha256": "cb561201b2eebf0f140adec16c3fd70eddd4974b7daef3461c9f80a2b8731589",
+  "bindings": {
+    "prompt": {
+      "title": "DR_PROMPT",
+      "input": "text",
+      "type": "string"
+    },
+    "width": {
+      "title": "DR_WIDTH",
+      "input": "value",
+      "type": "integer"
+    },
+    "height": {
+      "title": "DR_HEIGHT",
+      "input": "value",
+      "type": "integer"
+    },
+    "seed": {
+      "title": "DR_SEED",
+      "input": "noise_seed",
+      "type": "integer"
+    }
+  },
+  "outputs": [
+    {
+      "title": "DR_OUTPUT",
+      "kind": "image",
+      "alpha": false
+    }
+  ],
+  "models": [
+    {
+      "title": "DR_MODEL",
+      "input": "unet_name",
+      "filename": "flux-2-klein-9b-fp8.safetensors",
+      "source": "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B",
+      "licenceStatus": "Source/licence terms must be reviewed for intended use; no download performed"
+    },
+    {
+      "title": "DR_ENCODER",
+      "input": "clip_name",
+      "filename": "qwen_3_8b_fp8mixed.safetensors",
+      "source": "Existing local ComfyUI installation",
+      "licenceStatus": "Existing local weight; licence not independently verified"
+    },
+    {
+      "title": "DR_VAE",
+      "input": "vae_name",
+      "filename": "flux2-vae.safetensors",
+      "source": "Existing local ComfyUI installation",
+      "licenceStatus": "Existing local weight; licence not independently verified"
+    }
+  ],
+  "maxPixels": 1048576,
+  "validationEvidenceId": null,
+  "enabled": false
+}
