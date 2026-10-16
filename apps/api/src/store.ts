@@ -481,6 +481,12 @@ export class Store {
     return this.transaction(() => {
       const c = this.candidates().find((c) => c.id === id);
       if (!c) throw Error("Candidate not found");
+      if (
+        this.db
+          .prepare("SELECT 1 FROM edit_requests WHERE jobId=?")
+          .get(c.jobId)
+      )
+        throw Error("Review AI edits from their source master.");
       if (action === "reject") {
         this.db
           .prepare("UPDATE candidates SET disposition='rejected' WHERE id=?")

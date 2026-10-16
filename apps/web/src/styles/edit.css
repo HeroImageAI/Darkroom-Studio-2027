@@ -193,3 +193,37 @@
 .edit-body input[type="checkbox"] {
   accent-color: var(--crimson);
 }
+
+.ai-edit {
+  border-bottom: 1px solid var(--control-border);
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
+  width: 100%;
+  min-width: 0;
+}
+.ai-edit img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 45vh;
+  object-fit: contain;
+}
+.ai-edit figure {
+  margin: var(--space-2) 0;
+}
+.ai-edit figcaption {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.ai-edit textarea,
+.ai-edit select {
+  width: 100%;
+  background: var(--surface-app);
+  color: var(--text-primary);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+}
+.ai-review-actions .button {
+  white-space: normal;
+}

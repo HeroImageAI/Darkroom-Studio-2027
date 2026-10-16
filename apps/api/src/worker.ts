@@ -10,6 +10,9 @@ import { readiness } from "./readiness.js";
 import { intentSchema } from "../../../packages/contracts/src/index.js";
 import { graphHash } from "../../../packages/workflows/src/bind.js";
 import sharp from "sharp";
+import { editRow } from "./edits.js";
+import { protectEdit } from "./edit-render.js";
+import { assertEditReady } from "../../../packages/routing/src/edit-policy.js";
 import type { Store } from "./store.js";
 import type { ComfyClient } from "./comfy.js";
 import { randomUUID } from "node:crypto";
@@ -170,6 +173,12 @@ export class Worker {
           throw Error(
             inspection.status.reason ?? "Verified Desktop engine required",
           );
+        const edit = editRow(this.store, job.id);
+        if (edit)
+          assertEditReady(
+            JSON.parse(edit.requestJson).task,
+            inspection.status.fingerprint,
+          );
         job.intent = intentSchema.parse(job.intent);
         this.store.validateReferences(job.projectId, job.intent.references);
         const ready = new Set(
@@ -291,13 +300,34 @@ export class Worker {
       metadata.height !== job.intent.height
     )
       throw Error("Output dimensions do not match request");
+    const edit = editRow(this.store, jobId);
+    let resultBytes = bytes;
+    if (edit) {
+      const raw = await this.store.importAsset(
+        bytes,
+        "Uncomposited AI proposal.png",
+        job.projectId,
+        "generated",
+      );
+      this.store.db
+        .prepare("UPDATE edit_requests SET rawAssetId=? WHERE jobId=?")
+        .run(raw.id, jobId);
+      resultBytes = await protectEdit(
+        this.store.assetBytes(edit.sourceAssetId),
+        this.store.assetBytes(edit.maskAssetId),
+        bytes,
+      );
+    }
     const asset = await this.store.importAsset(
-      bytes,
+      resultBytes,
       "Variation " + ((job.variationIndex ?? 0) + 1) + ".png",
       job.projectId,
       "generated",
     );
-    if (asset.width !== job.intent.width || asset.height !== job.intent.height)
+    if (
+      !edit &&
+      (asset.width !== job.intent.width || asset.height !== job.intent.height)
+    )
       throw Error("Output dimensions do not match request");
     this.store.completeJob(jobId, asset.id);
   }

@@ -12,6 +12,7 @@ import {
   type Layer,
   type Point,
 } from "../../../../packages/document/src/edit.js";
+import { AIEditPanel } from "./AIEditPanel.js";
 import { api } from "../lib/api.js";
 import { Button } from "../components/Controls.js";
 import "../styles/edit.css";
@@ -39,6 +40,7 @@ export function EditWorkspace({
   assets,
   onDocument,
   onImport,
+  onRefresh,
 }: {
   projectId: string;
   asset?: Asset;
@@ -46,6 +48,7 @@ export function EditWorkspace({
   assets: Asset[];
   onDocument: (id: string) => void;
   onImport: () => void;
+  onRefresh: () => Promise<void>;
 }) {
   const [record, setRecord] = useState<Document>();
   const [doc, setDoc] = useState<Snapshot>();
@@ -276,6 +279,34 @@ export function EditWorkspace({
     window.addEventListener("keydown", keyboard);
     return () => window.removeEventListener("keydown", keyboard);
   });
+  async function prepareAI() {
+    if (
+      blocked.current ||
+      !(await save()) ||
+      JSON.stringify(current.current) !== saved.current
+    )
+      throw Error(
+        "Save the current master before requesting or accepting an AI edit.",
+      );
+    return { documentId: documentId!, expectedRevision: revision.current };
+  }
+  async function adoptAI(id: string) {
+    await onRefresh();
+    if (id !== documentId) {
+      onDocument(id);
+      return;
+    }
+    const d = await api<Document>("/documents/" + id);
+    const before = current.current!;
+    revision.current = d.currentRevisionId;
+    saved.current = JSON.stringify(d.snapshot);
+    setRecord(d);
+    setPast((p) => historyCommit(p, before, d.snapshot));
+    setFuture([]);
+    display(d.snapshot);
+    setSelected(d.snapshot.layers.at(-1)?.id ?? "");
+    setStatus("All changes saved");
+  }
   async function openMaster() {
     if (!asset) return;
     try {
@@ -833,6 +864,12 @@ export function EditWorkspace({
           </div>
         </div>
         <aside className="edit-properties" aria-label="Layer properties">
+          <AIEditPanel
+            documentId={documentId}
+            hasSelection={!!doc.selection}
+            prepare={prepareAI}
+            onApplied={adoptAI}
+          />
           <h2>{chosen?.name ?? "Select a layer"}</h2>
           {chosen && (
             <>

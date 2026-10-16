@@ -339,7 +339,7 @@ export function App() {
                 : "Engine not connected"}
             </Status>
           </div>
-          <small className="foundation-label">EDIT PREVIEW · 0.3</small>
+          <small className="foundation-label">AI EDIT PREVIEW · 0.4</small>
         </aside>
         <main id="workspace" tabIndex={-1}>
           {error && (
@@ -411,6 +411,7 @@ export function App() {
               projectId={project}
               asset={selected}
               documentId={selectedDocument}
+              onRefresh={() => refresh()}
               assets={assets}
               onDocument={(id) => {
                 localStorage.setItem("darkroom.lastDocument." + project, id);
