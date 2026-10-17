@@ -26,7 +26,16 @@ type Document = {
   snapshot: Snapshot;
 };
 type Tool =
-  "Move" | "Pan" | "Select" | "Lasso" | "Mask" | "Crop" | "Paint" | "Erase";
+  | "Refine"
+  | "Subject"
+  | "Move"
+  | "Pan"
+  | "Select"
+  | "Lasso"
+  | "Mask"
+  | "Crop"
+  | "Paint"
+  | "Erase";
 type Gesture = {
   start: Point;
   last: Point;
@@ -80,6 +89,11 @@ export function EditWorkspace({
   const [past, setPast] = useState<Snapshot[]>([]);
   const [future, setFuture] = useState<Snapshot[]>([]);
   const [selected, setSelected] = useState("");
+  const [selectionDescription, setSelectionDescription] = useState("");
+  const [selectionBusy, setSelectionBusy] = useState(false);
+  const [selectionMode, setSelectionMode] = useState<
+    "replace" | "add" | "subtract"
+  >("replace");
   const [tool, setTool] = useState<Tool>("Move");
   const [status, setStatus] = useState("Opening master…");
   const [error, setError] = useState("");
@@ -356,9 +370,67 @@ export function EditWorkspace({
     );
     return { x: p.x, y: p.y };
   }
+  async function selectRegion(
+    polygon?: Point[],
+    subjectPoint?: Point,
+    refinement?: { points: Point[]; size: number },
+  ) {
+    if (selectionBusy || !current.current) return;
+    setSelectionBusy(true);
+    setError("");
+    const before = current.current;
+    try {
+      const base = await prepareAI();
+      const result = await api<{
+        expectedRevision: string;
+        selectionMaskAssetId: string | null;
+      }>("/documents/" + base.documentId + "/selection", {
+        method: "POST",
+        body: JSON.stringify({
+          expectedRevision: base.expectedRevision,
+          mode: selectionMode,
+          subject: !polygon && !refinement,
+          stroke: refinement,
+          description:
+            !polygon && !refinement && selectionDescription.trim()
+              ? selectionDescription.trim()
+              : undefined,
+          polygon,
+          point: subjectPoint,
+        }),
+      });
+      if (
+        current.current !== before ||
+        revision.current !== result.expectedRevision
+      )
+        throw Error("The master changed during selection; try again.");
+      const { selection: _, selectionMaskAssetId: _mask, ...rest } = before;
+      commit({
+        ...rest,
+        ...(result.selectionMaskAssetId
+          ? { selectionMaskAssetId: result.selectionMaskAssetId }
+          : {}),
+      });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSelectionBusy(false);
+    }
+  }
   function down(e: React.PointerEvent<SVGSVGElement>) {
-    if (!doc || blocked.current || painting.current || e.button !== 0) return;
+    if (
+      !doc ||
+      blocked.current ||
+      painting.current ||
+      selectionBusy ||
+      e.button !== 0
+    )
+      return;
     const p = point(e);
+    if (tool === "Subject") {
+      void selectRegion(undefined, p);
+      return;
+    }
     e.currentTarget.setPointerCapture(e.pointerId);
     const hit = (e.target as Element)
       .closest("[data-layer]")
@@ -376,7 +448,8 @@ export function EditWorkspace({
       client: { x: e.clientX, y: e.clientY },
     };
     if (tool === "Crop") setCrop(undefined);
-    if (tool === "Paint" || tool === "Erase") setStroke([p]);
+    if (tool === "Paint" || tool === "Erase" || tool === "Refine")
+      setStroke([p]);
     if (tool === "Mask" && chosen && !chosen.locked && "assetId" in chosen)
       setStroke([localPoint(p, chosen.transform)]);
   }
@@ -408,6 +481,7 @@ export function EditWorkspace({
         height: Math.abs(p.y - g.start.y),
       });
     else if (
+      tool === "Refine" ||
       tool === "Lasso" ||
       tool === "Mask" ||
       tool === "Paint" ||
@@ -439,7 +513,9 @@ export function EditWorkspace({
       setCrop(undefined);
       return;
     }
-    if (tool === "Paint" || tool === "Erase") {
+    if (tool === "Refine") {
+      void selectRegion(undefined, undefined, { points: g.points, size });
+    } else if (tool === "Paint" || tool === "Erase") {
       void finishPaint(g);
     } else if (tool === "Move" && current.current) {
       const next = current.current;
@@ -464,8 +540,12 @@ export function EditWorkspace({
           ],
         } as Partial<Layer>),
       );
-    } else if ((tool === "Select" || tool === "Lasso") && stroke.length >= 3)
-      commit({ ...g.before, selection: stroke });
+    } else if ((tool === "Select" || tool === "Lasso") && stroke.length >= 3) {
+      if (selectionMode === "replace") {
+        const { selectionMaskAssetId: _, ...rest } = g.before;
+        commit({ ...rest, selection: stroke });
+      } else void selectRegion(stroke);
+    }
     setStroke([]);
   }
   async function finishPaint(g: Gesture) {
@@ -778,21 +858,10 @@ export function EditWorkspace({
         </div>
       )}
       <div className="edit-toolbar" aria-label="Canvas tools">
-        {(
-          [
-            "Move",
-            "Pan",
-            "Select",
-            "Lasso",
-            "Mask",
-            "Paint",
-            "Erase",
-            "Crop",
-          ] as Tool[]
-        ).map((t) => (
+        {(["Move", "Select", "Crop"] as Tool[]).map((t) => (
           <Button
             key={t}
-            disabled={paintBusy}
+            disabled={paintBusy || selectionBusy}
             aria-pressed={tool === t}
             onClick={() => {
               setTool(t);
@@ -802,6 +871,91 @@ export function EditWorkspace({
             {t}
           </Button>
         ))}
+        <Button
+          disabled={paintBusy || selectionBusy}
+          aria-pressed={tool === "Subject"}
+          onClick={() => setTool("Subject")}
+        >
+          Smart Select
+        </Button>
+        <details className="more-canvas-tools">
+          <summary>More tools</summary>
+          {(["Pan", "Lasso", "Refine", "Mask", "Paint", "Erase"] as Tool[]).map(
+            (t) => (
+              <Button
+                key={t}
+                disabled={paintBusy || selectionBusy}
+                aria-pressed={tool === t}
+                onClick={() => {
+                  setTool(t);
+                  setCrop(undefined);
+                }}
+              >
+                {t === "Refine" ? "Refine selection" : t}
+              </Button>
+            ),
+          )}
+        </details>
+        {(["Subject", "Select", "Lasso", "Refine"] as Tool[]).includes(
+          tool,
+        ) && (
+          <label>
+            Selection
+            <select
+              aria-label="Selection mode"
+              value={selectionMode}
+              onChange={(e) =>
+                setSelectionMode(e.target.value as typeof selectionMode)
+              }
+            >
+              <option value="replace">Replace</option>
+              <option value="add">Add</option>
+              <option value="subtract">Subtract</option>
+            </select>
+          </label>
+        )}
+        {tool === "Subject" && (
+          <span className="muted">
+            {selectionBusy
+              ? "Finding the subject…"
+              : "Click a foreground subject, or describe an object. Refine the mask before editing."}
+          </span>
+        )}
+        {tool === "Subject" && (
+          <label>
+            Find
+            <input
+              aria-label="Object to select"
+              maxLength={120}
+              value={selectionDescription}
+              placeholder="e.g. orange spacesuit"
+              onChange={(e) => setSelectionDescription(e.target.value)}
+            />
+            <Button
+              disabled={selectionBusy || !selectionDescription.trim()}
+              onClick={() => void selectRegion()}
+            >
+              Select matching objects
+            </Button>
+          </label>
+        )}
+        {tool === "Refine" && (
+          <label>
+            Brush size
+            <input
+              aria-label="Selection brush size"
+              type="number"
+              min={1}
+              max={4096}
+              value={size}
+              onChange={(e) =>
+                setSize(
+                  Math.max(1, Math.min(4096, Number(e.target.value) || 1)),
+                )
+              }
+            />
+          </label>
+        )}
         <Button onClick={undo} disabled={!past.length || blocked.current}>
           Undo
         </Button>
@@ -1223,7 +1377,7 @@ export function EditWorkspace({
                     </g>
                   );
                 })}
-              {(tool === "Paint" || tool === "Erase") &&
+              {(tool === "Paint" || tool === "Erase" || tool === "Refine") &&
                 stroke.length > 0 &&
                 (stroke.length === 1 ? (
                   <circle
@@ -1244,6 +1398,29 @@ export function EditWorkspace({
                     pointerEvents="none"
                   />
                 ))}
+              {doc.selectionMaskAssetId && (
+                <g pointerEvents="none">
+                  <defs>
+                    <mask
+                      id="selection-preview"
+                      style={{ maskType: "luminance" }}
+                    >
+                      <image
+                        href={"/api/assets/" + doc.selectionMaskAssetId}
+                        width={doc.width}
+                        height={doc.height}
+                      />
+                    </mask>
+                  </defs>
+                  <rect
+                    width={doc.width}
+                    height={doc.height}
+                    fill="#e31824"
+                    opacity={0.35}
+                    mask="url(#selection-preview)"
+                  />
+                </g>
+              )}
               {doc.selection && (
                 <polygon
                   points={path(doc.selection)}
@@ -1259,7 +1436,7 @@ export function EditWorkspace({
         </div>
         <aside className="edit-properties" aria-label="Layer properties">
           <FinishPanel
-            hasSelection={!!doc.selection}
+            hasSelection={!!(doc.selection || doc.selectionMaskAssetId)}
             key={documentId}
             documentId={documentId}
             width={doc.width}
@@ -1271,7 +1448,7 @@ export function EditWorkspace({
           />
           <AIEditPanel
             documentId={documentId}
-            hasSelection={!!doc.selection}
+            hasSelection={!!(doc.selection || doc.selectionMaskAssetId)}
             prepare={prepareAI}
             onApplied={adoptAI}
             onPreview={setAiPreview}
@@ -1362,8 +1539,8 @@ export function EditWorkspace({
                   </label>
                   <p>
                     Bundled Inter Latin outlines. Text stays editable in the
-                    project; SVG handoff outlines it. Visible text layers must
-                    be hidden before AI editing.
+                    project; SVG handoff outlines it. AI input uses these exact
+                    glyphs. Protect lettering with the selection when editing.
                   </p>
                 </fieldset>
               )}
@@ -1590,11 +1767,15 @@ export function EditWorkspace({
               </Button>
             </fieldset>
           )}
-          {doc.selection && (
+          {(doc.selection || doc.selectionMaskAssetId) && (
             <Button
               disabled={blocked.current}
               onClick={() => {
-                const { selection: _, ...rest } = doc;
+                const {
+                  selection: _,
+                  selectionMaskAssetId: _mask,
+                  ...rest
+                } = doc;
                 commit(rest);
               }}
             >

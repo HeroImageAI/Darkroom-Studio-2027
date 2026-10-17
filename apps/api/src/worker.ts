@@ -11,7 +11,7 @@ import { intentSchema } from "../../../packages/contracts/src/index.js";
 import { graphHash } from "../../../packages/workflows/src/bind.js";
 import sharp from "sharp";
 import { editRow } from "./edits.js";
-import { protectEdit } from "./edit-render.js";
+import { protectRequestedEdit } from "./edit-render.js";
 import {
   assertEditReady,
   editSignature,
@@ -351,12 +351,11 @@ export class Worker {
       this.store.db
         .prepare("UPDATE edit_requests SET rawAssetId=? WHERE jobId=?")
         .run(raw.id, jobId);
-      resultBytes = await protectEdit(
+      resultBytes = await protectRequestedEdit(
         this.store.assetBytes(edit.sourceAssetId),
         this.store.assetBytes(edit.maskAssetId),
         bytes,
-        JSON.parse(edit.requestJson).task !== "Background",
-        JSON.parse(edit.requestJson).task !== "Expand",
+        JSON.parse(edit.requestJson).task,
       );
     }
     const asset = await this.store.importAsset(

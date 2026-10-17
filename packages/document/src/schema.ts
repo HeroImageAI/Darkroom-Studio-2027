@@ -78,10 +78,16 @@ export const snapshotSchema = z
     height: z.number().int().positive().max(16384),
     colourSpace: z.literal("srgb"),
     layers: z.array(z.union([raster, text, vector])).max(100),
+    selectionMaskAssetId: z.string().uuid().optional(),
     selection: z.array(point).min(3).max(2000).optional(),
   })
   .strict()
   .superRefine((doc, ctx) => {
+    if (doc.selection && doc.selectionMaskAssetId)
+      ctx.addIssue({
+        code: "custom",
+        message: "Use one selection representation at a time",
+      });
     const points = doc.layers.reduce(
       (sum, layer) =>
         sum +

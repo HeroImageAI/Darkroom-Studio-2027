@@ -308,3 +308,15 @@
   object-fit: contain;
   margin-top: var(--space-2);
 }
+
+.more-canvas-tools {
+  position: relative;
+}
+.more-canvas-tools[open] {
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.more-canvas-tools summary {
+  cursor: pointer;
+}

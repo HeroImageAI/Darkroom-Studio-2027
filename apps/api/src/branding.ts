@@ -10,7 +10,7 @@ import {
 } from "../../../packages/document/src/svg.js";
 import type { Snapshot } from "../../../packages/document/src/schema.js";
 import type { Store } from "./store.js";
-import { renderMaster } from "./edit-render.js";
+import { renderRasterMaster } from "./raster-render.js";
 const fonts: Record<string, { font: Font; sha256: string }> = {};
 export const fontNames = ["Darkroom Sans", "Darkroom Sans Bold"] as const;
 for (const [i, name] of fontNames.entries()) {
@@ -163,7 +163,7 @@ export async function renderDelivery(store: Store, doc: Snapshot) {
         l.visible && (l.type === "text" || ("vectorSvg" in l && l.vectorSvg)),
     )
   )
-    return renderMaster(store, doc);
+    return renderRasterMaster(store, doc);
   return sharp((await documentSvg(store, doc)).bytes)
     .png()
     .toBuffer();

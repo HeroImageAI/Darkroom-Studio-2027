@@ -2,12 +2,15 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { editWorkflowId } from "./edit-template.js";
-export function editSignature() {
-  return createHash("sha256")
-    .update(readFileSync(resolve("packages/routing/src/edit-template.ts")))
-    .update(readFileSync(resolve("apps/api/src/edit-render.ts")))
-    .digest("hex");
-}
+import { canvasSignature } from "../../../apps/api/src/render-signature.js";
+const loadedEditSignature = createHash("sha256")
+  .update(readFileSync(resolve("packages/routing/src/edit-template.ts")))
+  .update(readFileSync(resolve("apps/api/src/edit-render.ts")))
+  .update(canvasSignature())
+  .update(readFileSync(resolve("apps/api/src/worker.ts")))
+  .update(readFileSync(resolve("apps/api/src/edits.ts")))
+  .digest("hex");
+export const editSignature = () => loadedEditSignature;
 export function editEvidence() {
   return JSON.parse(
     readFileSync(resolve("workflows/edit-validation.json"), "utf8"),

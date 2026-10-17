@@ -35,6 +35,7 @@ import {
   handoffRecord,
   importProject,
 } from "./handoff.js";
+import { prepareSelection } from "./selection.js";
 export async function createApp(
   options: {
     dataDir?: string;
@@ -378,6 +379,10 @@ export async function createApp(
         .strict()
         .parse(req.body).action,
     ),
+  );
+  app.post<{ Params: { id: string } }>(
+    "/api/documents/:id/selection",
+    async (req) => prepareSelection(store, comfy, req.params.id, req.body),
   );
   app.get("/api/jobs", () => store.jobs().map(({ provenance, ...job }) => job));
   app.get<{ Params: { id: string } }>("/api/jobs/:id", async (req, reply) => {

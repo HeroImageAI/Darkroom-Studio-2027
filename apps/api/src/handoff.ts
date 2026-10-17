@@ -70,6 +70,9 @@ export async function createHandoff(
     const ids = [
       ...new Set([
         doc.originalAssetId,
+        ...(doc.snapshot.selectionMaskAssetId
+          ? [doc.snapshot.selectionMaskAssetId]
+          : []),
         ...doc.snapshot.layers.flatMap((l) =>
           "assetId" in l
             ? [l.assetId, ...(l.maskAssetId ? [l.maskAssetId] : [])]
@@ -239,6 +242,9 @@ async function importProjectData(
   }
   const required = new Set([
     bundle.originalAssetId,
+    ...(bundle.snapshot.selectionMaskAssetId
+      ? [bundle.snapshot.selectionMaskAssetId]
+      : []),
     ...bundle.snapshot.layers.flatMap((l) =>
       "assetId" in l
         ? [l.assetId, ...(l.maskAssetId ? [l.maskAssetId] : [])]
@@ -301,6 +307,9 @@ async function importProjectData(
   );
   const snapshot = {
     ...bundle.snapshot,
+    selectionMaskAssetId: bundle.snapshot.selectionMaskAssetId
+      ? ids.get(bundle.snapshot.selectionMaskAssetId)
+      : undefined,
     id: initial.id,
     layers: bundle.snapshot.layers.map((l) => ({
       ...l,

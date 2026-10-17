@@ -7,7 +7,10 @@ import { Store } from "../apps/api/src/store.js";
 import { ComfyClient } from "../apps/api/src/comfy.js";
 import { config } from "../apps/api/src/config.js";
 import { workflowById } from "../apps/api/src/workflow.js";
-import { prepareEdit, protectEdit } from "../apps/api/src/edit-render.js";
+import {
+  prepareEdit,
+  protectRequestedEdit,
+} from "../apps/api/src/edit-render.js";
 import { editPrompt, editWorkflowId } from "../apps/api/src/edits.js";
 import {
   bind,
@@ -154,12 +157,11 @@ for (const task of editTasks) {
     if (h?.status?.completed) {
       const [out] = byTitle(compiled, "DR_OUTPUT");
       const raw = await client.image(h.outputs[out].images[0]);
-      const result = await protectEdit(
+      const result = await protectRequestedEdit(
         prepared.source,
         prepared.maskPng,
         raw,
-        task !== "Background",
-        task !== "Expand",
+        task,
       );
       writeFileSync(root + "/" + task + ".raw.png", raw);
       writeFileSync(root + "/" + task + ".result.png", result);

@@ -1,0 +1,25 @@
+{
+  "sources": [
+    {
+      "filename": "astronaut.png",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/astronaut.png",
+      "rights": "NASA / public domain",
+      "rightsSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py#L382-L399",
+      "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5"
+    },
+    {
+      "filename": "rocket.jpg",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/rocket.jpg",
+      "rights": "SpaceX / public domain",
+      "rightsSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py#L1032-L1049",
+      "sha256": "c2dd0de7c538df8d111e479619b129464d0269d0ae5fd18ca91d33a7fdfea95c"
+    },
+    {
+      "filename": "glass-full.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Wine_Bottle_MET_DP319844.jpg",
+      "rights": "The Metropolitan Museum of Art / CC0",
+      "rightsSource": "https://commons.wikimedia.org/wiki/File:Wine_Bottle_MET_DP319844.jpg",
+      "sha256": "143e7b6bd4af66abf4c35917a4a910fd1ae29589e41b2f29f90ba209eec9e795"
+    }
+  ]
+}
