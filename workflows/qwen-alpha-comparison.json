@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "enabled": false,
+  "scope": "Controlled synthetic native Qwen RGBA and reference geometry investigation, not photographic glass certification",
+  "reviewedAt": "2026-10-17",
+  "reviewImage": "data/quality-gaps/qwen-alpha/review-all.png",
+  "comparison": "40 steps, cfg 1, Euler/simple, seed 42; matched-area runs decode at 672x896 then resize to source dimensions for measurement; no matched speed claim",
+  "cases": [
+    {
+      "key": "white-current",
+      "prompt": "Extract the exact bottle from image 1. This is an RGBA image with transparency. Preserve the glass bottle silhouette, translucent glass, dark cap, opaque cream label and its three dark horizontal lines. The image has alpha channel and the background is transparent. Preserve the original framing and position. Remove the background without adding objects, lettering, shadows or a checkerboard pattern.",
+      "promptId": "716f0e2b-ed58-494e-987c-b52789c46a11",
+      "ms": 14150,
+      "width": 384,
+      "height": 512,
+      "channels": 4,
+      "transparent": 46991,
+      "semitransparent": 143649,
+      "interiorAlphaMAE": 27.286479591836734,
+      "sourceHash": "8979ee3bb8210780aa11e2e56c4b593376ee66d5726d8aa51938f93c80899b95",
+      "outputHash": "66bc1bcdc55ce81145517e1327d5fa92485d311a06c2c5c08666bdbe54f3177c",
+      "graphHash": "b680f17ac79ffd5ab5a5e0ae2f5d5b51d0953f828a4c67c6831bcf8a3ef51ff6",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "visualReview": "FAIL glass gate: altered glass density and/or input-background tint; no production promotion",
+      "enabled": false
+    },
+    {
+      "key": "white-matched",
+      "prompt": "Extract the exact bottle from image 1. This is an RGBA image with transparency. Preserve the glass bottle silhouette, translucent glass, dark cap, opaque cream label and its three dark horizontal lines. The image has alpha channel and the background is transparent. Preserve the original framing and position. Remove the background without adding objects, lettering, shadows or a checkerboard pattern.",
+      "promptId": "1d2de4b0-e354-4d1c-9d71-0bfb065dd3be",
+      "ms": 7959,
+      "width": 384,
+      "height": 512,
+      "channels": 4,
+      "transparent": 46992,
+      "semitransparent": 143661,
+      "interiorAlphaMAE": 48.03341836734694,
+      "sourceHash": "8979ee3bb8210780aa11e2e56c4b593376ee66d5726d8aa51938f93c80899b95",
+      "outputHash": "889f5e828fa747bd87e162cdcde2b7d3ef201de78d33770490f7db5c98a94256",
+      "graphHash": "f11e3e4365d2180532f8f76ed0c1ebdcba8cb1ca593162d483b4b151c6dc01e5",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "visualReview": "FAIL glass gate: altered glass density and/or input-background tint; no production promotion",
+      "enabled": false
+    },
+    {
+      "key": "blue-current",
+      "prompt": "Extract the exact bottle from image 1. This is an RGBA image with transparency. Preserve the glass bottle silhouette, translucent glass, dark cap, opaque cream label and its three dark horizontal lines. The image has alpha channel and the background is transparent. Preserve the original framing and position. Remove the background without adding objects, lettering, shadows or a checkerboard pattern.",
+      "promptId": "f57b4529-e9c1-49f4-bd52-c513cbddf781",
+      "ms": 9383,
+      "width": 384,
+      "height": 512,
+      "channels": 4,
+      "transparent": 53452,
+      "semitransparent": 136934,
+      "interiorAlphaMAE": 20.619897959183675,
+      "sourceHash": "4f29d16865f973c885ba7088e12b7a5499b4c43e9158e79887718ba4deecdb2a",
+      "outputHash": "8dcf6dc5bcf6754d4e44c05e8c4d400c1880dbcc8cda86d26e3c80a61a7a055b",
+      "graphHash": "147bb7b12b4448b20bd8506e5eba5c5cf783a3ac09c22c623ceffd97bef81979",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "visualReview": "FAIL glass gate: altered glass density and/or input-background tint; no production promotion",
+      "enabled": false
+    },
+    {
+      "key": "blue-matched",
+      "prompt": "Extract the exact bottle from image 1. This is an RGBA image with transparency. Preserve the glass bottle silhouette, translucent glass, dark cap, opaque cream label and its three dark horizontal lines. The image has alpha channel and the background is transparent. Preserve the original framing and position. Remove the background without adding objects, lettering, shadows or a checkerboard pattern.",
+      "promptId": "fe08a595-e597-490e-8a91-aabcc868dcf6",
+      "ms": 7949,
+      "width": 384,
+      "height": 512,
+      "channels": 4,
+      "transparent": 52488,
+      "semitransparent": 138217,
+      "interiorAlphaMAE": 111.40357142857142,
+      "sourceHash": "4f29d16865f973c885ba7088e12b7a5499b4c43e9158e79887718ba4deecdb2a",
+      "outputHash": "c375abe53c49934c3ec90659587c2c5a85716e1712d292cba00d012e50e780d5",
+      "graphHash": "a4548a92ef87e86f7ae2b443fe5f6494da5c7ab3c6c4c46f74519e78d87fe8e1",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "visualReview": "FAIL glass gate: altered glass density and/or input-background tint; no production promotion",
+      "enabled": false
+    },
+    {
+      "key": "white-matched-area",
+      "prompt": "Extract the exact bottle from image 1. This is an RGBA image with transparency. Preserve the glass bottle silhouette, translucent glass, dark cap, opaque cream label and its three dark horizontal lines. The image has alpha channel and the background is transparent. Preserve the original framing and position. Remove the background without adding objects, lettering, shadows or a checkerboard pattern.",
+      "promptId": "9924d8cc-f21a-4e1e-9a56-5c8cbfc42cd9",
+      "ms": 17419,
+      "width": 384,
+      "height": 512,
+      "nativeWidth": 672,
+      "nativeHeight": 896,
+      "channels": 4,
+      "transparent": 38737,
+      "semitransparent": 108258,
+      "interiorAlphaMAE": 217,
+      "sourceHash": "8979ee3bb8210780aa11e2e56c4b593376ee66d5726d8aa51938f93c80899b95",
+      "outputHash": "45a8e538aa0d94701ade4a533984f0953021a57938b934a59c7ab2abb8a3d279",
+      "graphHash": "bc9bc58c2361341943604d50b845403f9fcef16c74af0b89dbd772c7ea005e49",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "visualReview": "FAIL glass gate: altered glass density and/or input-background tint; no production promotion",
+      "enabled": false
+    },
+    {
+      "key": "blue-matched-area",
+      "prompt": "Extract the exact bottle from image 1. This is an RGBA image with transparency. Preserve the glass bottle silhouette, translucent glass, dark cap, opaque cream label and its three dark horizontal lines. The image has alpha channel and the background is transparent. Preserve the original framing and position. Remove the background without adding objects, lettering, shadows or a checkerboard pattern.",
+      "promptId": "cbe5729e-5d6a-4779-bbac-faeedaa1ce4b",
+      "ms": 16923,
+      "width": 384,
+      "height": 512,
+      "nativeWidth": 672,
+      "nativeHeight": 896,
+      "channels": 4,
+      "transparent": 38473,
+      "semitransparent": 150913,
+      "interiorAlphaMAE": 36.6,
+      "sourceHash": "4f29d16865f973c885ba7088e12b7a5499b4c43e9158e79887718ba4deecdb2a",
+      "outputHash": "fb54a32d12fa67679681b1417c9e4b58e139eb4fde394d94f7c3799f228869dd",
+      "graphHash": "0d509ec9362c3afa815fc5a8e0a52685d1e7721d156ba5f210b4b7d14ee2eafc",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "visualReview": "FAIL glass gate: altered glass density and/or input-background tint; no production promotion",
+      "enabled": false
+    }
+  ]
+}

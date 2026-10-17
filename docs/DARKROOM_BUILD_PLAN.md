@@ -2,7 +2,9 @@
 
 Status: Core scope corrections after the Phase 7 preview. Phase 8 Library expansion is on hold while core selection, coherent canvas rendering and broader visual QA are corrected. Phases 1–7 have scoped draft implementations; that does not certify their full outcome gates. See [scope corrections](SCOPE_CORRECTIONS.md).
 
-PR #8's core corrections are merged into `composite-workflow`; PR #9's quality fixes remain unmerged. The latest review and garment/colour/restoration/glass outcomes are recorded in [quality follow-up](QUALITY_FOLLOWUP.md). Candidate model tests do not advance a phase or enable a new route.
+17 October continuation: the user authorises work through full completion without further phase approval requests. The earlier approval stop rules below are superseded by that instruction; quality gates and review requirements remain. [Completion gates](COMPLETION_GATES.md) tracks the remaining outcomes, and [model/workflow audit](MODEL_WORKFLOW_AUDIT.md) records checks against publisher guidance and the installed engine.
+
+PR #8's core corrections and PR #9's quality fixes are merged into `composite-workflow` (PR #9 merge `6857e287f05c1fc620db0c26b327a8928de45b32`, after Windows/Linux CI passed at `f7a05a5`). The latest review and garment/colour/restoration/glass outcomes are recorded in [quality follow-up](QUALITY_FOLLOWUP.md). Candidate model tests do not advance a phase or enable a new route.
 
 ## Repository strategy
 
