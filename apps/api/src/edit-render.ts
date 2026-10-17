@@ -92,6 +92,7 @@ export async function protectEdit(
   generated: Buffer,
   matchBoundary = true,
   featherInside = true,
+  preserveAlpha = false,
 ) {
   const base = await sharp(source)
     .ensureAlpha()
@@ -175,6 +176,14 @@ export async function protectEdit(
             output[i * 4 + c]! * t + base.data[i * 4 + c]! * (1 - t),
           );
       }
+  // Recolour changes pigment, not coverage. RGB-only model output must not
+  // turn a cutout's translucent edge (or empty canvas) into an opaque rectangle.
+  if (preserveAlpha)
+    for (let i = 0; i < mask.length; i++) {
+      output[i * 4 + 3] = base.data[i * 4 + 3]!;
+      if (base.data[i * 4 + 3] === 0)
+        base.data.copy(output, i * 4, i * 4, i * 4 + 4);
+    }
   return sharp(output, { raw: { width, height, channels: 4 } })
     .png()
     .toBuffer();
@@ -192,5 +201,6 @@ export function protectRequestedEdit(
     generated,
     !["Background", "Recolour"].includes(task),
     !["Expand", "Recolour"].includes(task),
+    task === "Recolour",
   );
 }

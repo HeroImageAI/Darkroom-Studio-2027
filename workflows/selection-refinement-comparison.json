@@ -1,0 +1,114 @@
+{
+  "enabled": false,
+  "cases": [
+    {
+      "name": "garment",
+      "description": "orange spacesuit",
+      "iterations": 0,
+      "selected": 58903,
+      "added": 0,
+      "removed": 0,
+      "promptId": "b0f763d1-c6f6-4156-9a39-b0225be8cd8f",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 2477,
+      "visualReview": "pending"
+    },
+    {
+      "name": "garment",
+      "description": "orange spacesuit",
+      "iterations": 1,
+      "selected": 59130,
+      "added": 227,
+      "removed": 0,
+      "promptId": "af25a4f4-5559-4bf1-b3c9-f4ebb3bd0fea",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1157,
+      "visualReview": "pending"
+    },
+    {
+      "name": "garment",
+      "description": "orange spacesuit",
+      "iterations": 2,
+      "selected": 59112,
+      "added": 209,
+      "removed": 0,
+      "promptId": "a00f0282-d09e-41f9-b516-f716682716eb",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1156,
+      "visualReview": "pending"
+    },
+    {
+      "name": "person",
+      "description": "person",
+      "iterations": 0,
+      "selected": 105313,
+      "added": 0,
+      "removed": 0,
+      "promptId": "745104a3-d7ab-49b7-b882-5ddf8958fe57",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1141,
+      "visualReview": "pending"
+    },
+    {
+      "name": "person",
+      "description": "person",
+      "iterations": 1,
+      "selected": 106320,
+      "added": 1007,
+      "removed": 0,
+      "promptId": "ed8715bc-c7d7-4e76-b49e-10c778fc9773",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1143,
+      "visualReview": "pending"
+    },
+    {
+      "name": "person",
+      "description": "person",
+      "iterations": 2,
+      "selected": 106530,
+      "added": 1217,
+      "removed": 0,
+      "promptId": "713cf2e9-94ca-489c-a7bb-d6ef655b96a5",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1132,
+      "visualReview": "pending"
+    },
+    {
+      "name": "product",
+      "description": "bottle",
+      "iterations": 0,
+      "selected": 103522,
+      "added": 0,
+      "removed": 0,
+      "promptId": "9fa545fe-e9d3-484d-8cc6-602138112490",
+      "sourceHash": "b20fb24279433cc19af18ee7fd6c37b8e5eae24531b89112dea88bbf629ccebf",
+      "elapsedMs": 1128,
+      "visualReview": "pending"
+    },
+    {
+      "name": "product",
+      "description": "bottle",
+      "iterations": 1,
+      "selected": 104170,
+      "added": 648,
+      "removed": 0,
+      "promptId": "75971b86-7c70-4c81-b4af-ba5d665fd8b5",
+      "sourceHash": "b20fb24279433cc19af18ee7fd6c37b8e5eae24531b89112dea88bbf629ccebf",
+      "elapsedMs": 1115,
+      "visualReview": "pending"
+    },
+    {
+      "name": "product",
+      "description": "bottle",
+      "iterations": 2,
+      "selected": 104327,
+      "added": 805,
+      "removed": 0,
+      "promptId": "b3be187f-0d79-4337-8e3d-9b0e4aa1872f",
+      "sourceHash": "b20fb24279433cc19af18ee7fd6c37b8e5eae24531b89112dea88bbf629ccebf",
+      "elapsedMs": 1402,
+      "visualReview": "pending"
+    }
+  ],
+  "assessment": "Not promoted: garment refinement adds only 227 pixels at one iteration, does not resolve zipper/seam omissions; person refinement also adds pixels inside the badge. Additional pixels are not established as accurate ground truth. Existing selection route is unchanged."
+}

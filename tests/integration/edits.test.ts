@@ -20,6 +20,7 @@ import {
 import {
   prepareEdit,
   protectEdit,
+  protectRequestedEdit,
   renderMaster,
 } from "../../apps/api/src/edit-render.js";
 import {
@@ -27,6 +28,51 @@ import {
   type EditRequest,
 } from "../../packages/contracts/src/edit.js";
 let store: Store, root: string;
+it("recolour preserves translucent coverage and empty pixels while changing selected colour", async () => {
+  const width = 12,
+    height = 1;
+  const rgba = Buffer.alloc(width * 4);
+  const mask = Buffer.alloc(width, 255);
+  const alphas = [0, 1, 32, 64, 128, 192, 254, 255, 0, 64, 128, 255];
+  for (let i = 0; i < width; i++) {
+    rgba.set([220, 80, 20, alphas[i]!], i * 4);
+    if (i >= 8) mask[i] = 0;
+  }
+  const source = await sharp(rgba, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer();
+  const maskPng = await sharp(mask, { raw: { width, height, channels: 1 } })
+    .png()
+    .toBuffer();
+  // Opaque output models cannot author the original cutout alpha channel.
+  const generated = await sharp({
+    create: { width, height, channels: 3, background: "blue" },
+  })
+    .png()
+    .toBuffer();
+  const after = await sharp(
+    await protectRequestedEdit(source, maskPng, generated, "Recolour"),
+  )
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  for (let i = 0; i < width; i++) {
+    expect(after[i * 4 + 3]).toBe(alphas[i]);
+    if (mask[i] === 0 || alphas[i] === 0)
+      expect(after.subarray(i * 4, i * 4 + 4)).toEqual(
+        rgba.subarray(i * 4, i * 4 + 4),
+      );
+    else expect([...after.subarray(i * 4, i * 4 + 3)]).toEqual([0, 0, 255]);
+  }
+  // Replacement/background actions retain their existing ability to add opacity.
+  const replacement = await sharp(
+    await protectRequestedEdit(source, maskPng, generated, "Background"),
+  )
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  expect(replacement[3]).toBe(255);
+});
 beforeEach(() => {
   mkdirSync("data/tests", { recursive: true });
   root = mkdtempSync(join("data/tests", "edits-"));
