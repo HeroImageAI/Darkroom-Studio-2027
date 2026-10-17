@@ -116,6 +116,51 @@ it("retains the resized alpha plane for AI upscale and rejects wrong dimensions"
     "dimensions",
   );
 });
+it.each(["Upscale", "Restore"] as const)(
+  "%s removes the engine matte while retaining faint coverage and protected details",
+  async (task) => {
+    const width = 64,
+      height = 64;
+    const data = Buffer.alloc(width * height * 4);
+    const alphas = [0, 1, 16, 31, 128, 192, 254, 255];
+    for (let i = 0; i < width * height; i++)
+      data.set([240, 60, 20, alphas[Math.floor((i % width) / 8)]!], i * 4);
+    const source = await sharp(data, { raw: { width, height, channels: 4 } })
+      .png()
+      .toBuffer();
+    const { engine } = await finishInput(source, task, width, height);
+    const preserve = [
+      { x: 0, y: 0 },
+      { x: 64, y: 0 },
+      { x: 64, y: 16 },
+      { x: 0, y: 16 },
+    ];
+    // Identity engine isolates compositor correctness from a generative model.
+    const result = await finishOutput(
+      source,
+      engine,
+      task,
+      width,
+      height,
+      task === "Restore" ? preserve : undefined,
+    );
+    const after = await sharp(result).ensureAlpha().raw().toBuffer();
+    for (let y = 0; y < height; y++)
+      for (let x = 0; x < width; x++) {
+        const i = (y * width + x) * 4;
+        expect(after[i + 3]).toBe(data[i + 3]);
+        for (let c = 0; c < 3; c++) {
+          if (data[i + 3]! < 32 || (task === "Restore" && y < 16))
+            expect(after[i + c]).toBe(data[i + c]);
+          // Avoid resized transitions between adjacent alpha bands.
+          else if (x % 8 >= 2 && x % 8 <= 5)
+            expect(Math.abs(after[i + c]! - data[i + c]!)).toBeLessThanOrEqual(
+              2,
+            );
+        }
+      }
+  },
+);
 it("restores at twice the working size while keeping selected RGBA and the full alpha plane exact", async () => {
   const { bytes } = await fixture(),
     preserve = [

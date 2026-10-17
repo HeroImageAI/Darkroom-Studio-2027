@@ -16,9 +16,11 @@
     "Upscale": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c",
     "Restore": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c"
   },
-  "implementationHash": "975c5e48508b0283647b3302cbdc198e1c4f5d6d0dcadccfe09a25e8d368480c",
+  "implementationHash": "d22b69d4e6ba8da14cb2c086d75e67984fe0f619d2d8c297dc94b9e9f00c1473",
   "evidenceId": "finish-protected-restore-2026-10-16",
-  "previousImplementation": "ecc0f907d3a133b7857f0b8933774188f3633f5df9179d83e1c809cbdc8b7c74",
+  "previousImplementation": "975c5e48508b0283647b3302cbdc198e1c4f5d6d0dcadccfe09a25e8d368480c",
   "compatibilityEvidence": "workflows/scope-corrections-parity.json",
-  "compatibilityScope": "Existing scoped GPU outcomes retained after byte-identical renderer/output regression checks. No broader photographic or text-region generation claim."
+  "compatibilityScope": "Existing scoped GPU outcomes retained after byte-identical renderer/output regression checks. No broader photographic or text-region generation claim.",
+  "alphaEvidence": "workflows/finish-alpha-validation.json",
+  "alphaScope": "Four local GPU comparisons across synthetic and photographic cutouts; grey matte correction only, with existing alpha, opaque-output parity and selected Restore RGBA retained. Faint alpha below 32 keeps source RGB. Wider colour fidelity and clear-glass extraction remain open."
 }
