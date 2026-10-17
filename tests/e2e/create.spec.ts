@@ -133,7 +133,9 @@ test("reviews variations, compares references, saves versions and sends a result
   await page.getByLabel("Add saved reference").selectOption(ids.reference);
   await page.getByLabel("Add saved reference").selectOption(ids.second);
   await page.getByRole("button", { name: "Move reference 2 earlier" }).click();
-  await page.getByLabel("Quality", { exact: true }).selectOption("Final");
+  await expect(page.getByLabel("Quality", { exact: true })).toHaveValue(
+    "Final",
+  );
   await page.getByLabel("Variations", { exact: true }).selectOption("2");
   await page.getByRole("button", { name: "Generate ↗" }).click();
   await expect(page.getByAltText("Generated variation 1")).toBeVisible();
