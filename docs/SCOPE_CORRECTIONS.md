@@ -5,7 +5,7 @@ This is corrective work after the Phase 7 preview, not Phase 8. Create / Edit / 
 ## Implemented
 
 - Smart Select uses the existing validated BiRefNet foreground mask for clicks and the already installed SAM 3.1 checkpoint for object descriptions. Add/Subtract combines selections; Rectangle, Lasso and a selection brush refine them. Masks retain holes and disconnected regions. No model, plugin or runtime dependency was installed.
-- Selection masks are revision-owned assets, survive save/reload and native project handoff, and participate in AI Edit and protected Restore. Crop and accepted AI results clear obsolete selection coordinates. Selecting never changes source-image pixels.
+- Selection masks are revision-owned assets, survive save/reload and native project handoff, and participate in AI Edit and protected Restore. Imported mask assets stay internal rather than becoming Library images. Crop and accepted AI results clear obsolete selection coordinates. Selecting never changes source-image pixels.
 - AI preparation and PNG delivery share exact bundled glyph/SVG rendering. Visible supported text no longer needs to be hidden before AI work. AI proposals remain raster results; source editable layers are retained by the existing review/history workflow.
 - The primary toolbar shows Move, Select, Crop and Smart Select. Less-used tools and selection refinement sit under More tools. Composite harmonisation is collapsed until requested. The restricted restoration action is labelled **Restore surroundings**.
 - Recolour no longer matches its selected boundary back to the old colour or fades the old colour inward. Other edit protection remains unchanged. Protected pixels remain byte-exact.
@@ -19,7 +19,7 @@ General identity-preserving restoration, arbitrary click-object segmentation, re
 
 100 unit/integration tests pass, including selection holes, component isolation, Add/Subtract, brush dabs, stale revisions, project ownership, native mask round-trip, crop invalidation, branded AI input parity, protected Restore masks and the recolour boundary regression. TypeScript and production build pass. Twelve baseline rendering/retained-GPU-output parity comparisons pass.
 
-The browser suite now contains 15 tests. Local headless browser startup failed before reaching the app (missing bundled Chromium and Edge process startup restrictions). This is not a browser-suite pass. The updated suite must pass CI before this work is considered merge-ready.
+The browser suite now contains 15 tests. Local headless browser startup failed before reaching the app (missing bundled Chromium and Edge process startup restrictions). This is not a browser-suite pass. The exact published-head Windows/Linux CI status is recorded on the draft PR; CI success is required before merge.
 
 ## Real AI and visual checks
 

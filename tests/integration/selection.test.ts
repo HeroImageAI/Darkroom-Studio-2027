@@ -163,6 +163,11 @@ it("native project carries selection masks under new asset IDs and rejects forei
     idempotencyKey: randomUUID(),
   });
   expect(copy.document.snapshot.selectionMaskAssetId).toBeTruthy();
+  expect(
+    store
+      .assets(copy.project.id)
+      .some((a) => a.id === copy.document.snapshot.selectionMaskAssetId),
+  ).toBe(false);
   expect(await selectionPixels(store, copy.document.snapshot)).toEqual(
     await selectionPixels(store, doc.snapshot),
   );

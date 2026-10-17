@@ -291,6 +291,12 @@ async function importProjectData(
       bundle.name.slice(0, 180) + " · imported",
     ),
     ids = new Map<string, string>();
+  const imageAssets = new Set([
+    bundle.originalAssetId,
+    ...bundle.snapshot.layers.flatMap((l) =>
+      "assetId" in l ? [l.assetId] : [],
+    ),
+  ]);
   for (let i = 0; i < bundle.assets.length; i++) {
     const a = bundle.assets[i]!;
     const imported = await store.importAsset(
@@ -299,6 +305,12 @@ async function importProjectData(
       project.id,
       a.origin,
     );
+    if (!imageAssets.has(a.id))
+      store.db
+        .prepare(
+          "UPDATE project_assets SET role='internal' WHERE projectId=? AND assetId=?",
+        )
+        .run(project.id, imported.id);
     ids.set(a.id, imported.id);
   }
   const initial = store.createDocument(
