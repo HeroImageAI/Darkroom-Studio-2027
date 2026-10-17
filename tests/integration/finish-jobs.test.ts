@@ -196,6 +196,62 @@ it("restores at twice the working size while keeping selected RGBA and the full 
     "working resolution",
   );
 });
+it("does not introduce a visible step where faint-alpha protection ends", async () => {
+  const width = 256,
+    height = 1,
+    rgba = Buffer.alloc(width * 4);
+  for (let x = 0; x < width; x++) rgba.set([240, 180, 100, x], x * 4);
+  const source = await sharp(rgba, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer();
+  const raw = await sharp({
+    create: { width, height, channels: 3, background: "black" },
+  })
+    .png()
+    .toBuffer();
+  const result = await sharp(
+    await finishOutput(source, raw, "Upscale", width, height),
+  )
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  for (let x = 1; x < width; x++)
+    for (let c = 0; c < 3; c++) {
+      const previous = (result[(x - 1) * 4 + c]! * (x - 1)) / 255;
+      const current = (result[x * 4 + c]! * x) / 255;
+      expect(Math.abs(current - previous)).toBeLessThan(3);
+    }
+});
+it.each([64, 128, 192])(
+  "real 2x resize keeps translucent colour at alpha %i",
+  async (alpha) => {
+    const source = await sharp({
+      create: {
+        width: 16,
+        height: 16,
+        channels: 4,
+        background: { r: 0, g: 204, b: 136, alpha: alpha / 255 },
+      },
+    })
+      .png()
+      .toBuffer();
+    const { engine, resized } = await finishInput(source, "Upscale", 32, 32);
+    const expected = await sharp(resized).ensureAlpha().raw().toBuffer();
+    const after = await sharp(
+      await finishOutput(source, engine, "Upscale", 32, 32),
+    )
+      .ensureAlpha()
+      .raw()
+      .toBuffer();
+    for (let i = 0; i < 32 * 32; i++) {
+      expect(after[i * 4 + 3]).toBe(expected[i * 4 + 3]);
+      for (let c = 0; c < 3; c++)
+        expect(
+          Math.abs(after[i * 4 + c]! - expected[i * 4 + c]!),
+        ).toBeLessThanOrEqual(4);
+    }
+  },
+);
 it("requires a saved protected selection and freezes it for Restore", async () => {
   const f = await fixture();
   await expect(

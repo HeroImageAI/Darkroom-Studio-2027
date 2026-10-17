@@ -1,6 +1,6 @@
 {
   "baselineCommit": "a00022f438238422ca379444c74b55ebb57cbd98",
-  "implementationHash": "d22b69d4e6ba8da14cb2c086d75e67984fe0f619d2d8c297dc94b9e9f00c1473",
+  "implementationHash": "362ed2e04a13e52cdae15f8c03751c13efee2e0926c3ae6a430e06ce64dc8473",
   "modelHashes": {
     "diffusion_models/seedvr2_7b_sharp_int8_convrot.safetensors": "db48be2f1cc7e36b01a2aa529810f5d9c6a971edd29be225cf1b0eb18d51c366",
     "vae/ema_vae_fp16.safetensors": "20678548f420d98d26f11442d3528f8b8c94e57ee046ef93dbb7633da8612ca1",
@@ -19,14 +19,16 @@
           "elapsedMs": 7330,
           "sourceHash": "5f83a0e4fa936f75ebd8190f90c018e92ff03d1a6619e278a2ac00a8ac36f13a",
           "rawHash": "006b8a49aabd2b98d1fbba8a04b65ca2ef45a020e36e95febf6a7c4de75c852b",
-          "outputHash": "bb767410b83982d9e057ac359d22609e3139c3a472f3652c1c553b8f7d06694d",
+          "outputHash": "2bd3fb41fd9f82e57abc394a2e3babb52417937e52c10f1cc6eec3c07a3885da",
           "alphaExact": true,
           "opaquePixelsUnchanged": 72983,
           "protectedPixelsExact": null,
           "translucentRgbMaeBefore": 75.22573787915951,
-          "translucentRgbMaeAfter": 31.860686416119332,
+          "translucentRgbMaeAfter": 2.9891032803713697,
           "visualReview": "SCOPED PASS: grey matte fringe reduced on three backgrounds; colour MAE improved. Upscale still shifts saturated colours and is not a general colour-fidelity pass.",
-          "protectedPixels": 0
+          "protectedPixels": 0,
+          "recomposedAfterReview": true,
+          "recomposedAfterEncodingFix": true
         },
         {
           "task": "Restore",
@@ -34,14 +36,16 @@
           "elapsedMs": 1317,
           "sourceHash": "5f83a0e4fa936f75ebd8190f90c018e92ff03d1a6619e278a2ac00a8ac36f13a",
           "rawHash": "b1f17332b5e386fa26d8c137fe547de23dfcfad7d2977e3695cf0b9bbb62f0a7",
-          "outputHash": "38d13ff9c430e800196c992ec16e0e2d39045c8ffa3fc20fedfe166085b87bc4",
+          "outputHash": "105a92d83ed33a104c0139dccf94b03ecf69f7774149418e619f6bed1c448106",
           "alphaExact": true,
           "opaquePixelsUnchanged": 18480,
           "protectedPixelsExact": true,
           "translucentRgbMaeBefore": 37.46815239776405,
-          "translucentRgbMaeAfter": 2.808344365989997,
+          "translucentRgbMaeAfter": 2.4602640482494853,
           "visualReview": "SCOPED PASS: grey matte fringe reduced on three backgrounds; colour MAE improved. Upscale still shifts saturated colours and is not a general colour-fidelity pass.",
-          "protectedPixels": 1536
+          "protectedPixels": 1536,
+          "recomposedAfterReview": true,
+          "recomposedAfterEncodingFix": true
         }
       ]
     },
@@ -56,14 +60,16 @@
           "elapsedMs": 2026,
           "sourceHash": "ce88ef9d4a3c18a158bfce70c936783de130fb3255d653d242fb97198f433f72",
           "rawHash": "757a878f9d232435b173b86669095ca660688d0e439a934c326e8310b47c894a",
-          "outputHash": "93ec3e4777f101431897242bbeda670ffdb46f3428a3dd54b667563d75f29295",
+          "outputHash": "f00434db52462e1abcf566caf77eb8b80b8d5fa1e5e11fadea2dfcc02909b462",
           "alphaExact": true,
           "opaquePixelsUnchanged": 135360,
           "protectedPixelsExact": null,
           "translucentRgbMaeBefore": 47.59238754325259,
-          "translucentRgbMaeAfter": 45.213437139561705,
+          "translucentRgbMaeAfter": 20.285005767012688,
           "visualReview": "SCOPED: alpha/opaque pixels retained; Restore protected head exact. Photographic edge appearance reviewed on three backgrounds; general fidelity remains unproven.",
-          "protectedPixels": 0
+          "protectedPixels": 0,
+          "recomposedAfterReview": true,
+          "recomposedAfterEncodingFix": true
         },
         {
           "task": "Restore",
@@ -71,19 +77,21 @@
           "elapsedMs": 1331,
           "sourceHash": "ce88ef9d4a3c18a158bfce70c936783de130fb3255d653d242fb97198f433f72",
           "rawHash": "a821170408198249bc0e2e0933280a0ef3efb5f70b9ce0787668143e300c5385",
-          "outputHash": "ee853a9c06ea4d1c46069ce729dc21c2a9d34af8ed752fd2c88ad49963327c88",
+          "outputHash": "5a8a608e54649c6e8ee80b04ed0e9b1a87ca1c3facf9004002d6ccc7f3627368",
           "alphaExact": true,
           "opaquePixelsUnchanged": 33945,
           "protectedPixelsExact": true,
           "translucentRgbMaeBefore": 16.731895223420647,
-          "translucentRgbMaeAfter": 16.80688238315357,
+          "translucentRgbMaeAfter": 16.784797123780173,
           "visualReview": "SCOPED: alpha/opaque pixels retained; Restore protected head exact. Photographic edge appearance reviewed on three backgrounds; general fidelity remains unproven.",
-          "protectedPixels": 4875
+          "protectedPixels": 4875,
+          "recomposedAfterReview": true,
+          "recomposedAfterEncodingFix": true
         }
       ]
     }
   ],
   "compatibilityEvidence": "workflows/scope-corrections-parity.json",
   "scope": "Remove known engine grey matte from existing alpha; does not recover a glass matte. Opaque and protected output stays unchanged. Photographic Restore translucent MAE slightly worsened (16.732 to 16.807), so no universal fidelity claim.",
-  "review": "Visual comparisons: source, old and corrected rows over white, grey and near-black. Model contents checked against enabled evidence after these runs."
+  "review": "Visual comparisons: source, old and corrected rows over white, grey and near-black. Model contents checked against enabled evidence after these runs. PR review: replace hard alpha-32 switch with continuous source-to-recovered blending over alpha 32–64; retained raw GPU results recomposed and checked. Encoding review: raw RGBA output is straight; do not reuse resize processing premultiplied metadata as raw input format."
 }

@@ -1,5 +1,5 @@
 {
-  "scope": "Eight real GPU cases across six photographic categories; small public/owned fixture set, not general release certification.",
+  "scope": "Nine real GPU cases across six photographic categories; reviewed garment mask is fixture-specific, not an automatic selection upgrade.",
   "sources": "tests/golden/photo-sources.json",
   "runs": [
     {
@@ -125,6 +125,22 @@
       "scope": "One fixture only; general photographic fidelity is not certified",
       "selectionDescription": "right arm sleeve",
       "selectionPixels": 24254
+    },
+    {
+      "name": "garment-reviewed-boundary",
+      "task": "Recolour",
+      "instruction": "Change only the selected spacesuit fabric to dark navy blue. Retain the fabric folds, stitching and shape. Keep the face, hair, badges including their borders and lettering, collar hardware, zipper fasteners, helmet and background unchanged.",
+      "seed": 2027,
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "outputHash": "eda79c5e5d02da7ddcc25026ac5fef9de89af4ef0a4b9aa216407a9e833716e2",
+      "promptId": "79c23897-3351-49fe-b14f-dd96e1862f75",
+      "ms": 16617,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "protectedPixels": 210736,
+      "protectedPixelsExact": true,
+      "visualReview": "SCOPED MANUAL PASS: navy fabric with 210736 unselected pixels exact, using explicit fixture-specific protected annotations. Bindings/collar edges still need final delivery review; automatic garment selection remains partial.",
+      "scope": "One fixture only; general photographic fidelity is not certified",
+      "selectionEvidence": "tests/golden/garment-protection.json"
     }
   ]
 }

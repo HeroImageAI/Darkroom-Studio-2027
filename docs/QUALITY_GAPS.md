@@ -1,5 +1,7 @@
 # Quality follow-up
 
+Latest review corrections and task-by-task outcomes are in `PR9_REVIEW.md` and `QUALITY_FOLLOWUP.md`. The preview uses an isolated recovered workspace; alternate candidate models are experimental only.
+
 The approved core corrections were merged through PR #8 into `composite-workflow` at `5166a47`. This follow-up stays within the existing editing tools. Library expansion remains on hold.
 
 ## Recolour transparency correction
@@ -23,7 +25,7 @@ The comparison is recorded in `workflows/selection-refinement-comparison.json`. 
 - Clear/translucent glass extraction remains unproven. Preserving existing alpha is separate from recovering a glass matte.
 - Professional artwork perspective extraction and broader photographic QA remain open.
 
-No new product controls or model downloads are introduced by this follow-up.
+No new product controls are introduced. The subsequent review tests two small candidate checkpoints in an ignored workspace cache; neither is enabled or registered with ComfyUI. See `QUALITY_FOLLOWUP.md` for provenance and results.
 
 ## Garment description follow-up
 
@@ -39,7 +41,7 @@ Reproduce the masks with `node --import tsx scripts/check-selection-refinement.t
 
 - **Implemented:** recolour coverage preservation, finishing grey-fringe correction, regression tests, retained-output comparisons and selection diagnostics.
 - **Not implemented:** the remaining quality gates listed above; no selection model change was promoted.
-- **Test results:** finishing transparency regression checks bring the suite to 103 tests. TypeScript/build and browser CI status are reported with the follow-up PR.
+- **Test results:** finishing transparency and review regressions bring the suite to 107 tests. TypeScript/build and browser CI status are reported with the follow-up PR.
 - **Live results:** nine native-refinement comparisons, six garment-description comparisons, a sleeve-only recolour and four finishing transparency runs completed against the verified Desktop instance. Recolour alpha correction uses retained GPU output and deterministic recomposition. None is a glass-matting benchmark.
 - **Known issues:** the open gates above still apply. This patch changes no browser interaction.
 - **Git status:** follow-up branch `quality-gaps`, based on the approved PR #8 merge into `composite-workflow`; submit as a separate draft for review.
@@ -51,6 +53,6 @@ These tools flatten their engine input over `#808080`, then restore the source a
 
 Two controlled tests isolate the compositing calculation using an identity engine. Four additional local GPU comparisons cover Restore and Upscale on an owned translucent graphic and a public-domain photographic cutout. All alpha values stay exact; opaque output matches the prior implementation. Restore preserves 1,536 selected pixels on the graphic and 4,875 on the photograph. Twelve retained-output parity comparisons also pass.
 
-On the graphic, translucent RGB mean absolute error falls from 37.47 to 2.81 for Restore and from 75.23 to 31.86 for Upscale. The latter still changes saturated colours. On the photograph, Upscale improves slightly (47.59 to 45.21), while Restore is slightly worse by this metric (16.73 to 16.81). Thus the grey-fringe correction passes its bounded visual check on white, grey and near-black; general colour fidelity, photographic restoration and clear-glass extraction remain open. Original/source fidelity metrics are supporting evidence, not a measure of newly recovered detail.
+After review fixes, graphic translucent RGB mean absolute error falls from 37.47 to 2.46 for Restore and from 75.23 to 2.99 for Upscale. The previously reported saturated Upscale colours were largely caused by passing resize-processing metadata back into the encoder; `PR9_REVIEW.md` explains the correction. On the photograph, Upscale improves from 47.59 to 20.29, while Restore is slightly worse by this metric (16.73 to 16.78). These are bounded corrections, not general colour-fidelity, photographic-restoration or clear-glass certification. Original/source fidelity metrics are supporting evidence, not a measure of newly recovered detail.
 
 Evidence: `workflows/finish-alpha-validation.json`. The installed finish-model hashes and node fingerprint match the existing enabled evidence. The graph and model choices are unchanged. Reproduce with `node --import tsx scripts/check-finish-transparency.ts` and the `--portrait` variant using the retained photographic fixtures. Review images show source, previous and corrected output in rows, on three backgrounds in columns. No result is accepted into a user's master by this diagnostic.

@@ -1,0 +1,27 @@
+{
+  "sourceHash": "6b32944332cb832de29573db13037873eb46de6533143cec7d5adfae1fb69f17",
+  "referenceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+  "rawHash": "9fa9e531fc0fef5f2ad585f9ae5b9c00727149a6687cc4f1dfaab5bae9a967e0",
+  "outputHash": "235377c20db380ebdd63a2812ac5f82ccd3f7a202b2cba2a634c3ce51cbc8bae",
+  "protectedPixels": 30240,
+  "protectedRgbaExact": true,
+  "metrics": [
+    {
+      "name": "degraded-source",
+      "headPsnr": 30.059287013908254,
+      "outsidePsnr": 29.889808583320377
+    },
+    {
+      "name": "unprotected-model",
+      "headPsnr": 26.96508558941285,
+      "outsidePsnr": 28.19203675111909
+    },
+    {
+      "name": "protected-result",
+      "headPsnr": 30.059287013908254,
+      "outsidePsnr": 28.19779076899604
+    }
+  ],
+  "scope": "Known-reference PSNR measures distortion, not identity or recovered detail. Existing protected head remains at degraded source quality; unprotected model output is diagnostic only and is not accepted.",
+  "visualReview": "Reference/degraded/unprotected/protected head comparison reviewed: raw model changes detail and does not establish identity-safe repair. Keep protected source head."
+}

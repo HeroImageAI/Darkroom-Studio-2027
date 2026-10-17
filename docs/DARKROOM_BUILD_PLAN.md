@@ -2,6 +2,8 @@
 
 Status: Core scope corrections after the Phase 7 preview. Phase 8 Library expansion is on hold while core selection, coherent canvas rendering and broader visual QA are corrected. Phases 1–7 have scoped draft implementations; that does not certify their full outcome gates. See [scope corrections](SCOPE_CORRECTIONS.md).
 
+PR #8's core corrections are merged into `composite-workflow`; PR #9's quality fixes remain unmerged. The latest review and garment/colour/restoration/glass outcomes are recorded in [quality follow-up](QUALITY_FOLLOWUP.md). Candidate model tests do not advance a phase or enable a new route.
+
 ## Repository strategy
 
 Use only `HeroImageAI/Darkroom-Studio-2027` for this product. `HeroImageAI/Darkroom` is read-only evidence. No submodule, shared runtime database, copied history or five-studio architecture. The supplied remote was verified as an empty public repository on 16 October 2026 through the connected GitHub tools.

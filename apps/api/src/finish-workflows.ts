@@ -174,7 +174,9 @@ export async function finishOutput(
       resized.data[i * 4 + 3] = Math.round(
         (resized.data[i * 4 + 3]! * mask[i]!) / 255,
       );
-    return sharp(resized.data, { raw: resized.info }).png().toBuffer();
+    return sharp(resized.data, { raw: { width, height, channels: 4 } })
+      .png()
+      .toBuffer();
   }
   const rgb = await sharp(raw)
     .resize(width, height, { fit: "fill", kernel: "lanczos3" })
@@ -216,7 +218,7 @@ export async function finishOutput(
       // Remove that matte before restoring alpha, or translucent edges are
       // composited twice. Keep faint coverage conservative to avoid amplifying
       // model/8-bit noise where there is little foreground information.
-      const value =
+      const recovered =
         alpha < 32
           ? resized.data[i * 4 + c]!
           : Math.max(
@@ -226,9 +228,17 @@ export async function finishOutput(
                 (rgb[i * 3 + c]! * 255 - 128 * (255 - alpha)) / alpha,
               ),
             );
+      const confidence = Math.max(0, Math.min(1, (alpha - 32) / 32));
+      const value =
+        resized.data[i * 4 + c]! * (1 - confidence) + recovered * confidence;
       resized.data[i * 4 + c] = Math.round(
         resized.data[i * 4 + c]! * (1 - t) + value * t,
       );
     }
-  return sharp(resized.data, { raw: resized.info }).png().toBuffer();
+  // raw() returns straight RGBA. Its output info.premultiplied records resize
+  // processing, not the buffer format; reusing it as input metadata would
+  // unpremultiply a second time and oversaturate translucent colours.
+  return sharp(resized.data, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer();
 }

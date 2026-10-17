@@ -1,0 +1,9 @@
+{
+  "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+  "added": 1227,
+  "proposedPixelsInProtectedRegions": 441,
+  "manuallySubtractedPixels": 8722,
+  "automaticPromotion": false,
+  "assessment": "Reject automatic growth: reaches protected regions. Reviewed mask uses explicit fixture-specific annotations; inspect before any live edit.",
+  "visualReview": "Reviewed selection inspected before new GPU edit. Fixture-specific protection retains badges, head, collar hardware and helmet; bindings/seams remain subject to manual review."
+}
