@@ -53,6 +53,7 @@ export {
 import {
   editWorkflowId,
   editPrompt,
+  editModel,
 } from "../../../packages/routing/src/edit-template.js";
 export async function submitEdit(
   store: Store,
@@ -95,7 +96,7 @@ export async function submitEdit(
     height: prepared.engineHeight,
     seed: request.seed,
     quality: "Final" as const,
-    model: "Qwen" as const,
+    model: editModel(request.task),
     references: editWorkflowId(request.task).endsWith("1ref")
       ? [randomUUID()]
       : [randomUUID(), randomUUID()],

@@ -1,8 +1,12 @@
 import type { EditRequest } from "../../contracts/src/edit.js";
 export const editWorkflowId = (task: string) =>
-  ["Background", "Expand"].includes(task)
-    ? "create.qwen.1ref"
-    : "create.qwen.2ref";
+  task === "Recolour"
+    ? "create.klein.2ref"
+    : ["Background", "Expand"].includes(task)
+      ? "create.qwen.1ref"
+      : "create.qwen.2ref";
+export const editModel = (task: string): "Klein" | "Qwen" =>
+  task === "Recolour" ? "Klein" : "Qwen";
 export function editPrompt(request: EditRequest) {
   const stage =
     request.task === "Background"

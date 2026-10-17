@@ -212,6 +212,10 @@ export class Worker {
           workflows.map((w) => w.manifest),
           ready,
         );
+        if (editRoute && route.workflow.id !== editRoute.workflowId)
+          throw Error(
+            "This queued edit uses an older model route. Apply the change again; the source master is unchanged.",
+          );
         const { manifest, graph } = workflowById(route.workflow.id);
         const q = await this.client.queue();
         if (q.queue_running.length || q.queue_pending.length) {
