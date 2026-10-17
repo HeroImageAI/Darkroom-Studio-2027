@@ -27,6 +27,16 @@ import { exportRequestSchema } from "../../../packages/contracts/src/finish.js";
 import { finishRequestSchema } from "../../../packages/contracts/src/finish.js";
 import { submitFinish, finishHistory, reviewFinish } from "./finish-jobs.js";
 import { finishEvidence } from "./finish-readiness.js";
+import { paintStroke } from "./paint.js";
+import { textOutline, importLogo } from "./branding.js";
+import {
+  createHandoff,
+  handoffHistory,
+  handoffRecord,
+  importProject,
+} from "./handoff.js";
+import { prepareSelection } from "./selection.js";
+import { prepareArtwork, artworkHistory, reviewArtwork } from "./artwork.js";
 export async function createApp(
   options: {
     dataDir?: string;
@@ -318,6 +328,54 @@ export async function createApp(
         .parse(req.body).action,
     ),
   );
+  app.post<{ Params: { id: string } }>(
+    "/api/documents/:id/paint",
+    async (req, reply) =>
+      reply.code(201).send(await paintStroke(store, req.params.id, req.body)),
+  );
+  app.post("/api/text-outline", (req) => textOutline(req.body));
+  app.post("/api/logos", async (req) => {
+    const body = z
+      .object({ projectId: z.string().uuid(), svg: z.string().max(256000) })
+      .strict()
+      .parse(req.body);
+    return importLogo(store, body.projectId, body.svg);
+  });
+  app.post("/api/handoffs", (req) => createHandoff(store, req.body));
+  app.post("/api/artwork", (req) => prepareArtwork(store, req.body));
+  app.get<{ Params: { id: string } }>("/api/documents/:id/artwork", (req) =>
+    artworkHistory(store, req.params.id),
+  );
+  app.post<{ Params: { id: string } }>("/api/artwork/:id/review", (req) =>
+    reviewArtwork(
+      store,
+      req.params.id,
+      z
+        .object({ action: z.enum(["save-copy", "reject"]) })
+        .strict()
+        .parse(req.body).action,
+    ),
+  );
+  app.get<{ Params: { id: string } }>("/api/documents/:id/handoffs", (req) =>
+    handoffHistory(store, req.params.id),
+  );
+  app.get<{ Params: { id: string } }>(
+    "/api/handoffs/:id/download",
+    (req, reply) => {
+      const row = handoffRecord(store, req.params.id);
+      if (!row) return reply.code(404).send({ error: "Handoff not found" });
+      return reply
+        .type(row.format === "svg" ? "image/svg+xml" : "application/json")
+        .header("Content-Disposition", `attachment; filename="${row.filename}"`)
+        .header("X-Content-Type-Options", "nosniff")
+        .header(
+          "Content-Security-Policy",
+          "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox",
+        )
+        .send(Buffer.from(row.bytes as Uint8Array));
+    },
+  );
+  app.post("/api/project-imports", (req) => importProject(store, req.body));
   app.get("/api/edit-capabilities", () => editEvidence());
   app.get<{ Params: { id: string } }>("/api/documents/:id/edits", (req) =>
     editHistory(store, req.params.id),
@@ -336,6 +394,10 @@ export async function createApp(
         .strict()
         .parse(req.body).action,
     ),
+  );
+  app.post<{ Params: { id: string } }>(
+    "/api/documents/:id/selection",
+    async (req) => prepareSelection(store, comfy, req.params.id, req.body),
   );
   app.get("/api/jobs", () => store.jobs().map(({ provenance, ...job }) => job));
   app.get<{ Params: { id: string } }>("/api/jobs/:id", async (req, reply) => {

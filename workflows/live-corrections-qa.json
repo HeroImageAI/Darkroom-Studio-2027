@@ -1,0 +1,15 @@
+{
+  "documentId": "0c973a77-f1a8-4376-86db-1b8a3286bb51",
+  "jobId": "43022a1f-1270-4a74-93a2-02838c9c047c",
+  "state": "succeeded",
+  "disposition": "candidate",
+  "masterUnchanged": true,
+  "visibleEditableTextInInput": true,
+  "protectedPixels": 203312,
+  "protectedPixelsExact": true,
+  "selectionMaskAfterReload": "73e9472b-9505-4428-84a8-b285c41fb5f3",
+  "sourceHash": "fa97faa7186b9780762f8143de470a6cf018b106bda862a367ac811636b613b6",
+  "outputHash": "120f729e20204a699556030323a0881e6fafbc6ca41eae7978f02fe5ade06672",
+  "acceptance": "Not accepted; candidate only",
+  "scope": "Owned test master with public-domain portrait and bundled text. Live SAM selection, Clear/Undo/reload and branded AI candidate."
+}

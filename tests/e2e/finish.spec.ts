@@ -13,7 +13,7 @@ test("Finish prepares real PNG and JPEG attachments and initiates downloads with
   )
     .png()
     .toBuffer();
-  await page.locator("input[type=file]").setInputFiles({
+  await page.getByLabel("Import image files", { exact: true }).setInputFiles({
     name: "Finish owned.png",
     mimeType: "image/png",
     buffer: source,

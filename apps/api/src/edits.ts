@@ -53,6 +53,7 @@ export {
 import {
   editWorkflowId,
   editPrompt,
+  editModel,
 } from "../../../packages/routing/src/edit-template.js";
 export async function submitEdit(
   store: Store,
@@ -95,7 +96,7 @@ export async function submitEdit(
     height: prepared.engineHeight,
     seed: request.seed,
     quality: "Final" as const,
-    model: "Qwen" as const,
+    model: editModel(request.task),
     references: editWorkflowId(request.task).endsWith("1ref")
       ? [randomUUID()]
       : [randomUUID(), randomUUID()],
@@ -215,7 +216,7 @@ export function reviewEdit(
         : store.createDocument(original.projectId, original.originalAssetId);
     const asset = store.asset(job.resultId)!;
     const e = request.expand ?? { left: 0, top: 0 };
-    const { selection: _, ...rest } = base;
+    const { selection: _, selectionMaskAssetId: _mask, ...rest } = base;
     const snapshot: Snapshot = {
       ...rest,
       id: target.id,

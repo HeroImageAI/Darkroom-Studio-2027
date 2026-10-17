@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sanitizeSvg } from "./svg.js";
 const transform = z
   .object({
     x: z.number().finite(),
@@ -31,6 +32,18 @@ const raster = z
     ...base,
     type: z.enum(["raster", "generated", "paint"]),
     assetId: z.string().uuid(),
+    vectorSvg: z
+      .string()
+      .max(256000)
+      .refine((s) => {
+        try {
+          sanitizeSvg(s);
+          return true;
+        } catch {
+          return false;
+        }
+      }, "Unsupported SVG logo")
+      .optional(),
     maskAssetId: z.string().uuid().optional(),
     maskStrokes: z.array(maskStroke).max(500).optional(),
   })
@@ -65,10 +78,16 @@ export const snapshotSchema = z
     height: z.number().int().positive().max(16384),
     colourSpace: z.literal("srgb"),
     layers: z.array(z.union([raster, text, vector])).max(100),
+    selectionMaskAssetId: z.string().uuid().optional(),
     selection: z.array(point).min(3).max(2000).optional(),
   })
   .strict()
   .superRefine((doc, ctx) => {
+    if (doc.selection && doc.selectionMaskAssetId)
+      ctx.addIssue({
+        code: "custom",
+        message: "Use one selection representation at a time",
+      });
     const points = doc.layers.reduce(
       (sum, layer) =>
         sum +

@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "decision": "Use existing Klein two-reference route for Recolour only. All other edit actions retain Qwen.",
+  "workflowId": "create.klein.2ref",
+  "steps": 4,
+  "scope": "One generated photographic-style mug, one NASA garment photo, one owned sphere and one artificial alpha-ramp derivative. No universal editing or automatic-selection certification.",
+  "cases": [
+    {
+      "name": "mug",
+      "sourceHash": "90227df86ff610a5d2306800da0ec82b4bf8c0a54817da24b25c5896c3916778",
+      "maskHash": "7ffc1145ef6e44419d5482611b13c068caa68aa2463721e802c7310f4507e529",
+      "rawHash": "acba4f951554d8f4de0ebc7ed28455c73a66dcad70f9ab8d6d09ef1cacfc3af4",
+      "resultHash": "d61d665698ca11c5214c579732ff3e23a9081d7412e68fa40d1df4cb1a22cfea",
+      "promptId": "7562cf92-1e12-40f8-8fb8-b9e1551fc108",
+      "graphHash": "734768755c1bf3f195121d39168aa2a8db9c39be79bef35c805a9955677f13ee",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "modelFiles": [
+        {
+          "title": "DR_MODEL",
+          "input": "unet_name",
+          "filename": "flux-2-klein-9b-fp8.safetensors",
+          "source": "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B",
+          "licenceStatus": "Source/licence terms must be reviewed for intended use; no download performed",
+          "sha256": "865ba09f5b4c3cbd3468a4bd3acb9fcb2f8740c54317482f0bcd4ed1d3655cee"
+        },
+        {
+          "title": "DR_ENCODER",
+          "input": "clip_name",
+          "filename": "qwen_3_8b_fp8mixed.safetensors",
+          "source": "Existing local ComfyUI installation",
+          "licenceStatus": "Existing local weight; licence not independently verified",
+          "sha256": "abad16806e0cbabc54e0325d6565847443fe396d5f0be38bb3cd3fe75a1201d6"
+        },
+        {
+          "title": "DR_VAE",
+          "input": "vae_name",
+          "filename": "flux2-vae.safetensors",
+          "source": "Existing local ComfyUI installation",
+          "licenceStatus": "Existing local weight; licence not independently verified",
+          "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
+        }
+      ],
+      "sourceWidth": 1024,
+      "sourceHeight": 1024,
+      "prompt": "Edit image 1 according to the instruction below. Image 2 is ONLY an edit-region guide: white pixels may change, black pixels must remain unchanged. Return the complete edited image 1 at the same framing and dimensions. Do not draw the guide, mask, borders, captions or annotations. Preserve all other subjects, identities, product shapes, labels and visible text.\nAction: Recolour\nVerbatim user instruction:\nChange only the red mug on the left to forest green. Preserve its shape, handle, glossy ceramic finish, lighting, shadow and the exact black word NOIR. Keep the blue mug, tabletop, background, camera framing and all other details unchanged.",
+      "seed": 20271017,
+      "steps": 4,
+      "observedMs": 14754,
+      "protectedPixels": 867584,
+      "protectedExact": true,
+      "alphaExact": true,
+      "visualReview": "Scoped pass: green glossy ceramic and readable NOIR; heavy Qwen texture failure absent. Slight local background/shadow variation remains."
+    },
+    {
+      "name": "garment",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maskHash": "d0a8d3314c9952f2ec6fab2ab48dc24d981e594291ac1bcbbc3a4d36c50965ef",
+      "rawHash": "1e6bd4b47c3d2b8786c6163d67494eda4cf6eac4855e82602f6958d14cb74705",
+      "resultHash": "9f16cf4a2283ee2ebfdd357e4be53a1c8ea01e9a41c682c32406d35a0b8119d4",
+      "promptId": "08eafb48-f6c2-4874-ab95-de70ae5bacbe",
+      "graphHash": "ddc2b2df6e7f69238f626e9c68b8b594bd3ccf197e3533b8433b799015045287",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "modelFiles": [
+        {
+          "title": "DR_MODEL",
+          "input": "unet_name",
+          "filename": "flux-2-klein-9b-fp8.safetensors",
+          "source": "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B",
+          "licenceStatus": "Source/licence terms must be reviewed for intended use; no download performed",
+          "sha256": "865ba09f5b4c3cbd3468a4bd3acb9fcb2f8740c54317482f0bcd4ed1d3655cee"
+        },
+        {
+          "title": "DR_ENCODER",
+          "input": "clip_name",
+          "filename": "qwen_3_8b_fp8mixed.safetensors",
+          "source": "Existing local ComfyUI installation",
+          "licenceStatus": "Existing local weight; licence not independently verified",
+          "sha256": "abad16806e0cbabc54e0325d6565847443fe396d5f0be38bb3cd3fe75a1201d6"
+        },
+        {
+          "title": "DR_VAE",
+          "input": "vae_name",
+          "filename": "flux2-vae.safetensors",
+          "source": "Existing local ComfyUI installation",
+          "licenceStatus": "Existing local weight; licence not independently verified",
+          "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
+        }
+      ],
+      "sourceWidth": 512,
+      "sourceHeight": 512,
+      "prompt": "Edit image 1 according to the instruction below. Image 2 is ONLY an edit-region guide: white pixels may change, black pixels must remain unchanged. Return the complete edited image 1 at the same framing and dimensions. Do not draw the guide, mask, borders, captions or annotations. Preserve all other subjects, identities, product shapes, labels and visible text.\nAction: Recolour\nVerbatim user instruction:\nChange only the selected spacesuit fabric to dark navy blue. Retain the fabric folds, stitching and shape. Keep the face, hair, badges including their borders and lettering, collar hardware, zipper fasteners, helmet and background unchanged.",
+      "seed": 2027,
+      "steps": 4,
+      "observedMs": 9898,
+      "protectedPixels": 210736,
+      "protectedExact": true,
+      "alphaExact": true,
+      "visualReview": "Scoped pass: navy fabric with folds retained and protected badges/face exact. Existing mask omissions remain."
+    },
+    {
+      "name": "sphere",
+      "sourceHash": "815818c477af8178e1a749d16a5fe95f3991c5ae0ca453fa139643fd06c607ab",
+      "maskHash": "4771ea38d695e7282c4e8eb8072c6cd3c99c7b4446a175b8c7d13b97bf9cc84a",
+      "rawHash": "825a3d00a6c88e2a9d5014f61b90c614fa0d1558ca121d44486e33fceccfb737",
+      "resultHash": "934bcf345cdde7b38b36d9472d26b0df7d02acab819afbf10dd2e21ee25f3cb9",
+      "promptId": "7812098d-346d-40ee-b77d-dd94d0489d42",
+      "graphHash": "f98858d6d65302f1fecdf32878457e38032573956b2c8484d6e4c14de6d3e7e3",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "modelFiles": [
+        {
+          "title": "DR_MODEL",
+          "input": "unet_name",
+          "filename": "flux-2-klein-9b-fp8.safetensors",
+          "source": "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B",
+          "licenceStatus": "Source/licence terms must be reviewed for intended use; no download performed",
+          "sha256": "865ba09f5b4c3cbd3468a4bd3acb9fcb2f8740c54317482f0bcd4ed1d3655cee"
+        },
+        {
+          "title": "DR_ENCODER",
+          "input": "clip_name",
+          "filename": "qwen_3_8b_fp8mixed.safetensors",
+          "source": "Existing local ComfyUI installation",
+          "licenceStatus": "Existing local weight; licence not independently verified",
+          "sha256": "abad16806e0cbabc54e0325d6565847443fe396d5f0be38bb3cd3fe75a1201d6"
+        },
+        {
+          "title": "DR_VAE",
+          "input": "vae_name",
+          "filename": "flux2-vae.safetensors",
+          "source": "Existing local ComfyUI installation",
+          "licenceStatus": "Existing local weight; licence not independently verified",
+          "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
+        }
+      ],
+      "sourceWidth": 768,
+      "sourceHeight": 768,
+      "prompt": "Edit image 1 according to the instruction below. Image 2 is ONLY an edit-region guide: white pixels may change, black pixels must remain unchanged. Return the complete edited image 1 at the same framing and dimensions. Do not draw the guide, mask, borders, captions or annotations. Preserve all other subjects, identities, product shapes, labels and visible text.\nAction: Recolour\nVerbatim user instruction:\nChange only the selected orange sphere to blue. Preserve the sphere's shape, position, lighting and shadows. Keep the bottle, its NOIR label and background unchanged.",
+      "seed": 2027,
+      "steps": 4,
+      "observedMs": 11986,
+      "protectedPixels": 545824,
+      "protectedExact": true,
+      "alphaExact": true,
+      "visualReview": "Scoped pass: blue sphere and preserved protected label; small allowed shadow/join variation remains."
+    },
+    {
+      "name": "translucent",
+      "sourceHash": "ccca1aed0c8a4dbb819e4be35e681399d67e2ca2f9d835f9bce910d0885c7101",
+      "maskHash": "4771ea38d695e7282c4e8eb8072c6cd3c99c7b4446a175b8c7d13b97bf9cc84a",
+      "rawHash": "6c9c75b68bb45846f87f37702403ad2fe28fe2fa7e4589b767d5be964776dc8b",
+      "resultHash": "d6fdde77306cac6363001f2289a2e0576874ba061d81e5427d4aa8cad1be332a",
+      "promptId": "d4fb1e04-a8e7-4f42-9c2e-f19e49a1eb74",
+      "graphHash": "24595b806811e3d047d42bd00b9db6ffa6298f03444f58b24ead637e29c14b34",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "modelFiles": [
+        {
+          "title": "DR_MODEL",
+          "input": "unet_name",
+          "filename": "flux-2-klein-9b-fp8.safetensors",
+          "source": "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B",
+          "licenceStatus": "Source/licence terms must be reviewed for intended use; no download performed",
+          "sha256": "865ba09f5b4c3cbd3468a4bd3acb9fcb2f8740c54317482f0bcd4ed1d3655cee"
+        },
+        {
+          "title": "DR_ENCODER",
+          "input": "clip_name",
+          "filename": "qwen_3_8b_fp8mixed.safetensors",
+          "source": "Existing local ComfyUI installation",
+          "licenceStatus": "Existing local weight; licence not independently verified",
+          "sha256": "abad16806e0cbabc54e0325d6565847443fe396d5f0be38bb3cd3fe75a1201d6"
+        },
+        {
+          "title": "DR_VAE",
+          "input": "vae_name",
+          "filename": "flux2-vae.safetensors",
+          "source": "Existing local ComfyUI installation",
+          "licenceStatus": "Existing local weight; licence not independently verified",
+          "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
+        }
+      ],
+      "sourceWidth": 768,
+      "sourceHeight": 768,
+      "prompt": "Edit image 1 according to the instruction below. Image 2 is ONLY an edit-region guide: white pixels may change, black pixels must remain unchanged. Return the complete edited image 1 at the same framing and dimensions. Do not draw the guide, mask, borders, captions or annotations. Preserve all other subjects, identities, product shapes, labels and visible text.\nAction: Recolour\nVerbatim user instruction:\nChange only the selected orange sphere to blue. Preserve the sphere's shape, position, lighting and shadows. Keep the bottle, its NOIR label and background unchanged.",
+      "seed": 2027,
+      "steps": 4,
+      "observedMs": 11252,
+      "protectedPixels": 545824,
+      "protectedExact": true,
+      "alphaExact": true,
+      "visualReview": "Scoped pass on white/dark: source alpha exact; blue pigment retained. Artificial coverage ramp, not glass extraction."
+    }
+  ],
+  "implementationSha256": "6cb779b2bd3578f85a2e88e1a8b60b9b64aeb44ac833ae2d45e7efa40283df5f",
+  "comparisonEvidence": "workflows/windows-edit-input-comparison.json",
+  "queuedJobs": "Obsolete queued routes fail before engine submission with retry guidance; original master unchanged.",
+  "live": {
+    "request": {
+      "documentId": "c6612ec4-c89b-4164-8f71-4634c52a2ddc",
+      "expectedRevision": "4d141348-afc4-4fc4-af16-542a01d3ebde",
+      "task": "Recolour",
+      "area": "selection",
+      "seed": 20271017,
+      "instruction": "Change only the red mug on the left to forest green. Preserve its shape, handle, glossy ceramic finish, lighting, shadow and the exact black word NOIR. Keep the blue mug, tabletop, background, camera framing and all other details unchanged.",
+      "idempotencyKey": "dfc018f5-c803-4c9d-9864-8d8087f6cb86"
+    },
+    "jobId": "92306cf5-51ca-4a56-9f41-563b2627fef1",
+    "resultHash": "d61d665698ca11c5214c579732ff3e23a9081d7412e68fa40d1df4cb1a22cfea",
+    "masterUnchanged": true,
+    "workflowId": "create.klein.2ref",
+    "executionHash": "c0dacd7db0313c32667fbcedc34106cdebb718152ed9a2409a2436608f915ec4",
+    "implementationSha256": "6cb779b2bd3578f85a2e88e1a8b60b9b64aeb44ac833ae2d45e7efa40283df5f",
+    "steps": 4,
+    "visualReview": "Scoped pass: cleaner green mug with readable NOIR. Exact hash match to controlled native-RGBA case; pending candidate leaves master unchanged."
+  }
+}

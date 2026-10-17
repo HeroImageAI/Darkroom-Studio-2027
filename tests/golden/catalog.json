@@ -11,19 +11,37 @@
     },
     {
       "category": "garment",
-      "status": "fixture-pending"
+      "status": "active-scoped-partial",
+      "generator": "scripts/validate-photo-corrections.ts",
+      "evidence": "workflows/photo-corrections-qa.json",
+      "rubric": "docs/SCOPE_CORRECTIONS.md",
+      "outcome": "PARTIAL: navy fabric, folds and protected face/patches retained; no old-colour feathering. Mask edges/zipper seams still need refinement before delivery. Additional scoped pass: right arm sleeve recolour preserves all 237,890 unselected pixels; whole-garment gate stays partial."
     },
     {
       "category": "artwork-logo",
-      "status": "fixture-pending"
+      "status": "active-owned-vector-scoped",
+      "generator": "scripts/validate-branding.ts",
+      "evidence": "workflows/branding-qa.json",
+      "rubric": "docs/PHASE_7_REPORT.md",
+      "additionalEvidence": "workflows/artwork-validation.json",
+      "isolationEvidence": "workflows/artwork-isolation-validation.json",
+      "outcome": "Scoped exact vector branding and owned planar perspective correction pass; broader photographic extraction, curved fabrics and cleanup remain open."
     },
     {
       "category": "person",
-      "status": "fixture-pending"
+      "status": "active-scoped",
+      "generator": "scripts/validate-photo-corrections.ts",
+      "evidence": "workflows/photo-corrections-qa.json",
+      "rubric": "docs/SCOPE_CORRECTIONS.md",
+      "outcome": "SCOPED PASS: neutral backdrop; 140114 protected subject pixels exact. Edge refinement may still be needed."
     },
     {
       "category": "environment",
-      "status": "fixture-pending"
+      "status": "active-scoped",
+      "generator": "scripts/validate-photo-corrections.ts",
+      "evidence": "workflows/photo-corrections-qa.json",
+      "rubric": "docs/SCOPE_CORRECTIONS.md",
+      "outcome": "SCOPED PASS: coherent upward sky extension; 175104 original pixels exact."
     },
     {
       "category": "text-sensitive",
@@ -34,19 +52,35 @@
     },
     {
       "category": "transparent-object",
-      "status": "fixture-pending"
+      "status": "active-scoped-partial",
+      "generator": "scripts/validate-photo-corrections.ts",
+      "evidence": "workflows/photo-corrections-qa.json",
+      "rubric": "docs/SCOPE_CORRECTIONS.md",
+      "outcome": "PARTIAL: dark-glass silhouette and original RGB retained. True transparent/clear-glass matting is not established."
     },
     {
       "category": "composite",
-      "status": "fixture-pending"
+      "status": "active-synthetic-scoped",
+      "generator": "scripts/validate-composite.ts",
+      "evidence": "workflows/composite-qa.json",
+      "rubric": "docs/PHASE_6_REPORT.md",
+      "inputHash": "53f85be88a3e2ba38a26c9b25455d43456c4d0d533d6b12a7243b7ba53df1385"
     },
     {
       "category": "low-quality-image",
-      "status": "fixture-pending"
+      "status": "active-scoped-partial",
+      "generator": "scripts/validate-photo-corrections.ts",
+      "evidence": "workflows/photo-corrections-qa.json",
+      "rubric": "docs/SCOPE_CORRECTIONS.md",
+      "outcome": "PARTIAL: protected head is retained at its degraded source quality. Surrounding repair does not establish general identity-preserving restoration."
     },
     {
       "category": "sketch",
-      "status": "fixture-pending"
+      "status": "active-scoped",
+      "generator": "scripts/validate-photo-corrections.ts",
+      "evidence": "workflows/photo-corrections-qa.json",
+      "rubric": "docs/SCOPE_CORRECTIONS.md",
+      "outcome": "SCOPED PASS: one blue chair follows the source structure and view. Whole-image interpretation has no pixel-exact guarantee."
     }
   ]
 }

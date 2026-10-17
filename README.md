@@ -4,7 +4,7 @@ Create. Edit. Finish.
 
 A focused local AI image studio. The user chooses the result; Darkroom chooses the process.
 
-This independent repository contains the local foundation, Create workflow and Phase 4 intelligent editing candidate. Create supports references, variations and reviewed Klein/Qwen routing. Edit supports layers, transforms, hide/reveal masks, rectangle/lasso selections, non-destructive crop, Undo/Redo and autosave recovery. See the [Phase 4 report](docs/PHASE_4_REPORT.md), [Phase 3 report](docs/PHASE_3_REPORT.md) and [Create report](docs/PHASE_2_REPORT.md) for actual validation and limits. AI editing now offers scoped Remove/Replace/Recolour/Background/Expand/Instruct results for explicit review. Finish/export remains later work.
+Darkroom targets Windows image generation and editing with FLUX.2 Klein 9B, Qwen Image 2.1 and SeedVR2. Create supports references and variations; Edit provides a layered canvas, visible selections, reviewed AI results and preserved originals; Finish prepares image exports. Quality and reliability remain under active validation. See [current scope](docs/CURRENT_SCOPE.md) and [completion gates](docs/COMPLETION_GATES.md). Vector development and expanded branding/handoff are outside the current scope.
 
 ## Run locally
 

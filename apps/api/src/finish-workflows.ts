@@ -155,8 +155,9 @@ export async function finishOutput(
   width: number,
   height: number,
   preserve?: Point[],
+  preserveMask?: Buffer,
 ) {
-  if (task === "Restore" && (!preserve || preserve.length < 3))
+  if (task === "Restore" && !preserveMask && (!preserve || preserve.length < 3))
     throw Error("Select the lettering or details to preserve before restoring");
   const resized = await sharp(source)
     .resize(width, height, { fit: "fill", kernel: "lanczos3" })
@@ -173,7 +174,9 @@ export async function finishOutput(
       resized.data[i * 4 + 3] = Math.round(
         (resized.data[i * 4 + 3]! * mask[i]!) / 255,
       );
-    return sharp(resized.data, { raw: resized.info }).png().toBuffer();
+    return sharp(resized.data, { raw: { width, height, channels: 4 } })
+      .png()
+      .toBuffer();
   }
   const rgb = await sharp(raw)
     .resize(width, height, { fit: "fill", kernel: "lanczos3" })
@@ -182,12 +185,26 @@ export async function finishOutput(
     .toBuffer();
   let protectedPixels: Buffer | undefined, transition: Buffer | undefined;
   if (task === "Restore") {
-    const polygon = preserve!.map((p) => `${p.x},${p.y}`).join(" ");
-    const mask = Buffer.from(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="black"/><polygon points="${polygon}" fill="white"/></svg>`,
-    );
-    protectedPixels = await sharp(mask).greyscale().raw().toBuffer();
-    transition = await sharp(mask).blur(3).greyscale().raw().toBuffer();
+    const polygon = (preserve ?? []).map((p) => `${p.x},${p.y}`).join(" ");
+    const mask =
+      preserveMask ??
+      Buffer.from(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="black"/><polygon points="${polygon}" fill="white"/></svg>`,
+      );
+    const meta = await sharp(mask).metadata();
+    if (meta.width !== width || meta.height !== height)
+      throw Error("Preserved selection dimensions do not match the image");
+    protectedPixels = await sharp(mask)
+      .removeAlpha()
+      .greyscale()
+      .raw()
+      .toBuffer();
+    transition = await sharp(mask)
+      .blur(3)
+      .removeAlpha()
+      .greyscale()
+      .raw()
+      .toBuffer();
   }
   for (let i = 0; i < width * height; i++)
     for (let c = 0; c < 3; c++) {
@@ -196,9 +213,32 @@ export async function finishOutput(
         : transition
           ? Math.max(0, 1 - (2 * transition[i]!) / 255)
           : 1;
+      const alpha = resized.data[i * 4 + 3]!;
+      // The engine sees a grey matte, while delivery retains source coverage.
+      // Remove that matte before restoring alpha, or translucent edges are
+      // composited twice. Keep faint coverage conservative to avoid amplifying
+      // model/8-bit noise where there is little foreground information.
+      const recovered =
+        alpha < 32
+          ? resized.data[i * 4 + c]!
+          : Math.max(
+              0,
+              Math.min(
+                255,
+                (rgb[i * 3 + c]! * 255 - 128 * (255 - alpha)) / alpha,
+              ),
+            );
+      const confidence = Math.max(0, Math.min(1, (alpha - 32) / 32));
+      const value =
+        resized.data[i * 4 + c]! * (1 - confidence) + recovered * confidence;
       resized.data[i * 4 + c] = Math.round(
-        resized.data[i * 4 + c]! * (1 - t) + rgb[i * 3 + c]! * t,
+        resized.data[i * 4 + c]! * (1 - t) + value * t,
       );
     }
-  return sharp(resized.data, { raw: resized.info }).png().toBuffer();
+  // raw() returns straight RGBA. Its output info.premultiplied records resize
+  // processing, not the buffer format; reusing it as input metadata would
+  // unpremultiply a second time and oversaturate translucent colours.
+  return sharp(resized.data, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer();
 }

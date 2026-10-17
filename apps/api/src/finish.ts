@@ -5,7 +5,7 @@ import {
   type ExportRequest,
   type ExportRecord,
 } from "../../../packages/contracts/src/finish.js";
-import { renderMaster } from "./edit-render.js";
+import { renderDelivery } from "./branding.js";
 import { Conflict, type Store } from "./store.js";
 
 export function exportHistory(
@@ -63,7 +63,7 @@ export async function createExport(
   if (!doc) throw Error("Master not found");
   if (doc.currentRevisionId !== r.expectedRevision)
     throw new Conflict("Master changed. Save and export its current revision.");
-  const bytes = await renderExport(await renderMaster(store, doc.snapshot), r);
+  const bytes = await renderExport(await renderDelivery(store, doc.snapshot), r);
   const id = randomUUID(),
     filename = `darkroom-${r.width}x${r.height}-${id.slice(0, 8)}.${r.format === "jpeg" ? "jpg" : "png"}`;
   const asset = await store.internalAsset(bytes, filename, doc.projectId);

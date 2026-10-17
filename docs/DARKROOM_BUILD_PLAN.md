@@ -1,12 +1,18 @@
 # Darkroom Studio 2027 — build plan
 
-Status: Phase 0. Work is incremental and gates are explicit. This baseline does not authorise automatic implementation of later phases.
+Status: Core scope corrections after the Phase 7 preview. Phase 8 Library expansion is on hold while core selection, coherent canvas rendering and broader visual QA are corrected. Phases 1–7 have scoped draft implementations; that does not certify their full outcome gates. See [scope corrections](SCOPE_CORRECTIONS.md).
+
+17 October continuation: the user authorises work through full completion without further phase approval requests. The earlier approval stop rules below are superseded by that instruction; quality gates and review requirements remain. [Completion gates](COMPLETION_GATES.md) tracks the remaining outcomes, and [model/workflow audit](MODEL_WORKFLOW_AUDIT.md) records checks against publisher guidance and the installed engine.
+
+PR #10's completion/audit evidence is merged at `7696d581fb5c2d7b37016abf526955ef88eef7fa`, after Windows/Linux checks passed at `a1f061a`. The next original-scope milestone is the reviewed [artwork perspective tool](ARTWORK_EXTRACTION.md); broader photographic extraction remains open.
+
+PR #8's core corrections and PR #9's quality fixes are merged into `composite-workflow` (PR #9 merge `6857e287f05c1fc620db0c26b327a8928de45b32`, after Windows/Linux CI passed at `f7a05a5`). The latest review and garment/colour/restoration/glass outcomes are recorded in [quality follow-up](QUALITY_FOLLOWUP.md). Candidate model tests do not advance a phase or enable a new route.
 
 ## Repository strategy
 
 Use only `HeroImageAI/Darkroom-Studio-2027` for this product. `HeroImageAI/Darkroom` is read-only evidence. No submodule, shared runtime database, copied history or five-studio architecture. The supplied remote was verified as an empty public repository on 16 October 2026 through the connected GitHub tools.
 
-Bootstrap `main` with repository identity only because an empty GitHub repository cannot accept a normal branch-based pull request. Put the planning baseline on `planning-baseline` and open a draft PR against `main`; do not merge automatically. Phase 1 uses `foundation` from the reviewed main. Subsequent branches follow named product work: `create-workspace`, `edit-workspace`, `ai-routing`, `smart-selection`, `finish-workflow`, `branding-ui`, `library`.
+Bootstrap `main` with repository identity only because an empty GitHub repository cannot accept a normal branch-based pull request. Put the planning baseline on `planning-baseline` and open a draft PR against `main`; do not merge automatically. The implemented previews currently form stacked draft PRs; `main` remains the bootstrap. Review and integration are still outstanding. The original strategy called for `foundation` from reviewed main. Subsequent branches follow named product work: `create-workspace`, `edit-workspace`, `ai-routing`, `smart-selection`, `finish-workflow`, `branding-ui`, `library`.
 
 Commit logical completed milestones. No force pushes or history rewriting. Main must contain reviewed work; propose required status checks and review protection when CI exists, and report actual configuration separately. Do not assert protections are enabled merely because this document requests them. Include exact head SHA and validation in every phase report.
 
@@ -53,3 +59,11 @@ Before any ComfyUI update is accepted, rerun node/input/model compatibility chec
 Every phase report includes IMPLEMENTED, NOT IMPLEMENTED, TEST RESULTS, LIVE RESULTS, KNOWN ISSUES, GIT STATUS and RECOMMENDATION. Link evidence and distinguish mocks, historical results and current live runs. Record any blocked gate without labelling it passed. Stop at the phase boundary for review and explicit continuation; do not expand scope to occupy blocked time.
 
 Phase 0 checks are document completeness, cross-links, requirement coverage, clean Git state and remote commit/PR verification. TypeScript/build/browser/model tests are not applicable to a documentation-only baseline; they become mandatory with Phase 1. No model or browser validation is claimed in Phase 0.
+
+## 17 October artwork quality continuation
+
+PR11 planar perspective correction is merged into composite-workflow at f61ee27e8c36a9362d211d638c7c23cbf461a67f. The next bounded correction adds opt-in isolation from an existing visible selection. It preserves photographed pixels and saves a separate master; it introduces no model, package or additional product destination. See ARTWORK_EXTRACTION.md and workflows/artwork-isolation-validation.json for scoped photographic evidence and remaining edge-quality limitations. Core quality gates still precede Library expansion. The user's explicit continuing authorization supersedes the earlier phase-boundary approval stop rule.
+
+## Latest scope correction
+
+The user's subsequent direction narrows the product to Windows image generation and editing, with simplicity as a requirement. CURRENT_SCOPE.md takes precedence over the original phase table: no vector development, expanded branding/handoff or Library feature programme. Complete representative image-quality and reliability outcomes before adding controls.

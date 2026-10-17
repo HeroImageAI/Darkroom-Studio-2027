@@ -1,5 +1,6 @@
-import { beforeEach, afterEach, it, expect } from "vitest";
-import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { beforeEach, afterEach, it, expect, vi } from "vitest";
+import { mkdtempSync, mkdirSync, rmSync, readFileSync } from "node:fs";
+import * as readinessModule from "../../apps/api/src/readiness.js";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
@@ -20,6 +21,7 @@ import {
 import {
   prepareEdit,
   protectEdit,
+  protectRequestedEdit,
   renderMaster,
 } from "../../apps/api/src/edit-render.js";
 import {
@@ -27,12 +29,94 @@ import {
   type EditRequest,
 } from "../../packages/contracts/src/edit.js";
 let store: Store, root: string;
+it("recolour matches background drift without restoring the old pigment", async () => {
+  const width = 24,
+    height = 24;
+  const original = Buffer.alloc(width * height * 4);
+  const generated = Buffer.alloc(original.length);
+  const mask = Buffer.alloc(width * height);
+  for (let y = 0; y < height; y++)
+    for (let x = 0; x < width; x++) {
+      const i = y * width + x;
+      const object = x >= 8 && x < 16 && y >= 8 && y < 16;
+      original.set(object ? [220, 80, 20, 255] : [120, 120, 120, 255], i * 4);
+      generated.set(object ? [20, 60, 200, 255] : [130, 130, 130, 255], i * 4);
+      if (x >= 4 && x < 20 && y >= 4 && y < 20) mask[i] = 255;
+    }
+  const png = (bytes: Buffer, channels: 1 | 4) =>
+    sharp(bytes, { raw: { width, height, channels } }).png().toBuffer();
+  const result = await sharp(
+    await protectRequestedEdit(
+      await png(original, 4),
+      await png(mask, 1),
+      await png(generated, 4),
+      "Recolour",
+    ),
+  )
+    .raw()
+    .toBuffer();
+  for (let i = 0; i < mask.length; i++)
+    if (!mask[i])
+      expect(result.subarray(i * 4, i * 4 + 4)).toEqual(
+        original.subarray(i * 4, i * 4 + 4),
+      );
+  expect(Math.abs(result[(4 * width + 4) * 4]! - 120)).toBeLessThanOrEqual(1);
+  const centre = (12 * width + 12) * 4;
+  expect(result[centre + 2]! - result[centre]!).toBeGreaterThan(150);
+  expect(result[centre]).toBeLessThan(25);
+});
+it("recolour preserves translucent coverage and empty pixels while changing selected colour", async () => {
+  const width = 12,
+    height = 1;
+  const rgba = Buffer.alloc(width * 4);
+  const mask = Buffer.alloc(width, 255);
+  const alphas = [0, 1, 32, 64, 128, 192, 254, 255, 0, 64, 128, 255];
+  for (let i = 0; i < width; i++) {
+    rgba.set([220, 80, 20, alphas[i]!], i * 4);
+    if (i >= 8) mask[i] = 0;
+  }
+  const source = await sharp(rgba, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer();
+  const maskPng = await sharp(mask, { raw: { width, height, channels: 1 } })
+    .png()
+    .toBuffer();
+  // Opaque output models cannot author the original cutout alpha channel.
+  const generated = await sharp({
+    create: { width, height, channels: 3, background: "blue" },
+  })
+    .png()
+    .toBuffer();
+  const after = await sharp(
+    await protectRequestedEdit(source, maskPng, generated, "Recolour"),
+  )
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  for (let i = 0; i < width; i++) {
+    expect(after[i * 4 + 3]).toBe(alphas[i]);
+    if (mask[i] === 0 || alphas[i] === 0)
+      expect(after.subarray(i * 4, i * 4 + 4)).toEqual(
+        rgba.subarray(i * 4, i * 4 + 4),
+      );
+    else expect([...after.subarray(i * 4, i * 4 + 3)]).toEqual([0, 0, 255]);
+  }
+  // Replacement/background actions retain their existing ability to add opacity.
+  const replacement = await sharp(
+    await protectRequestedEdit(source, maskPng, generated, "Background"),
+  )
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  expect(replacement[3]).toBe(255);
+});
 beforeEach(() => {
   mkdirSync("data/tests", { recursive: true });
   root = mkdtempSync(join("data/tests", "edits-"));
   store = new Store(root);
 });
 afterEach(() => {
+  vi.restoreAllMocks();
   store.close();
   rmSync(root, { recursive: true, force: true });
 });
@@ -179,6 +263,93 @@ async function completed() {
   store.completeJob(j.id, result.id);
   return { ...f, j, result };
 }
+function routeClient() {
+  vi.spyOn(readinessModule, "readiness").mockReturnValue(
+    ["Klein", "Qwen"].map((model) => ({
+      id: `create.${model.toLowerCase()}.2ref`,
+      model: model as "Klein" | "Qwen",
+      references: 2,
+      qualities: ["Final"],
+      ready: true,
+      reason: "Isolated route test",
+    })),
+  );
+  class Fake extends ComfyClient {
+    override async inspect() {
+      return {
+        status: {
+          connected: true,
+          verified: true,
+          url: this.url,
+          models: {},
+          fingerprint: JSON.parse(
+            readFileSync("workflows/edit-validation.json", "utf8"),
+          ).fingerprint,
+        },
+        info: {},
+      };
+    }
+    override async queue() {
+      return { queue_running: [], queue_pending: [] };
+    }
+    override async submit(): Promise<string> {
+      throw Error("Unexpected engine submission");
+    }
+  }
+  return new Fake("http://127.0.0.1:8188", "test");
+}
+it("submits recolour to Klein while retaining Qwen for other local actions", async () => {
+  const f = await fixture(),
+    saved = store.saveDocument(f.doc.id, f.doc.currentRevisionId, f.snapshot),
+    client = routeClient();
+  for (const task of ["Recolour", "Remove"] as const) {
+    const request = {
+      ...f.request,
+      task,
+      expectedRevision: saved.currentRevisionId,
+      idempotencyKey: randomUUID(),
+    };
+    const row = await submitEdit(store, client, request),
+      job = store.job(row.jobId)!;
+    expect(job.intent.model).toBe(task === "Recolour" ? "Klein" : "Qwen");
+    expect(job.intent.references).toEqual([row.sourceAssetId, row.maskAssetId]);
+    expect(JSON.parse(row.requestJson).instruction).toBe(f.request.instruction);
+  }
+  expect(store.document(f.doc.id)!.currentRevisionId).toBe(
+    saved.currentRevisionId,
+  );
+});
+it("refuses an obsolete queued recolour route before engine submission", async () => {
+  const f = await completed(),
+    row = editRow(store, f.j.id)!,
+    old = store.job(f.j.id)!;
+  store.db.prepare("DELETE FROM candidates WHERE jobId=?").run(f.j.id);
+  store.db
+    .prepare("UPDATE edit_requests SET requestJson=? WHERE jobId=?")
+    .run(JSON.stringify({ ...f.request, task: "Recolour" }), f.j.id);
+  store.db
+    .prepare("UPDATE jobs SET state='queued',resultId=NULL,intent=? WHERE id=?")
+    .run(
+      JSON.stringify({
+        ...old.intent,
+        model: "Qwen",
+        quality: "Final",
+        references: [row.sourceAssetId, row.maskAssetId],
+      }),
+      f.j.id,
+    );
+  const client = routeClient(),
+    submitted = vi.spyOn(client, "submit"),
+    worker = new Worker(store, client);
+  await worker.tick();
+  await worker.stop();
+  expect(submitted).not.toHaveBeenCalled();
+  expect(store.job(f.j.id)!.state).toBe("failed");
+  expect(store.job(f.j.id)!.error).toContain("older model route");
+  expect(store.document(f.doc.id)!.currentRevisionId).toBe(
+    f.doc.currentRevisionId,
+  );
+});
 it("accepts a result only explicitly, keeps source layers and makes review idempotent", async () => {
   const f = await completed();
   expect(store.document(f.doc.id)!.currentRevisionId).toBe(

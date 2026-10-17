@@ -12,6 +12,7 @@ import {
   type Layer,
   type Point,
 } from "../../../../packages/document/src/edit.js";
+import { TextArtwork } from "./TextArtwork.js";
 import { AIEditPanel } from "./AIEditPanel.js";
 import { FinishPanel } from "./FinishPanel.js";
 import { api } from "../lib/api.js";
@@ -24,7 +25,18 @@ type Document = {
   currentRevisionId: string;
   snapshot: Snapshot;
 };
-type Tool = "Move" | "Pan" | "Select" | "Lasso" | "Mask" | "Crop";
+type Tool =
+  | "Refine"
+  | "Subject"
+  | "Move"
+  | "Pan"
+  | "Select"
+  | "Lasso"
+  | "Mask"
+  | "Crop"
+  | "Paint"
+  | "Artwork"
+  | "Erase";
 type Gesture = {
   start: Point;
   last: Point;
@@ -51,8 +63,25 @@ export function EditWorkspace({
   onImport: () => void;
   onRefresh: () => Promise<void>;
 }) {
+  const [placedAssets, setPlacedAssets] = useState<Asset[]>([]);
+  const [placeId, setPlaceId] = useState("");
+  const [paintColour, setPaintColour] = useState("#808080");
+  const [paintBusy, setPaintBusy] = useState(false);
+  const painting = useRef(false);
+  const placeInput = useRef<HTMLInputElement>(null);
+  const logoInput = useRef<HTMLInputElement>(null);
+  const allAssets = [
+    ...assets,
+    ...placedAssets.filter((a) => !assets.some((v) => v.id === a.id)),
+  ];
+  useEffect(() => {
+    setPlacedAssets([]);
+    setPlaceId("");
+  }, [projectId]);
   const [record, setRecord] = useState<Document>();
   const [aiPreview, setAiPreview] = useState<string>();
+  const [artworkCorners, setArtworkCorners] = useState<Point[]>([]);
+  const artworkDrag = useRef<number | undefined>(undefined);
   const [doc, setDoc] = useState<Snapshot>();
   const current = useRef<Snapshot | undefined>(undefined);
   const revision = useRef("");
@@ -63,6 +92,11 @@ export function EditWorkspace({
   const [past, setPast] = useState<Snapshot[]>([]);
   const [future, setFuture] = useState<Snapshot[]>([]);
   const [selected, setSelected] = useState("");
+  const [selectionDescription, setSelectionDescription] = useState("");
+  const [selectionBusy, setSelectionBusy] = useState(false);
+  const [selectionMode, setSelectionMode] = useState<
+    "replace" | "add" | "subtract"
+  >("replace");
   const [tool, setTool] = useState<Tool>("Move");
   const [status, setStatus] = useState("Opening master…");
   const [error, setError] = useState("");
@@ -91,7 +125,7 @@ export function EditWorkspace({
   }
   function commit(next: Snapshot) {
     const before = current.current;
-    if (!before || blocked.current) return;
+    if (!before || blocked.current || painting.current) return;
     const checked = snapshotSchema.safeParse(next);
     if (!checked.success) {
       setError(checked.error.issues[0]?.message ?? "Invalid edit");
@@ -105,14 +139,21 @@ export function EditWorkspace({
     if (current.current) commit(updateLayer(current.current, selected, change));
   }
   function undo() {
-    if (blocked.current || !past.length || !current.current) return;
+    if (painting.current || blocked.current || !past.length || !current.current)
+      return;
     const before = current.current;
     setFuture((f) => [before, ...f]);
     display(past[past.length - 1]!);
     setPast((p) => p.slice(0, -1));
   }
   function redo() {
-    if (blocked.current || !future.length || !current.current) return;
+    if (
+      painting.current ||
+      blocked.current ||
+      !future.length ||
+      !current.current
+    )
+      return;
     const before = current.current;
     setPast((p) => [...p, before]);
     display(future[0]!);
@@ -129,6 +170,8 @@ export function EditWorkspace({
     setConflict(false);
     setError("");
     setRecovery(undefined);
+    setArtworkCorners([]);
+    artworkDrag.current = undefined;
     setStatus("Opening master…");
     setDoc(undefined);
     current.current = undefined;
@@ -270,6 +313,8 @@ export function EditWorkspace({
         void save();
       }
       if (e.key === "Escape") {
+        artworkDrag.current = undefined;
+        if (tool === "Artwork") setTool("Move");
         if (gesture.current) display(gesture.current.before);
         gesture.current = undefined;
         setStroke([]);
@@ -281,7 +326,9 @@ export function EditWorkspace({
     window.addEventListener("keydown", keyboard);
     return () => window.removeEventListener("keydown", keyboard);
   });
-  async function prepareAI() {
+  async function prepareAI(forPaint = false) {
+    if (painting.current && !forPaint)
+      throw Error("Wait for the paint stroke to save.");
     if (
       blocked.current ||
       !(await save()) ||
@@ -330,9 +377,84 @@ export function EditWorkspace({
     );
     return { x: p.x, y: p.y };
   }
+  async function selectRegion(
+    polygon?: Point[],
+    subjectPoint?: Point,
+    refinement?: { points: Point[]; size: number },
+  ) {
+    if (selectionBusy || !current.current) return;
+    setSelectionBusy(true);
+    setError("");
+    const before = current.current;
+    try {
+      const base = await prepareAI();
+      const result = await api<{
+        expectedRevision: string;
+        selectionMaskAssetId: string | null;
+      }>("/documents/" + base.documentId + "/selection", {
+        method: "POST",
+        body: JSON.stringify({
+          expectedRevision: base.expectedRevision,
+          mode: selectionMode,
+          subject: !polygon && !refinement,
+          stroke: refinement,
+          description:
+            !polygon && !refinement && selectionDescription.trim()
+              ? selectionDescription.trim()
+              : undefined,
+          polygon,
+          point: subjectPoint,
+        }),
+      });
+      if (
+        current.current !== before ||
+        revision.current !== result.expectedRevision
+      )
+        throw Error("The master changed during selection; try again.");
+      const { selection: _, selectionMaskAssetId: _mask, ...rest } = before;
+      commit({
+        ...rest,
+        ...(result.selectionMaskAssetId
+          ? { selectionMaskAssetId: result.selectionMaskAssetId }
+          : {}),
+      });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSelectionBusy(false);
+    }
+  }
   function down(e: React.PointerEvent<SVGSVGElement>) {
-    if (!doc || blocked.current || e.button !== 0) return;
+    if (
+      !doc ||
+      blocked.current ||
+      painting.current ||
+      selectionBusy ||
+      e.button !== 0
+    )
+      return;
     const p = point(e);
+    if (tool === "Artwork") {
+      const clamped = {
+        x: Math.round(Math.max(0, Math.min(doc.width - 1, p.x)) * 100) / 100,
+        y: Math.round(Math.max(0, Math.min(doc.height - 1, p.y)) * 100) / 100,
+      };
+      const corner = (e.target as Element)
+        .closest("[data-artwork-corner]")
+        ?.getAttribute("data-artwork-corner");
+      if (corner !== null && corner !== undefined) {
+        artworkDrag.current = Number(corner);
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } else
+        setArtworkCorners((points) =>
+          points.length < 4 ? [...points, clamped] : points,
+        );
+      return;
+    }
+    if (tool === "Subject") {
+      void selectRegion(undefined, p);
+      return;
+    }
     e.currentTarget.setPointerCapture(e.pointerId);
     const hit = (e.target as Element)
       .closest("[data-layer]")
@@ -350,10 +472,31 @@ export function EditWorkspace({
       client: { x: e.clientX, y: e.clientY },
     };
     if (tool === "Crop") setCrop(undefined);
+    if (tool === "Paint" || tool === "Erase" || tool === "Refine")
+      setStroke([p]);
     if (tool === "Mask" && chosen && !chosen.locked && "assetId" in chosen)
       setStroke([localPoint(p, chosen.transform)]);
   }
   function move(e: React.PointerEvent<SVGSVGElement>) {
+    if (tool === "Artwork" && artworkDrag.current !== undefined && doc) {
+      const p = point(e),
+        index = artworkDrag.current;
+      setArtworkCorners((points) =>
+        points.map((v, i) =>
+          i === index
+            ? {
+                x:
+                  Math.round(Math.max(0, Math.min(doc.width - 1, p.x)) * 100) /
+                  100,
+                y:
+                  Math.round(Math.max(0, Math.min(doc.height - 1, p.y)) * 100) /
+                  100,
+              }
+            : v,
+        ),
+      );
+      return;
+    }
     const g = gesture.current;
     if (!g) return;
     const p = point(e);
@@ -380,7 +523,13 @@ export function EditWorkspace({
         width: Math.abs(p.x - g.start.x),
         height: Math.abs(p.y - g.start.y),
       });
-    else if (tool === "Lasso" || tool === "Mask") {
+    else if (
+      tool === "Refine" ||
+      tool === "Lasso" ||
+      tool === "Mask" ||
+      tool === "Paint" ||
+      tool === "Erase"
+    ) {
       if (g.points.length < 2000) g.points.push(p);
       setStroke(
         tool === "Mask" && g.layer
@@ -396,6 +545,12 @@ export function EditWorkspace({
       ]);
   }
   function up(e: React.PointerEvent<SVGSVGElement>, cancelled = false) {
+    if (artworkDrag.current !== undefined) {
+      artworkDrag.current = undefined;
+      if (e.currentTarget.hasPointerCapture(e.pointerId))
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      return;
+    }
     const g = gesture.current;
     if (!g) return;
     gesture.current = undefined;
@@ -407,7 +562,11 @@ export function EditWorkspace({
       setCrop(undefined);
       return;
     }
-    if (tool === "Move" && current.current) {
+    if (tool === "Refine") {
+      void selectRegion(undefined, undefined, { points: g.points, size });
+    } else if (tool === "Paint" || tool === "Erase") {
+      void finishPaint(g);
+    } else if (tool === "Move" && current.current) {
       const next = current.current;
       display(g.before);
       commit(next);
@@ -430,9 +589,205 @@ export function EditWorkspace({
           ],
         } as Partial<Layer>),
       );
-    } else if ((tool === "Select" || tool === "Lasso") && stroke.length >= 3)
-      commit({ ...g.before, selection: stroke });
+    } else if ((tool === "Select" || tool === "Lasso") && stroke.length >= 3) {
+      if (selectionMode === "replace") {
+        const { selectionMaskAssetId: _, ...rest } = g.before;
+        commit({ ...rest, selection: stroke });
+      } else void selectRegion(stroke);
+    }
     setStroke([]);
+  }
+  async function finishPaint(g: Gesture) {
+    if (painting.current) return;
+    const paintLayer = g.layer?.type === "paint" ? g.layer : undefined;
+    if (paintLayer?.locked || (tool === "Erase" && !paintLayer)) {
+      setError(
+        "Choose an unlocked paint layer before erasing or painting on it.",
+      );
+      return;
+    }
+    painting.current = true;
+    setPaintBusy(true);
+    try {
+      const prepared = await prepareAI(true);
+      setStatus("Saving paint stroke…");
+      const a = await api<Asset>(`/documents/${documentId}/paint`, {
+        method: "POST",
+        body: JSON.stringify({
+          expectedRevision: prepared.expectedRevision,
+          layerId: paintLayer?.id,
+          colour: paintColour,
+          erase: tool === "Erase",
+          size,
+          points: paintLayer
+            ? g.points.map((p) => localPoint(p, paintLayer.transform))
+            : g.points,
+        }),
+      });
+      if (current.current?.id !== prepared.documentId) return;
+      setPlacedAssets((list) => [...list, a]);
+      const next = paintLayer
+        ? updateLayer(current.current!, paintLayer.id, {
+            assetId: a.id,
+          } as Partial<Layer>)
+        : {
+            ...current.current!,
+            layers: [
+              ...current.current!.layers,
+              {
+                id: crypto.randomUUID(),
+                name: "Guidance paint",
+                type: "paint" as const,
+                assetId: a.id,
+                visible: true,
+                locked: false,
+                opacity: 1,
+                transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 },
+              },
+            ],
+          };
+      painting.current = false;
+      commit(next);
+      setSelected(paintLayer?.id ?? next.layers.at(-1)!.id);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      painting.current = false;
+      setPaintBusy(false);
+      setSaveEpoch((n) => n + 1);
+    }
+  }
+  function placeImage(a: Asset) {
+    if (!current.current || painting.current || blocked.current) return;
+    const d = current.current;
+    const scale = Math.min(
+      1,
+      (d.width * 0.8) / a.width,
+      (d.height * 0.8) / a.height,
+    );
+    const l = {
+      id: crypto.randomUUID(),
+      name: a.name,
+      type: "raster" as const,
+      assetId: a.id,
+      visible: true,
+      locked: false,
+      opacity: 1,
+      transform: {
+        x: (d.width - a.width * scale) / 2,
+        y: (d.height - a.height * scale) / 2,
+        scaleX: scale,
+        scaleY: scale,
+        rotation: 0,
+      },
+    };
+    commit({ ...d, layers: [...d.layers, l] });
+    setSelected(l.id);
+    setTool("Move");
+  }
+  function addBranding(kind: "text" | "rectangle" | "ellipse") {
+    if (!current.current || painting.current || blocked.current) return;
+    const layer = {
+      id: crypto.randomUUID(),
+      name:
+        kind === "text"
+          ? "Text"
+          : kind === "rectangle"
+            ? "Rectangle"
+            : "Ellipse",
+      visible: true,
+      locked: false,
+      opacity: 1,
+      transform: {
+        x: current.current.width * 0.1,
+        y: current.current.height * 0.1,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+      },
+      ...(kind === "text"
+        ? {
+            type: "text" as const,
+            text: "YOUR BRAND",
+            fontFamily: "Darkroom Sans",
+            fontSize: 48,
+            fill: "#f2f2f3",
+          }
+        : {
+            type: "vector" as const,
+            shape: kind,
+            width: 200,
+            height: 100,
+            fill: "#e31824",
+            stroke: "#000000",
+            strokeWidth: 0,
+          }),
+    };
+    commit({ ...current.current, layers: [...current.current.layers, layer] });
+    setSelected(layer.id);
+    setTool("Move");
+  }
+  async function importSvgLogo(file?: File) {
+    if (!file || !current.current) return;
+    const target = current.current.id;
+    try {
+      if (file.size > 256000)
+        throw Error("SVG logo exceeds 256 KB. Simplify the artwork first.");
+      const imported = await api<{ asset: Asset; svg: string }>("/logos", {
+        method: "POST",
+        body: JSON.stringify({ projectId, svg: await file.text() }),
+      });
+      if (current.current?.id !== target) return;
+      setPlacedAssets((list) => [...list, imported.asset]);
+      const a = imported.asset,
+        d = current.current,
+        scale = Math.min(
+          1,
+          (d.width * 0.5) / a.width,
+          (d.height * 0.5) / a.height,
+        );
+      const layer = {
+        id: crypto.randomUUID(),
+        name: file.name.slice(0, 200),
+        type: "raster" as const,
+        assetId: a.id,
+        vectorSvg: imported.svg,
+        visible: true,
+        locked: false,
+        opacity: 1,
+        transform: {
+          x: (d.width - a.width * scale) / 2,
+          y: (d.height - a.height * scale) / 2,
+          scaleX: scale,
+          scaleY: scale,
+          rotation: 0,
+        },
+      };
+      commit({ ...d, layers: [...d.layers, layer] });
+      setSelected(layer.id);
+      setTool("Move");
+      await onRefresh();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+  async function importLayer(file?: File) {
+    if (!file) return;
+    const targetDocument = current.current?.id;
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const a = await api<Asset>("/assets?projectId=" + projectId, {
+        method: "POST",
+        body: form,
+      });
+      if (current.current?.id !== targetDocument) return;
+      setPlacedAssets((list) => [...list, a]);
+      placeImage(a);
+      await onRefresh();
+    } catch (e) {
+      setError((e as Error).message);
+    }
   }
   async function recoverCopy() {
     if (!record || !current.current) return;
@@ -500,9 +855,9 @@ export function EditWorkspace({
   if (!doc) return <p role="status">{error || status}</p>;
   const rasterAsset =
     chosen && "assetId" in chosen
-      ? assets.find((a) => a.id === chosen.assetId)
+      ? allAssets.find((a) => a.id === chosen.assetId)
       : undefined;
-  const locked = !chosen || chosen.locked || blocked.current;
+  const locked = !chosen || chosen.locked || blocked.current || paintBusy;
   const path = (ps: Point[]) => ps.map((p) => `${p.x},${p.y}`).join(" ");
   return (
     <section className="edit-workspace" aria-label="Image editor">
@@ -552,19 +907,103 @@ export function EditWorkspace({
         </div>
       )}
       <div className="edit-toolbar" aria-label="Canvas tools">
-        {(["Move", "Pan", "Select", "Lasso", "Mask", "Crop"] as Tool[]).map(
-          (t) => (
-            <Button
-              key={t}
-              aria-pressed={tool === t}
-              onClick={() => {
-                setTool(t);
-                setCrop(undefined);
-              }}
+        {(["Move", "Select", "Crop"] as Tool[]).map((t) => (
+          <Button
+            key={t}
+            disabled={paintBusy || selectionBusy}
+            aria-pressed={tool === t}
+            onClick={() => {
+              setTool(t);
+              setCrop(undefined);
+            }}
+          >
+            {t}
+          </Button>
+        ))}
+        <Button
+          disabled={paintBusy || selectionBusy}
+          aria-pressed={tool === "Subject"}
+          onClick={() => setTool("Subject")}
+        >
+          Smart Select
+        </Button>
+        <details className="more-canvas-tools">
+          <summary>More tools</summary>
+          {(["Pan", "Lasso", "Refine", "Mask", "Paint", "Erase"] as Tool[]).map(
+            (t) => (
+              <Button
+                key={t}
+                disabled={paintBusy || selectionBusy}
+                aria-pressed={tool === t}
+                onClick={() => {
+                  setTool(t);
+                  setCrop(undefined);
+                }}
+              >
+                {t === "Refine" ? "Refine selection" : t}
+              </Button>
+            ),
+          )}
+        </details>
+        {(["Subject", "Select", "Lasso", "Refine"] as Tool[]).includes(
+          tool,
+        ) && (
+          <label>
+            Selection
+            <select
+              aria-label="Selection mode"
+              value={selectionMode}
+              onChange={(e) =>
+                setSelectionMode(e.target.value as typeof selectionMode)
+              }
             >
-              {t}
+              <option value="replace">Replace</option>
+              <option value="add">Add</option>
+              <option value="subtract">Subtract</option>
+            </select>
+          </label>
+        )}
+        {tool === "Subject" && (
+          <span className="muted">
+            {selectionBusy
+              ? "Finding the subject…"
+              : "Click a foreground subject, or describe an object. Refine the mask before editing."}
+          </span>
+        )}
+        {tool === "Subject" && (
+          <label>
+            Find
+            <input
+              aria-label="Object to select"
+              maxLength={120}
+              value={selectionDescription}
+              placeholder="e.g. orange spacesuit"
+              onChange={(e) => setSelectionDescription(e.target.value)}
+            />
+            <Button
+              disabled={selectionBusy || !selectionDescription.trim()}
+              onClick={() => void selectRegion()}
+            >
+              Select matching objects
             </Button>
-          ),
+          </label>
+        )}
+        {tool === "Refine" && (
+          <label>
+            Brush size
+            <input
+              aria-label="Selection brush size"
+              type="number"
+              min={1}
+              max={4096}
+              value={size}
+              onChange={(e) =>
+                setSize(
+                  Math.max(1, Math.min(4096, Number(e.target.value) || 1)),
+                )
+              }
+            />
+          </label>
         )}
         <Button onClick={undo} disabled={!past.length || blocked.current}>
           Undo
@@ -598,6 +1037,119 @@ export function EditWorkspace({
       <div className="edit-body">
         <aside className="edit-layers" aria-label="Layers">
           <h2>Layers</h2>
+          <details>
+            <summary>Add to this canvas</summary>
+            <label>
+              Saved image
+              <select
+                aria-label="Image to place"
+                value={placeId}
+                onChange={(e) => setPlaceId(e.target.value)}
+              >
+                <option value="">Choose an image�</option>
+                {allAssets.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Button
+              disabled={
+                !placeId ||
+                paintBusy ||
+                blocked.current ||
+                doc.layers.length >= 100
+              }
+              onClick={() => {
+                const a = allAssets.find((a) => a.id === placeId);
+                if (a) placeImage(a);
+              }}
+            >
+              Place image
+            </Button>
+            <input
+              ref={placeInput}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+              aria-label="Import canvas layer"
+              onChange={(e) => {
+                void importLayer(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => placeInput.current?.click()}
+            >
+              Import as layer
+            </Button>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => {
+                setSelected("");
+                setTool("Paint");
+              }}
+            >
+              New paint layer
+            </Button>
+          </details>
+          {paintBusy && <p role="status">Saving paint stroke�</p>}
+          <details>
+            <summary>Add branding</summary>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => addBranding("text")}
+            >
+              Add text
+            </Button>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => addBranding("rectangle")}
+            >
+              Add rectangle
+            </Button>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => addBranding("ellipse")}
+            >
+              Add ellipse
+            </Button>
+            <input
+              type="file"
+              accept="image/svg+xml,.svg"
+              hidden
+              ref={logoInput}
+              aria-label="Import SVG logo file"
+              onChange={(e) => {
+                void importSvgLogo(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => logoInput.current?.click()}
+            >
+              Import SVG logo
+            </Button>
+            <p>
+              Static paths and shapes only. Outline text and simplify gradients,
+              clipping or effects before import.
+            </p>
+          </details>
           <p className="muted">Top layer appears in front.</p>
           {[...doc.layers].reverse().map((l) => (
             <div
@@ -703,16 +1255,17 @@ export function EditWorkspace({
         </aside>
         <div className="edit-stage" data-testid="edit-stage">
           {aiPreview && (
-            <div className="ai-canvas-review" aria-label="AI result review">
+            <div className="ai-canvas-review" aria-label="Result review">
               <div>
-                <strong>
-                  AI result review · master unchanged until accepted
-                </strong>
+                <strong>Result review · master unchanged until accepted</strong>
                 <Button onClick={() => setAiPreview(undefined)}>
                   Back to editing
                 </Button>
               </div>
-              <img src={"/api/assets/" + aiPreview} alt="AI review on canvas" />
+              <img
+                src={"/api/assets/" + aiPreview}
+                alt="Result preview on canvas"
+              />
             </div>
           )}
           <div
@@ -744,7 +1297,7 @@ export function EditWorkspace({
               <defs>
                 {doc.layers.map((l) => {
                   if (!("assetId" in l)) return null;
-                  const a = assets.find((a) => a.id === l.assetId);
+                  const a = allAssets.find((a) => a.id === l.assetId);
                   if (!a) return null;
                   const strokes = [
                     ...(l.maskStrokes ?? []),
@@ -802,7 +1355,7 @@ export function EditWorkspace({
                 .map((l) => {
                   const a =
                     "assetId" in l
-                      ? assets.find((a) => a.id === l.assetId)
+                      ? allAssets.find((a) => a.id === l.assetId)
                       : undefined;
                   const t = l.transform;
                   return (
@@ -817,20 +1370,28 @@ export function EditWorkspace({
                     >
                       {a ? (
                         <image
-                          href={"/api/assets/" + a.id}
+                          href={
+                            "vectorSvg" in l &&
+                            l.vectorSvg &&
+                            !l.maskAssetId &&
+                            !l.maskStrokes?.length
+                              ? "data:image/svg+xml," +
+                                encodeURIComponent(l.vectorSvg)
+                              : "/api/assets/" + a.id
+                          }
                           width={a.width}
                           height={a.height}
                           preserveAspectRatio="none"
                           mask={`url(#mask-${l.id})`}
                         />
                       ) : l.type === "text" ? (
-                        <text
+                        <TextArtwork
+                          text={l.text}
                           fontFamily={l.fontFamily}
                           fontSize={l.fontSize}
                           fill={l.fill}
-                        >
-                          {l.text}
-                        </text>
+                          selected={l.id === selected}
+                        />
                       ) : l.type === "vector" ? (
                         l.shape === "rectangle" ? (
                           <rect
@@ -866,6 +1427,50 @@ export function EditWorkspace({
                     </g>
                   );
                 })}
+              {(tool === "Paint" || tool === "Erase" || tool === "Refine") &&
+                stroke.length > 0 &&
+                (stroke.length === 1 ? (
+                  <circle
+                    cx={stroke[0]!.x}
+                    cy={stroke[0]!.y}
+                    r={size / 2}
+                    fill={tool === "Erase" ? "#ffffff" : paintColour}
+                    pointerEvents="none"
+                  />
+                ) : (
+                  <polyline
+                    points={path(stroke)}
+                    fill="none"
+                    stroke={tool === "Erase" ? "#ffffff" : paintColour}
+                    strokeWidth={size}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    pointerEvents="none"
+                  />
+                ))}
+              {doc.selectionMaskAssetId && (
+                <g pointerEvents="none">
+                  <defs>
+                    <mask
+                      id="selection-preview"
+                      style={{ maskType: "luminance" }}
+                    >
+                      <image
+                        href={"/api/assets/" + doc.selectionMaskAssetId}
+                        width={doc.width}
+                        height={doc.height}
+                      />
+                    </mask>
+                  </defs>
+                  <rect
+                    width={doc.width}
+                    height={doc.height}
+                    fill="#e31824"
+                    opacity={0.35}
+                    mask="url(#selection-preview)"
+                  />
+                </g>
+              )}
               {doc.selection && (
                 <polygon
                   points={path(doc.selection)}
@@ -876,12 +1481,48 @@ export function EditWorkspace({
                 <polyline points={path(stroke)} className="selection-outline" />
               )}
               {crop && <rect {...crop} className="crop-outline" />}
+              {tool === "Artwork" && artworkCorners.length > 0 && (
+                <g className="artwork-markers">
+                  <polygon
+                    points={path(artworkCorners)}
+                    className="selection-outline"
+                  />
+                  {artworkCorners.map((p, i) => (
+                    <g
+                      key={i}
+                      data-artwork-corner={i}
+                      style={{ cursor: "move" }}
+                    >
+                      <circle
+                        cx={p.x}
+                        cy={p.y}
+                        r={Math.max(doc.width, doc.height) / 70}
+                        fill="var(--charcoal)"
+                        stroke="var(--white)"
+                        strokeWidth="2"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <text
+                        x={p.x}
+                        y={p.y}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fontSize={Math.max(doc.width, doc.height) / 55}
+                        fill="var(--white)"
+                        pointerEvents="none"
+                      >
+                        {i + 1}
+                      </text>
+                    </g>
+                  ))}
+                </g>
+              )}
             </svg>
           </div>
         </div>
         <aside className="edit-properties" aria-label="Layer properties">
           <FinishPanel
-            hasSelection={!!doc.selection}
+            hasSelection={!!(doc.selection || doc.selectionMaskAssetId)}
             key={documentId}
             documentId={documentId}
             width={doc.width}
@@ -890,10 +1531,13 @@ export function EditWorkspace({
             onCrop={() => setTool("Crop")}
             onApplied={adoptAI}
             onPreview={setAiPreview}
+            artworkCorners={artworkCorners}
+            onArtworkCorners={setArtworkCorners}
+            onMarkArtwork={() => setTool("Artwork")}
           />
           <AIEditPanel
             documentId={documentId}
-            hasSelection={!!doc.selection}
+            hasSelection={!!(doc.selection || doc.selectionMaskAssetId)}
             prepare={prepareAI}
             onApplied={adoptAI}
             onPreview={setAiPreview}
@@ -927,6 +1571,142 @@ export function EditWorkspace({
                 />
                 <output>{Math.round(chosen.opacity * 100)}%</output>
               </label>
+              {chosen.type === "text" && (
+                <fieldset disabled={locked}>
+                  <legend>Exact text</legend>
+                  <label>
+                    Text
+                    <input
+                      aria-label="Text content"
+                      maxLength={500}
+                      value={chosen.text}
+                      onChange={(e) =>
+                        changeLayer({ text: e.target.value } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Font
+                    <select
+                      aria-label="Text font"
+                      value={chosen.fontFamily}
+                      onChange={(e) =>
+                        changeLayer({
+                          fontFamily: e.target.value,
+                        } as Partial<Layer>)
+                      }
+                    >
+                      <option>Darkroom Sans</option>
+                      <option>Darkroom Sans Bold</option>
+                    </select>
+                  </label>
+                  <label>
+                    Size
+                    <input
+                      aria-label="Text size"
+                      type="number"
+                      min="1"
+                      max="512"
+                      value={chosen.fontSize}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        if (n >= 1 && n <= 512)
+                          changeLayer({ fontSize: n } as Partial<Layer>);
+                      }}
+                    />
+                  </label>
+                  <label>
+                    Text colour
+                    <input
+                      aria-label="Text colour"
+                      type="color"
+                      value={chosen.fill}
+                      onChange={(e) =>
+                        changeLayer({ fill: e.target.value } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <p>
+                    Bundled Inter Latin outlines. Text stays editable in the
+                    project; SVG handoff outlines it. AI input uses these exact
+                    glyphs. Protect lettering with the selection when editing.
+                  </p>
+                </fieldset>
+              )}
+              {chosen.type === "vector" && (
+                <fieldset disabled={locked}>
+                  <legend>Shape</legend>
+                  {(["width", "height"] as const).map((k) => (
+                    <label key={k}>
+                      {k}
+                      <input
+                        aria-label={"Shape " + k}
+                        type="number"
+                        min="1"
+                        max="16384"
+                        value={chosen[k]}
+                        onChange={(e) => {
+                          const n = Number(e.target.value);
+                          if (n >= 1 && n <= 16384)
+                            changeLayer({ [k]: n } as Partial<Layer>);
+                        }}
+                      />
+                    </label>
+                  ))}
+                  <label>
+                    Fill
+                    <input
+                      aria-label="Shape fill"
+                      type="color"
+                      value={chosen.fill === "none" ? "#000000" : chosen.fill}
+                      onChange={(e) =>
+                        changeLayer({ fill: e.target.value } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      aria-label="Shape no fill"
+                      checked={chosen.fill === "none"}
+                      onChange={(e) =>
+                        changeLayer({
+                          fill: e.target.checked ? "none" : "#e31824",
+                        } as Partial<Layer>)
+                      }
+                    />
+                    No fill
+                  </label>
+                  <label>
+                    Stroke
+                    <input
+                      aria-label="Shape stroke"
+                      type="color"
+                      value={chosen.stroke}
+                      onChange={(e) =>
+                        changeLayer({
+                          stroke: e.target.value,
+                        } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Stroke width
+                    <input
+                      aria-label="Shape stroke width"
+                      type="number"
+                      min="0"
+                      max="512"
+                      value={chosen.strokeWidth}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        if (n >= 0 && n <= 512)
+                          changeLayer({ strokeWidth: n } as Partial<Layer>);
+                      }}
+                    />
+                  </label>
+                </fieldset>
+              )}
               <fieldset disabled={locked}>
                 <legend>Transform</legend>
                 {(["x", "y", "scaleX", "scaleY", "rotation"] as const).map(
@@ -963,10 +1743,44 @@ export function EditWorkspace({
                 )}
               </fieldset>
               {rasterAsset && (
-                <p className="muted">
-                  {Math.round(rasterAsset.width * chosen.transform.scaleX)} ×{" "}
-                  {Math.round(rasterAsset.height * chosen.transform.scaleY)} px
-                </p>
+                <fieldset disabled={locked}>
+                  <legend>Image size</legend>
+                  {(["width", "height"] as const).map((dimension) => {
+                    const axis = dimension === "width" ? "scaleX" : "scaleY";
+                    const currentSize =
+                      rasterAsset[dimension] * chosen.transform[axis];
+                    return (
+                      <label key={dimension}>
+                        {dimension === "width" ? "Width" : "Height"} (px)
+                        <input
+                          aria-label={"Image " + dimension}
+                          type="number"
+                          min="1"
+                          max="16384"
+                          step="0.1"
+                          value={Number(currentSize.toFixed(3))}
+                          onChange={(e) => {
+                            const n = Number(e.target.value);
+                            if (n >= 1 && n <= 16384)
+                              changeLayer({
+                                transform: {
+                                  ...chosen.transform,
+                                  scaleX:
+                                    (chosen.transform.scaleX * n) / currentSize,
+                                  scaleY:
+                                    (chosen.transform.scaleY * n) / currentSize,
+                                },
+                              });
+                          }}
+                        />
+                      </label>
+                    );
+                  })}
+                  <p className="muted">
+                    Keeps current proportions. Use the scale controls for
+                    independent dimensions.
+                  </p>
+                </fieldset>
               )}
               {chosen.locked && (
                 <p className="muted">
@@ -974,6 +1788,36 @@ export function EditWorkspace({
                 </p>
               )}
             </>
+          )}
+          {(tool === "Paint" || tool === "Erase") && (
+            <fieldset disabled={paintBusy || blocked.current}>
+              <legend>Rough guidance paint</legend>
+              <p>
+                Sketch light, shadow or colour for the AI. Paint stays on its
+                own layer. Select a paint layer to add strokes or erase.
+              </p>
+              <label>
+                Paint colour
+                <input
+                  type="color"
+                  aria-label="Paint colour"
+                  value={paintColour}
+                  onChange={(e) => setPaintColour(e.target.value)}
+                />
+              </label>
+              <label>
+                Brush size
+                <input
+                  type="range"
+                  aria-label="Paint brush size"
+                  min="1"
+                  max="512"
+                  value={size}
+                  onChange={(e) => setSize(Number(e.target.value))}
+                />
+                <output>{size} px</output>
+              </label>
+            </fieldset>
           )}
           {tool === "Mask" && (
             <fieldset disabled={locked}>
@@ -1012,11 +1856,15 @@ export function EditWorkspace({
               </Button>
             </fieldset>
           )}
-          {doc.selection && (
+          {(doc.selection || doc.selectionMaskAssetId) && (
             <Button
               disabled={blocked.current}
               onClick={() => {
-                const { selection: _, ...rest } = doc;
+                const {
+                  selection: _,
+                  selectionMaskAssetId: _mask,
+                  ...rest
+                } = doc;
                 commit(rest);
               }}
             >

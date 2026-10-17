@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "scope": "Reviewed planar artwork perspective correction; full photographic extraction remains open",
+  "sourceRights": "Owned geometric design and bundled licensed Inter outlines; source projection generated analytically",
+  "implementationFiles": {
+    "packages/document/src/perspective.ts": "7ccf3a40960d0cec745a89b5996dab4f3331c2071932201ad3edd54de702cf27",
+    "packages/contracts/src/artwork.ts": "5c03adea9b22106dc393add74b3a81d38e72127c1ad89ca5cf6f405bc4ee84e9",
+    "apps/api/src/artwork.ts": "de535ed189c2a51c3e19a4cd1eb8d1382cc0b0ea16dcaeff406602780623014c"
+  },
+  "controlled": {
+    "schemaVersion": 1,
+    "scope": "Owned analytically projected flat design; no curved-fabric or photographic certification",
+    "record": {
+      "id": "6b47c1a2-2142-4693-8f9d-945ceba4c36c",
+      "documentId": "1c25791d-8952-4334-999e-4956d405ff00",
+      "revisionId": "261b2718-c68d-4b00-88e8-9d31416cee48",
+      "assetId": "608c3fd2-45ef-4d68-b5ec-ad924473ea26",
+      "width": 400,
+      "height": 240,
+      "sourceHash": "2341073301d5193571f8397ca86a4bba4975bd395fb8f07363b0deaa7c021811",
+      "outputHash": "fc6bdabcce27e756b12143f47b9f6bc7616c9e447baf96c4ea773e399d9206e4",
+      "corners": [
+        {
+          "x": 60,
+          "y": 50
+        },
+        {
+          "x": 383.33333333333337,
+          "y": 66.66666666666667
+        },
+        {
+          "x": 385.18518518518516,
+          "y": 222.2222222222222
+        },
+        {
+          "x": 104.34782608695653,
+          "y": 234.7826086956522
+        }
+      ],
+      "disposition": "saved",
+      "createdAt": "2026-10-17T10:32:21.453Z",
+      "savedDocumentId": "a06883ec-91d7-466e-bc2e-f78d32dbb8bd"
+    },
+    "originalRevisionUnchanged": true,
+    "originalBytesUnchanged": true,
+    "interiorRGBMAE": 3.905752508361204,
+    "designText": "DARKROOM / STUDIO 2027",
+    "visualReview": "SCOPED PASS: rectified framing, DARKROOM/STUDIO 2027 lettering and colours retained; small outer-boundary sampling artifacts remain. Owned planar fixture only."
+  },
+  "live": {
+    "schemaVersion": 1,
+    "scope": "Owned analytically projected flat design; no curved-fabric or photographic certification",
+    "record": {
+      "id": "eebfe3c1-abdb-424f-8815-d7b03e8df620",
+      "documentId": "f8aaaf2e-25cd-481f-9b2a-093ca69b1a59",
+      "revisionId": "0f9996cd-06fc-4279-9fea-be5a22eef4db",
+      "assetId": "d57ade38-21ee-4ebd-8a54-c4123bc0fac7",
+      "width": 400,
+      "height": 240,
+      "sourceHash": "2341073301d5193571f8397ca86a4bba4975bd395fb8f07363b0deaa7c021811",
+      "outputHash": "fc6bdabcce27e756b12143f47b9f6bc7616c9e447baf96c4ea773e399d9206e4",
+      "corners": [
+        {
+          "x": 60,
+          "y": 50
+        },
+        {
+          "x": 383.33333333333337,
+          "y": 66.66666666666667
+        },
+        {
+          "x": 385.18518518518516,
+          "y": 222.2222222222222
+        },
+        {
+          "x": 104.34782608695653,
+          "y": 234.7826086956522
+        }
+      ],
+      "disposition": "saved",
+      "createdAt": "2026-10-17T10:33:25.371Z",
+      "savedDocumentId": "8f9ebc4b-1b09-49f3-9dae-9b01f3bc9a42"
+    },
+    "originalRevisionUnchanged": true,
+    "originalBytesUnchanged": true,
+    "interiorRGBMAE": 3.905752508361204,
+    "designText": "DARKROOM / STUDIO 2027",
+    "visualReview": "SCOPED PASS: live preview, separate master and reload inspected; original hidden/locked layer retained. Actual output hash equals controlled output."
+  },
+  "performance": {
+    "pixels": 16000000,
+    "calculationMs": 856.5889,
+    "processRssBytes": 156672000,
+    "scope": "One workstation calculation, excluding rendering/encoding/storage"
+  },
+  "modelsChanged": false
+}

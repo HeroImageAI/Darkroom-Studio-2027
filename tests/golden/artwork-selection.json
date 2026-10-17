@@ -1,0 +1,32 @@
+{
+  "sourceSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+  "source": "data/scope-qa/astronaut.png",
+  "width": 512,
+  "height": 512,
+  "scope": "Manually reviewed outline of the round photographic badge. This annotation belongs only to the pinned NASA fixture; never apply it to another image. Not a claim of automatic segmentation or curved-fabric reconstruction.",
+  "selection": [
+    { "x": 171, "y": 349 },
+    { "x": 185, "y": 351 },
+    { "x": 198, "y": 359 },
+    { "x": 207, "y": 373 },
+    { "x": 210, "y": 388 },
+    { "x": 206, "y": 402 },
+    { "x": 195, "y": 415 },
+    { "x": 179, "y": 423 },
+    { "x": 163, "y": 422 },
+    { "x": 147, "y": 414 },
+    { "x": 136, "y": 402 },
+    { "x": 132, "y": 387 },
+    { "x": 136, "y": 369 },
+    { "x": 147, "y": 356 },
+    { "x": 160, "y": 350 }
+  ],
+  "corners": [
+    { "x": 130, "y": 345 },
+    { "x": 213, "y": 345 },
+    { "x": 213, "y": 427 },
+    { "x": 130, "y": 427 }
+  ],
+  "outputWidth": 84,
+  "outputHeight": 83
+}

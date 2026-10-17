@@ -308,3 +308,33 @@
   object-fit: contain;
   margin-top: var(--space-2);
 }
+
+.more-canvas-tools {
+  position: relative;
+}
+.more-canvas-tools[open] {
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.more-canvas-tools summary {
+  cursor: pointer;
+}
+
+.artwork-panel .button {
+  width: 100%;
+  white-space: normal;
+  margin-bottom: var(--space-2);
+}
+.artwork-panel fieldset {
+  min-width: 0;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius);
+  margin: var(--space-3) 0;
+  padding: var(--space-2);
+}
+.artwork-candidate {
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-4);
+  padding-top: var(--space-2);
+}

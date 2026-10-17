@@ -16,6 +16,11 @@
     "Upscale": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c",
     "Restore": "5d2fc39eb8e66064097995a35073d1b775e618b5897d03426d5816bc5663eb3c"
   },
-  "implementationHash": "ecc0f907d3a133b7857f0b8933774188f3633f5df9179d83e1c809cbdc8b7c74",
-  "evidenceId": "finish-protected-restore-2026-10-16"
+  "implementationHash": "362ed2e04a13e52cdae15f8c03751c13efee2e0926c3ae6a430e06ce64dc8473",
+  "evidenceId": "finish-protected-restore-2026-10-16",
+  "previousImplementation": "ccec58caffdf272efc63da74e26c36d72bf87299a91fcc91d2fdbc31bcfa3a13",
+  "compatibilityEvidence": "workflows/scope-corrections-parity.json",
+  "compatibilityScope": "Existing scoped GPU outcomes retained after byte-identical renderer/output regression checks. No broader photographic or text-region generation claim.",
+  "alphaEvidence": "workflows/finish-alpha-validation.json",
+  "alphaScope": "Four local GPU comparisons across synthetic and photographic cutouts; grey matte correction only, with existing alpha, opaque-output parity and selected Restore RGBA retained. Faint alpha below 32 keeps source RGB. Wider colour fidelity and clear-glass extraction remain open. Blend continuously from source to recovered RGB between alpha 32 and 64. Encode straight RGBA without reapplying resize premultiplication; real 2x translucent regression tests."
 }

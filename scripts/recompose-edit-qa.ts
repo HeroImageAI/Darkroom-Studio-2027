@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync, existsSync, copyFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
-import { protectEdit } from "../apps/api/src/edit-render.js";
+import { protectRequestedEdit } from "../apps/api/src/edit-render.js";
 import { editSignature } from "../packages/routing/src/edit-policy.js";
 import { editTasks } from "../packages/contracts/src/edit.js";
 const root = "data/edit-qa",
@@ -19,13 +19,7 @@ for (const task of editTasks) {
   if (!existsSync(`${root}/${task}.before-final-composite.png`))
     copyFileSync(path, `${root}/${task}.before-final-composite.png`);
   const start = Date.now(),
-    result = await protectEdit(
-      source,
-      mask,
-      raw,
-      task !== "Background",
-      task !== "Expand",
-    );
+    result = await protectRequestedEdit(source, mask, raw, task);
   writeFileSync(path, result);
   const a = await sharp(source).ensureAlpha().raw().toBuffer(),
     b = await sharp(result).ensureAlpha().raw().toBuffer(),

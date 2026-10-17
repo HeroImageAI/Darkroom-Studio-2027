@@ -148,8 +148,8 @@ export function AIFinishPanel({
           onChange={(e) => setTask(e.target.value as FinishRequest["task"])}
         >
           {["Remove background", "Upscale", "Restore"].map((t) => (
-            <option key={t} disabled={!tasks.includes(t)}>
-              {t}
+            <option key={t} value={t} disabled={!tasks.includes(t)}>
+              {t === "Restore" ? "Restore surroundings" : t}
             </option>
           ))}
         </select>

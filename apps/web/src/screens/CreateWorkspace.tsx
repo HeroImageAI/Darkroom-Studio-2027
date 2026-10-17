@@ -30,7 +30,7 @@ type Props = {
 };
 export function CreateWorkspace(p: Props) {
   const [aspect, setAspect] = useState<keyof typeof aspectDimensions>("Square");
-  const [quality, setQuality] = useState<"Draft" | "Final">("Draft");
+  const [quality, setQuality] = useState<"Draft" | "Final">("Final");
   const [variations, setVariations] = useState(1);
   const [model, setModel] = useState<"Auto" | "Klein" | "Qwen">("Auto");
   const [custom, setCustom] = useState(false);
@@ -326,6 +326,18 @@ export function CreateWorkspace(p: Props) {
       </Panel>
       <div className="create-controls">
         <label>
+          Image model
+          <select
+            aria-label="Image model"
+            value={model}
+            onChange={(e) => setModel(e.target.value as typeof model)}
+          >
+            <option value="Auto">Auto</option>
+            <option value="Klein">FLUX.2 Klein 9B</option>
+            <option value="Qwen">Qwen Image 2.1</option>
+          </select>
+        </label>
+        <label>
           Aspect
           <select
             aria-label="Aspect"
@@ -370,18 +382,6 @@ export function CreateWorkspace(p: Props) {
         <details className="advanced">
           <summary>Advanced</summary>
           <div>
-            <label>
-              Model
-              <select
-                aria-label="Model"
-                value={model}
-                onChange={(e) => setModel(e.target.value as typeof model)}
-              >
-                <option>Auto</option>
-                <option>Klein</option>
-                <option>Qwen</option>
-              </select>
-            </label>
             <label>
               <input
                 type="checkbox"

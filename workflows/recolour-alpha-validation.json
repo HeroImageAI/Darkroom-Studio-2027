@@ -1,0 +1,51 @@
+{
+  "baselineCommit": "5166a47da7684de11494b842e9ef7bcd8ea012c8",
+  "implementationSha256": "88ecc855d26de2d956acda91d4bfa15f621774e9f96f0a11d1df5adcca70cb72",
+  "comparisons": [
+    {
+      "task": "Background",
+      "rgbParity": true,
+      "alphaChanged": 0,
+      "rawHash": "09d169de26b1dace62d1ffd50a9b925f5e63686a4fdd405a4875ecf55d58f2a5"
+    },
+    {
+      "task": "Remove",
+      "rgbParity": true,
+      "alphaChanged": 0,
+      "rawHash": "0007ce1ae9381d53b7ccaa29ff13a66d5c592773ec1d58f403437ee5a8e483ca"
+    },
+    {
+      "task": "Replace",
+      "rgbParity": true,
+      "alphaChanged": 0,
+      "rawHash": "277bd74a041dd5530d58f007182f03ea7746921331702c1caf57eb72c3ac1cf5"
+    },
+    {
+      "task": "Recolour",
+      "rgbParity": true,
+      "alphaChanged": 13449,
+      "sourceAlphaExact": true,
+      "rawHash": "794aec1fbac2eb233f750507ecac92b887c4f11be71602119dd9a21b7dfabfbe"
+    },
+    {
+      "task": "Expand",
+      "rgbParity": true,
+      "alphaChanged": 0,
+      "rawHash": "c1a522b8def4cb573292bf5b4725a6f5d21949da4ce4d499904d1a5972c751d7"
+    },
+    {
+      "task": "Instruct",
+      "rgbParity": true,
+      "alphaChanged": 0,
+      "rawHash": "7ea34dce5c68f888d469d788261c3a2dd557d13cc6ee12505cc57d31ae7d47e0"
+    }
+  ],
+  "translucentCoverage": {
+    "pixels": 589824,
+    "alphaExact": true,
+    "protectedPixels": 545824,
+    "protectedPixelsExact": true,
+    "changedColourPixels": 43998
+  },
+  "scope": "Deterministic compositor checks using retained GPU results and owned synthetic alpha ramp; does not validate glass extraction or garment selection quality."
+}

@@ -73,7 +73,11 @@ export async function submitFinish(
     throw new Conflict("Save the current master before finishing");
   if (doc.snapshot.layers.length >= 100)
     throw Error("Finish needs a free layer slot");
-  if (r.task === "Restore" && !doc.snapshot.selection)
+  if (
+    r.task === "Restore" &&
+    !doc.snapshot.selection &&
+    !doc.snapshot.selectionMaskAssetId
+  )
     throw Error("Select the lettering or details to preserve before restoring");
   if (
     r.task !== "Upscale" &&
@@ -169,6 +173,11 @@ export async function collectFinish(
     r.width,
     r.height,
     (JSON.parse(row.snapshotJson) as Snapshot).selection,
+    (JSON.parse(row.snapshotJson) as Snapshot).selectionMaskAssetId
+      ? store.assetBytes(
+          (JSON.parse(row.snapshotJson) as Snapshot).selectionMaskAssetId!,
+        )
+      : undefined,
   );
   const asset = await store.internalAsset(
     bytes,
@@ -302,7 +311,7 @@ export function reviewFinish(
       action === "accept"
         ? original
         : store.createDocument(original.projectId, original.originalAssetId);
-    const { selection: _, ...rest } = base,
+    const { selection: _, selectionMaskAssetId: _mask, ...rest } = base,
       sx = r.width / base.width,
       sy = r.height / base.height;
     const snapshot: Snapshot = {

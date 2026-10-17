@@ -142,6 +142,27 @@ export function AIEditPanel({
         Select an area on the canvas, then tell Darkroom what you want. Results
         wait for your review.
       </p>
+      <details>
+        <summary>Harmonise a composite</summary>
+        <Button
+          disabled={busy || !hasSelection || !enabled.includes("Instruct")}
+          onClick={() => {
+            setTask("Instruct");
+            setArea("outside");
+            setInstruction(
+              "Make this composition look like one coherent professional photograph. Harmonise the lighting, colour, contact shadows and joins around the selected subject. Keep the selected product, lettering and design exactly unchanged. Turn rough guidance paint into natural lighting or shadow; do not add objects or text.",
+            );
+          }}
+        >
+          Harmonise composite
+        </Button>
+        <p className="muted">
+          For a composite, select the product or branding to keep unchanged,
+          then harmonise its surroundings. Refine the selection so unwanted
+          background or rough paint is not kept with the subject. Review edges
+          and shadows before accepting.
+        </p>
+      </details>
       <label>
         Action
         <select

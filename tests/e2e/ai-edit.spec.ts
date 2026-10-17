@@ -20,7 +20,7 @@ async function setup(page: Page, loseResponse = false) {
   await page.goto("/");
   await expect(page.locator("#project")).not.toHaveValue("");
   await page.getByRole("button", { name: "Edit", exact: true }).click();
-  await page.locator("input[type=file]").setInputFiles({
+  await page.getByLabel("Import image files", { exact: true }).setInputFiles({
     name: "AI edit fixture.png",
     mimeType: "image/png",
     buffer: await sharp({
@@ -158,7 +158,7 @@ test("AI review compares a proposed result and changes the master only on accept
     page.getByRole("img", { name: "Proposed AI edit", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("img", { name: "AI review on canvas", exact: true }),
+    page.getByRole("img", { name: "Result preview on canvas", exact: true }),
   ).toBeVisible();
   expect(calls[0]).toMatchObject({
     documentId: id,

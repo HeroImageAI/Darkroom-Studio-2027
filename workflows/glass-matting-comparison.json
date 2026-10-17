@@ -1,0 +1,79 @@
+{
+  "baseline": {
+    "engineVersion": "0.41.2",
+    "modelHashes": {
+      "diffusion_models/seedvr2_7b_sharp_int8_convrot.safetensors": "db48be2f1cc7e36b01a2aa529810f5d9c6a971edd29be225cf1b0eb18d51c366",
+      "vae/ema_vae_fp16.safetensors": "20678548f420d98d26f11442d3528f8b8c94e57ee046ef93dbb7633da8612ca1",
+      "background_removal/birefnet.safetensors": "9ab37426bf4de0567af6b5d21b16151357149139362e6e8992021b8ce356a154"
+    },
+    "nodeFingerprint": "70a8098467bc2bde64617ef528b3e9e2ac1011c7ae88e07cf46a472ef4489987",
+    "scope": "Owned synthetic bottle with known alpha on two input backgrounds; necessary transparency check only. Single-image glass decomposition is ambiguous; no model or enabled workflow change.",
+    "runs": [
+      {
+        "name": "white",
+        "background": "#ffffff",
+        "promptId": "9f108810-2445-4723-8d84-07c990d627e2",
+        "ms": 1892,
+        "sourceHash": "8979ee3bb8210780aa11e2e56c4b593376ee66d5726d8aa51938f93c80899b95",
+        "outputHash": "eba44bcc52740d15ebc31a7c907f68cf0534a749472341470b80fc80d10c98df",
+        "sourceRgbExact": true,
+        "interiorAlphaMae": 216,
+        "predictedInteriorAlpha": 254,
+        "expectedInteriorAlpha": 38,
+        "labelAlpha": 254,
+        "visualReview": "FAIL: translucent body becomes opaque and silhouette is incomplete."
+      },
+      {
+        "name": "blue",
+        "background": "#8eacc8",
+        "promptId": "d2514243-7c62-4b49-8362-fa55f3035913",
+        "ms": 725,
+        "sourceHash": "4f29d16865f973c885ba7088e12b7a5499b4c43e9158e79887718ba4deecdb2a",
+        "outputHash": "4dc455684044b4896026a932f8caf36a36f3aff1f7c3b1daa8b81f099cb68e0b",
+        "sourceRgbExact": true,
+        "interiorAlphaMae": 216,
+        "predictedInteriorAlpha": 254,
+        "expectedInteriorAlpha": 38,
+        "labelAlpha": 247.66967147435898,
+        "visualReview": "FAIL: translucent body becomes opaque and silhouette is incomplete."
+      }
+    ]
+  },
+  "candidate": {
+    "model": "hustvl/vitmatte-small-composition-1k",
+    "revision": "6a58ad7646403c1df626fbd746900aec7361ea1d",
+    "modelSha256": "bda9289db1bb6762d978b42d1c62ae3f34daf7497171a347a1d09657efd788cb",
+    "checkpointBytes": 103294572,
+    "torch": "2.12.1+cu130",
+    "scope": "Manual trimap on a controlled synthetic fixture; alpha only, no foreground colour estimation; no route enabled.",
+    "runs": [
+      {
+        "name": "white",
+        "seconds": 0.8765114999987418,
+        "device": "cuda",
+        "peakAllocatedBytes": 302452736,
+        "predictedInteriorAlpha": 50.71658163265306,
+        "expectedInteriorAlpha": 38,
+        "interiorAlphaMae": 12.716581632653062,
+        "labelAlpha": 254.90124198717947,
+        "visualReview": "PROMISING CONTROLLED RESULT: guided body alpha and opaque label retained; no photographic or automatic matting pass."
+      },
+      {
+        "name": "blue",
+        "seconds": 0.05720959999598563,
+        "device": "cuda",
+        "peakAllocatedBytes": 302190592,
+        "predictedInteriorAlpha": 30.886224489795918,
+        "expectedInteriorAlpha": 38,
+        "interiorAlphaMae": 7.113775510204082,
+        "labelAlpha": 255,
+        "visualReview": "PROMISING CONTROLLED RESULT: guided body alpha and opaque label retained; no photographic or automatic matting pass."
+      }
+    ]
+  },
+  "candidateEnabled": false,
+  "modelSource": "https://huggingface.co/hustvl/vitmatte-small-composition-1k/tree/6a58ad7646403c1df626fbd746900aec7361ea1d",
+  "checkpointLicenseListed": "Apache-2.0",
+  "modelLocation": "Ignored workspace QA cache; not registered with ComfyUI",
+  "remainingGate": "Photographic glass and foreground-colour recovery, native ComfyUI workflow integration, and broader quality checks."
+}

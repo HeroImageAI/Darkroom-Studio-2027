@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { BrandingHandoff } from "./BrandingHandoff.js";
 import type {
   ExportRecord,
   ExportRequest,
@@ -6,6 +7,8 @@ import type {
 import { api } from "../lib/api.js";
 import { Button } from "../components/Controls.js";
 import { AIFinishPanel } from "./AIFinishPanel.js";
+import { ArtworkPanel } from "./ArtworkPanel.js";
+import type { Point } from "../../../../packages/document/src/edit.js";
 
 export function FinishPanel({
   documentId,
@@ -16,6 +19,9 @@ export function FinishPanel({
   onCrop,
   onApplied,
   onPreview,
+  artworkCorners,
+  onArtworkCorners,
+  onMarkArtwork,
 }: {
   documentId: string;
   width: number;
@@ -25,6 +31,9 @@ export function FinishPanel({
   onCrop: () => void;
   onApplied: (id: string) => Promise<void>;
   onPreview: (id: string | undefined) => void;
+  artworkCorners: Point[];
+  onArtworkCorners: (points: Point[]) => void;
+  onMarkArtwork: () => void;
 }) {
   const [format, setFormat] = useState<"png" | "jpeg">("png");
   const [transparent, setTransparent] = useState(true),
@@ -93,6 +102,19 @@ export function FinishPanel({
         documentId={documentId}
         width={width}
         height={height}
+        prepare={prepare}
+        onApplied={onApplied}
+        onPreview={onPreview}
+      />
+      <BrandingHandoff documentId={documentId} prepare={prepare} />
+      <ArtworkPanel
+        documentId={documentId}
+        hasSelection={hasSelection}
+        width={width}
+        height={height}
+        corners={artworkCorners}
+        onCorners={onArtworkCorners}
+        onMark={onMarkArtwork}
         prepare={prepare}
         onApplied={onApplied}
         onPreview={onPreview}

@@ -18,7 +18,7 @@ export function cropDocument(
   const y = Math.max(0, Math.min(doc.height - 1, Math.round(rect.y)));
   const width = Math.max(1, Math.min(doc.width - x, Math.round(rect.width)));
   const height = Math.max(1, Math.min(doc.height - y, Math.round(rect.height)));
-  const { selection: _, ...rest } = doc;
+  const { selection: _, selectionMaskAssetId: _mask, ...rest } = doc;
   return {
     ...rest,
     width,
