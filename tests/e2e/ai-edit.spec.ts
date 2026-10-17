@@ -158,7 +158,7 @@ test("AI review compares a proposed result and changes the master only on accept
     page.getByRole("img", { name: "Proposed AI edit", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("img", { name: "AI review on canvas", exact: true }),
+    page.getByRole("img", { name: "Result preview on canvas", exact: true }),
   ).toBeVisible();
   expect(calls[0]).toMatchObject({
     documentId: id,

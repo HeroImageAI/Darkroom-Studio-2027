@@ -4,6 +4,8 @@ Status: Core scope corrections after the Phase 7 preview. Phase 8 Library expans
 
 17 October continuation: the user authorises work through full completion without further phase approval requests. The earlier approval stop rules below are superseded by that instruction; quality gates and review requirements remain. [Completion gates](COMPLETION_GATES.md) tracks the remaining outcomes, and [model/workflow audit](MODEL_WORKFLOW_AUDIT.md) records checks against publisher guidance and the installed engine.
 
+PR #10's completion/audit evidence is merged at `7696d581fb5c2d7b37016abf526955ef88eef7fa`, after Windows/Linux checks passed at `a1f061a`. The next original-scope milestone is the reviewed [artwork perspective tool](ARTWORK_EXTRACTION.md); broader photographic extraction remains open.
+
 PR #8's core corrections and PR #9's quality fixes are merged into `composite-workflow` (PR #9 merge `6857e287f05c1fc620db0c26b327a8928de45b32`, after Windows/Linux CI passed at `f7a05a5`). The latest review and garment/colour/restoration/glass outcomes are recorded in [quality follow-up](QUALITY_FOLLOWUP.md). Candidate model tests do not advance a phase or enable a new route.
 
 ## Repository strategy

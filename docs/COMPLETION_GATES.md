@@ -10,7 +10,7 @@ The original `product-brief.md` defines scope. Completion means passing its boun
 | Create and references | Phase 2; validated Klein/Qwen routes | Representative photographic product/concept cases; intent, counts, lettering and reference fidelity |
 | Smart selection and local edits | Selection validation and photographic comparisons | Reliable object clicks/small parts; garment seams/edges with protected branding; visible refinements |
 | Product presentation and composite | Scoped product/composite evidence | Real photographic product fidelity, joins, shadows and protected design |
-| Artwork extraction | Basic selection and exact SVG handoff | Perspective correction and design/colour fidelity on photographed artwork; truthful raster output |
+| Artwork extraction | Reviewed planar perspective tool, controlled design and live UI copy; see `ARTWORK_EXTRACTION.md` | Photographed artwork/design fidelity, curved-fabric correction, cleanup and isolation; truthful raster output |
 | Upscale and alpha | PR9 review, 107-test baseline, GPU comparisons | Broader photographic detail, hair and translucent edges; supported practical dimensions |
 | Restore | Protected surroundings only | Demonstrate reduced damage with identity/design retained; source copying alone does not close this gate |
 | Background removal and clear glass | BiRefNet ordinary cutouts; isolated guided matte experiment | Photographic transparency, foreground colour recovery and validated native workflow |

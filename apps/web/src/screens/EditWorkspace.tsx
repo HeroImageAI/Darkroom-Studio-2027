@@ -35,6 +35,7 @@ type Tool =
   | "Mask"
   | "Crop"
   | "Paint"
+  | "Artwork"
   | "Erase";
 type Gesture = {
   start: Point;
@@ -79,6 +80,8 @@ export function EditWorkspace({
   }, [projectId]);
   const [record, setRecord] = useState<Document>();
   const [aiPreview, setAiPreview] = useState<string>();
+  const [artworkCorners, setArtworkCorners] = useState<Point[]>([]);
+  const artworkDrag = useRef<number | undefined>(undefined);
   const [doc, setDoc] = useState<Snapshot>();
   const current = useRef<Snapshot | undefined>(undefined);
   const revision = useRef("");
@@ -167,6 +170,8 @@ export function EditWorkspace({
     setConflict(false);
     setError("");
     setRecovery(undefined);
+    setArtworkCorners([]);
+    artworkDrag.current = undefined;
     setStatus("Opening master…");
     setDoc(undefined);
     current.current = undefined;
@@ -308,6 +313,8 @@ export function EditWorkspace({
         void save();
       }
       if (e.key === "Escape") {
+        artworkDrag.current = undefined;
+        if (tool === "Artwork") setTool("Move");
         if (gesture.current) display(gesture.current.before);
         gesture.current = undefined;
         setStroke([]);
@@ -427,6 +434,23 @@ export function EditWorkspace({
     )
       return;
     const p = point(e);
+    if (tool === "Artwork") {
+      const clamped = {
+        x: Math.round(Math.max(0, Math.min(doc.width - 1, p.x)) * 100) / 100,
+        y: Math.round(Math.max(0, Math.min(doc.height - 1, p.y)) * 100) / 100,
+      };
+      const corner = (e.target as Element)
+        .closest("[data-artwork-corner]")
+        ?.getAttribute("data-artwork-corner");
+      if (corner !== null && corner !== undefined) {
+        artworkDrag.current = Number(corner);
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } else
+        setArtworkCorners((points) =>
+          points.length < 4 ? [...points, clamped] : points,
+        );
+      return;
+    }
     if (tool === "Subject") {
       void selectRegion(undefined, p);
       return;
@@ -454,6 +478,25 @@ export function EditWorkspace({
       setStroke([localPoint(p, chosen.transform)]);
   }
   function move(e: React.PointerEvent<SVGSVGElement>) {
+    if (tool === "Artwork" && artworkDrag.current !== undefined && doc) {
+      const p = point(e),
+        index = artworkDrag.current;
+      setArtworkCorners((points) =>
+        points.map((v, i) =>
+          i === index
+            ? {
+                x:
+                  Math.round(Math.max(0, Math.min(doc.width - 1, p.x)) * 100) /
+                  100,
+                y:
+                  Math.round(Math.max(0, Math.min(doc.height - 1, p.y)) * 100) /
+                  100,
+              }
+            : v,
+        ),
+      );
+      return;
+    }
     const g = gesture.current;
     if (!g) return;
     const p = point(e);
@@ -502,6 +545,12 @@ export function EditWorkspace({
       ]);
   }
   function up(e: React.PointerEvent<SVGSVGElement>, cancelled = false) {
+    if (artworkDrag.current !== undefined) {
+      artworkDrag.current = undefined;
+      if (e.currentTarget.hasPointerCapture(e.pointerId))
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      return;
+    }
     const g = gesture.current;
     if (!g) return;
     gesture.current = undefined;
@@ -1206,16 +1255,17 @@ export function EditWorkspace({
         </aside>
         <div className="edit-stage" data-testid="edit-stage">
           {aiPreview && (
-            <div className="ai-canvas-review" aria-label="AI result review">
+            <div className="ai-canvas-review" aria-label="Result review">
               <div>
-                <strong>
-                  AI result review · master unchanged until accepted
-                </strong>
+                <strong>Result review · master unchanged until accepted</strong>
                 <Button onClick={() => setAiPreview(undefined)}>
                   Back to editing
                 </Button>
               </div>
-              <img src={"/api/assets/" + aiPreview} alt="AI review on canvas" />
+              <img
+                src={"/api/assets/" + aiPreview}
+                alt="Result preview on canvas"
+              />
             </div>
           )}
           <div
@@ -1431,6 +1481,42 @@ export function EditWorkspace({
                 <polyline points={path(stroke)} className="selection-outline" />
               )}
               {crop && <rect {...crop} className="crop-outline" />}
+              {tool === "Artwork" && artworkCorners.length > 0 && (
+                <g className="artwork-markers">
+                  <polygon
+                    points={path(artworkCorners)}
+                    className="selection-outline"
+                  />
+                  {artworkCorners.map((p, i) => (
+                    <g
+                      key={i}
+                      data-artwork-corner={i}
+                      style={{ cursor: "move" }}
+                    >
+                      <circle
+                        cx={p.x}
+                        cy={p.y}
+                        r={Math.max(doc.width, doc.height) / 70}
+                        fill="var(--charcoal)"
+                        stroke="var(--white)"
+                        strokeWidth="2"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <text
+                        x={p.x}
+                        y={p.y}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fontSize={Math.max(doc.width, doc.height) / 55}
+                        fill="var(--white)"
+                        pointerEvents="none"
+                      >
+                        {i + 1}
+                      </text>
+                    </g>
+                  ))}
+                </g>
+              )}
             </svg>
           </div>
         </div>
@@ -1445,6 +1531,9 @@ export function EditWorkspace({
             onCrop={() => setTool("Crop")}
             onApplied={adoptAI}
             onPreview={setAiPreview}
+            artworkCorners={artworkCorners}
+            onArtworkCorners={setArtworkCorners}
+            onMarkArtwork={() => setTool("Artwork")}
           />
           <AIEditPanel
             documentId={documentId}
