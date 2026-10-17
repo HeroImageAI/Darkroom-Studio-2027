@@ -109,6 +109,7 @@ export function FinishPanel({
       <BrandingHandoff documentId={documentId} prepare={prepare} />
       <ArtworkPanel
         documentId={documentId}
+        hasSelection={hasSelection}
         width={width}
         height={height}
         corners={artworkCorners}

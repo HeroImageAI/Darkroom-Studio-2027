@@ -115,3 +115,87 @@ test("artwork corners, review and separate master preserve the source and surviv
       .currentRevisionId,
   ).toBe(original.currentRevisionId);
 });
+test("a visible selection can isolate artwork with real transparent output", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.locator("#project")).not.toHaveValue("");
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await page.getByLabel("Import image files", { exact: true }).setInputFiles({
+    name: "owned-isolation.png",
+    mimeType: "image/png",
+    buffer: await sharp({
+      create: { width: 100, height: 80, channels: 4, background: "#e31824" },
+    })
+      .png()
+      .toBuffer(),
+  });
+  await page.getByRole("button", { name: "Save initial master" }).click();
+  await expect(
+    page.getByText("All changes saved", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Select", exact: true }).click();
+  const box = await page
+    .getByRole("img", { name: "Editable image canvas", exact: true })
+    .boundingBox();
+  if (!box) throw Error("Canvas missing");
+  await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.8, {
+    steps: 5,
+  });
+  await page.mouse.up();
+  await expect(
+    page.getByRole("button", { name: "Clear selection", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("All changes saved", { exact: true }),
+  ).toBeVisible();
+  const project = await page.locator("#project").inputValue();
+  const sourceId = await page.evaluate(
+    (p) => localStorage.getItem("darkroom.lastDocument." + p),
+    project,
+  );
+  const frozen = await (
+    await page.request.get(`/api/documents/${sourceId}`)
+  ).json();
+  await page.getByText("Finish & export", { exact: true }).click();
+  await page.getByText("Straighten artwork", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "Use image corners", exact: true })
+    .click();
+  await page.getByLabel("Keep selected artwork only", { exact: true }).check();
+  await page
+    .getByRole("button", { name: "Preview artwork", exact: true })
+    .click();
+  await expect(
+    page.getByRole("img", { name: "Result preview on canvas", exact: true }),
+  ).toBeVisible();
+  const [candidate] = await (
+    await page.request.get(`/api/documents/${sourceId}/artwork`)
+  ).json();
+  expect(candidate.selectionMaskHash).toMatch(/^[a-f0-9]{64}$/);
+  const pixels = await sharp(
+    await (await page.request.get(`/api/assets/${candidate.assetId}`)).body(),
+  )
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  expect(pixels[3]).toBe(0);
+  expect([
+    ...pixels.subarray((40 * 100 + 50) * 4, (40 * 100 + 50) * 4 + 4),
+  ]).toEqual([227, 24, 36, 255]);
+  expect(
+    (await (await page.request.get(`/api/documents/${sourceId}`)).json())
+      .currentRevisionId,
+  ).toBe(frozen.currentRevisionId);
+  await page
+    .getByRole("button", { name: "Save as new master", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", {
+      name: "Isolated artwork · raster",
+      exact: true,
+    }),
+  ).toBeVisible();
+});

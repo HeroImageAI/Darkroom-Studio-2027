@@ -59,3 +59,7 @@ Before any ComfyUI update is accepted, rerun node/input/model compatibility chec
 Every phase report includes IMPLEMENTED, NOT IMPLEMENTED, TEST RESULTS, LIVE RESULTS, KNOWN ISSUES, GIT STATUS and RECOMMENDATION. Link evidence and distinguish mocks, historical results and current live runs. Record any blocked gate without labelling it passed. Stop at the phase boundary for review and explicit continuation; do not expand scope to occupy blocked time.
 
 Phase 0 checks are document completeness, cross-links, requirement coverage, clean Git state and remote commit/PR verification. TypeScript/build/browser/model tests are not applicable to a documentation-only baseline; they become mandatory with Phase 1. No model or browser validation is claimed in Phase 0.
+
+## 17 October artwork quality continuation
+
+PR11 planar perspective correction is merged into composite-workflow at f61ee27e8c36a9362d211d638c7c23cbf461a67f. The next bounded correction adds opt-in isolation from an existing visible selection. It preserves photographed pixels and saves a separate master; it introduces no model, package or additional product destination. See ARTWORK_EXTRACTION.md and workflows/artwork-isolation-validation.json for scoped photographic evidence and remaining edge-quality limitations. Core quality gates still precede Library expansion. The user's explicit continuing authorization supersedes the earlier phase-boundary approval stop rule.
