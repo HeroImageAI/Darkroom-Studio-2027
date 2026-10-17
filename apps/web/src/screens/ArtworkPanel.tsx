@@ -11,6 +11,7 @@ export function ArtworkPanel({
   documentId,
   width,
   height,
+  hasSelection,
   corners,
   onCorners,
   onMark,
@@ -21,6 +22,7 @@ export function ArtworkPanel({
   documentId: string;
   width: number;
   height: number;
+  hasSelection: boolean;
   corners: Point[];
   onCorners: (points: Point[]) => void;
   onMark: () => void;
@@ -33,6 +35,10 @@ export function ArtworkPanel({
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const [records, setRecords] = useState<ArtworkRecord[]>([]);
+  const [keepSelection, setKeepSelection] = useState(false);
+  useEffect(() => {
+    if (!hasSelection) setKeepSelection(false);
+  }, [hasSelection]);
   const [selectedId, setSelectedId] = useState("");
   const selectedRecord = records.find((r) => r.id === selectedId) ?? records[0];
   const pending = useRef<ArtworkRequest | undefined>(undefined);
@@ -80,6 +86,7 @@ export function ArtworkPanel({
           corners: corners.map((p) => ({ ...p })),
           width: w,
           height: h,
+          ...(keepSelection ? { useSelection: true } : {}),
           idempotencyKey: crypto.randomUUID(),
         };
       const result = await api<ArtworkRecord>("/artwork", {
@@ -224,6 +231,21 @@ export function ArtworkPanel({
           }}
         />
       </label>
+      <label>
+        <input
+          type="checkbox"
+          aria-label="Keep selected artwork only"
+          disabled={busy || !hasSelection}
+          checked={keepSelection}
+          onChange={(e) => setKeepSelection(e.target.checked)}
+        />
+        Keep selected artwork only
+      </label>
+      <p>
+        {hasSelection
+          ? "Uses the visible selection to make the surrounding image transparent."
+          : "Select the artwork on the canvas first to isolate it from the surrounding image."}
+      </p>
       <Button
         primary
         disabled={
@@ -283,7 +305,11 @@ export function ArtworkPanel({
       {(selectedRecord ? [selectedRecord] : []).map((record) => (
         <div className="artwork-candidate" key={record.id}>
           <p>
-            {record.width} × {record.height} · raster artwork ·{" "}
+            {record.width} × {record.height} ·{" "}
+            {record.selectionMaskHash
+              ? "isolated raster artwork"
+              : "raster artwork"}{" "}
+            ·{" "}
             {record.disposition === "candidate"
               ? "ready to review"
               : record.disposition === "saved"

@@ -8,6 +8,7 @@ import { straightenRgba } from "../../../packages/document/src/perspective.js";
 import { snapshotSchema } from "../../../packages/document/src/schema.js";
 import { renderDelivery } from "./branding.js";
 import { Conflict, type Store } from "./store.js";
+import { selectionPixels } from "./selection.js";
 const hash = (bytes: Buffer) =>
   createHash("sha256").update(bytes).digest("hex");
 export function artworkHistory(
@@ -51,6 +52,19 @@ export async function prepareArtwork(
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
+  let selectionMaskHash: string | undefined;
+  if (request.useSelection) {
+    if (!doc.snapshot.selection && !doc.snapshot.selectionMaskAssetId)
+      throw Error("Select the artwork to keep before isolating it");
+    const mask = await selectionPixels(store, doc.snapshot);
+    if (!mask.some((value) => value > 0))
+      throw Error("The selection contains no artwork pixels");
+    selectionMaskHash = hash(mask);
+    for (let i = 0; i < mask.length; i++)
+      pixels.data[i * 4 + 3] = Math.round(
+        (pixels.data[i * 4 + 3]! * mask[i]!) / 255,
+      );
+  }
   const output = straightenRgba(
     pixels.data,
     pixels.info.width,
@@ -59,6 +73,18 @@ export async function prepareArtwork(
     request.width,
     request.height,
   );
+  if (request.useSelection) {
+    let visible = false;
+    for (let i = 3; i < output.length; i += 4)
+      if (output[i]) {
+        visible = true;
+        break;
+      }
+    if (!visible)
+      throw Error(
+        "No visible selected artwork falls inside the marked corners",
+      );
+  }
   const png = await sharp(output, {
     raw: { width: request.width, height: request.height, channels: 4 },
   })
@@ -68,7 +94,7 @@ export async function prepareArtwork(
     throw new Conflict("Master changed while preparing artwork; try again");
   const asset = await store.internalAsset(
     png,
-    "Straightened artwork.png",
+    request.useSelection ? "Isolated artwork.png" : "Straightened artwork.png",
     doc.projectId,
   );
   return store.transaction(() => {
@@ -86,6 +112,7 @@ export async function prepareArtwork(
       sourceHash: hash(source),
       outputHash: hash(png),
       corners: request.corners,
+      ...(selectionMaskHash ? { selectionMaskHash } : {}),
       disposition: "candidate",
       createdAt: new Date().toISOString(),
     };
@@ -142,7 +169,9 @@ export function reviewArtwork(
           ...base.layers.map((l) => ({ ...l, visible: false })),
           {
             id: randomUUID(),
-            name: "Straightened artwork · raster",
+            name: record.selectionMaskHash
+              ? "Isolated artwork · raster"
+              : "Straightened artwork · raster",
             type: "raster",
             assetId: record.assetId,
             visible: true,
@@ -152,7 +181,11 @@ export function reviewArtwork(
           },
         ],
       });
-      store.version(saved.id, "Straightened artwork", saved.currentRevisionId);
+      store.version(
+        saved.id,
+        record.selectionMaskHash ? "Isolated artwork" : "Straightened artwork",
+        saved.currentRevisionId,
+      );
       store.db
         .prepare(
           "UPDATE project_assets SET role='result' WHERE projectId=? AND assetId=?",

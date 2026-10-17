@@ -179,3 +179,129 @@ it("refuses a damaged preview before creating a copy", async () => {
   expect(store.document(doc.id)!.currentRevisionId).toBe(doc.currentRevisionId);
   expect(store.assetBytes(doc.originalAssetId)).toEqual(bytes);
 });
+it("isolates selection holes and disconnected regions while retaining selected colour and source alpha", async () => {
+  let { doc } = await fixture();
+  const mask = Buffer.alloc(64 * 64);
+  for (let y = 8; y < 40; y++)
+    for (let x = 8; x < 40; x++)
+      if (
+        (x < 24 && !(x >= 14 && x <= 18 && y >= 14 && y <= 18)) ||
+        (x >= 32 && y >= 30)
+      )
+        mask[y * 64 + x] = 255;
+  const asset = await store.internalAsset(
+    await sharp(mask, { raw: { width: 64, height: 64, channels: 1 } })
+      .png()
+      .toBuffer(),
+    "Owned selection.png",
+    doc.projectId,
+  );
+  doc = store.saveDocument(doc.id, doc.currentRevisionId, {
+    ...doc.snapshot,
+    selectionMaskAssetId: asset.id,
+  });
+  const source = await sharp(await renderDelivery(store, doc.snapshot))
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  const request = {
+    documentId: doc.id,
+    expectedRevision: doc.currentRevisionId,
+    corners,
+    width: 32,
+    height: 32,
+    useSelection: true,
+    idempotencyKey: randomUUID(),
+  };
+  const preview = await prepareArtwork(store, request);
+  expect(preview.selectionMaskHash).toMatch(/^[a-f0-9]{64}$/);
+  const output = await sharp(store.assetBytes(preview.assetId))
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  for (let y = 0; y < 32; y++)
+    for (let x = 0; x < 32; x++) {
+      const dst = (y * 32 + x) * 4,
+        src = ((y + 8) * 64 + x + 8) * 4;
+      expect(output[dst + 3]).toBe(
+        mask[(y + 8) * 64 + x + 8] ? source[src + 3] : 0,
+      );
+      if (output[dst + 3])
+        expect(output.subarray(dst, dst + 3)).toEqual(
+          source.subarray(src, src + 3),
+        );
+    }
+  expect(store.document(doc.id)!.currentRevisionId).toBe(doc.currentRevisionId);
+  expect((await prepareArtwork(store, request)).id).toBe(preview.id);
+});
+it("rejects missing or empty isolation selections instead of returning an opaque or empty result", async () => {
+  let { doc } = await fixture();
+  const request = {
+    documentId: doc.id,
+    expectedRevision: doc.currentRevisionId,
+    corners,
+    width: 32,
+    height: 32,
+    useSelection: true,
+    idempotencyKey: randomUUID(),
+  };
+  await expect(prepareArtwork(store, request)).rejects.toThrow(
+    "Select the artwork",
+  );
+  const empty = await store.internalAsset(
+    await sharp({
+      create: { width: 64, height: 64, channels: 3, background: "black" },
+    })
+      .png()
+      .toBuffer(),
+    "Empty selection.png",
+    doc.projectId,
+  );
+  doc = store.saveDocument(doc.id, doc.currentRevisionId, {
+    ...doc.snapshot,
+    selectionMaskAssetId: empty.id,
+  });
+  await expect(
+    prepareArtwork(store, {
+      ...request,
+      expectedRevision: doc.currentRevisionId,
+    }),
+  ).rejects.toThrow("contains no artwork");
+  doc = store.saveDocument(doc.id, doc.currentRevisionId, {
+    ...doc.snapshot,
+    selectionMaskAssetId: undefined,
+    selection: [
+      { x: 0, y: 0 },
+      { x: 3, y: 0 },
+      { x: 3, y: 3 },
+      { x: 0, y: 3 },
+    ],
+  });
+  await expect(
+    prepareArtwork(store, {
+      ...request,
+      expectedRevision: doc.currentRevisionId,
+    }),
+  ).rejects.toThrow("inside the marked corners");
+  expect(artworkHistory(store, doc.id)).toHaveLength(0);
+});
+it("keeps legacy preview retries without an isolation field compatible", async () => {
+  const { doc } = await fixture();
+  const request = {
+    documentId: doc.id,
+    expectedRevision: doc.currentRevisionId,
+    corners,
+    width: 32,
+    height: 32,
+    idempotencyKey: randomUUID(),
+  };
+  const preview = await prepareArtwork(store, request);
+  // Model the persisted pre-isolation request format explicitly.
+  store.db
+    .prepare("UPDATE artwork_extractions SET requestJson=? WHERE id=?")
+    .run(JSON.stringify(request), preview.id);
+  store.close();
+  store = new Store(root);
+  expect((await prepareArtwork(store, request)).id).toBe(preview.id);
+  expect(preview.selectionMaskHash).toBeUndefined();
+});

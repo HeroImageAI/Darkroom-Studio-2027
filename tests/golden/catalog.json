@@ -24,6 +24,7 @@
       "evidence": "workflows/branding-qa.json",
       "rubric": "docs/PHASE_7_REPORT.md",
       "additionalEvidence": "workflows/artwork-validation.json",
+      "isolationEvidence": "workflows/artwork-isolation-validation.json",
       "outcome": "Scoped exact vector branding and owned planar perspective correction pass; broader photographic extraction, curved fabrics and cleanup remain open."
     },
     {

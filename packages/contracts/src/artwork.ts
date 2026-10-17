@@ -15,6 +15,7 @@ export const artworkRequestSchema = z
       .length(4),
     width: z.number().int().min(2).max(8192),
     height: z.number().int().min(2).max(8192),
+    useSelection: z.boolean().optional(),
     idempotencyKey: z.string().uuid(),
   })
   .strict()
@@ -33,6 +34,7 @@ export type ArtworkRecord = {
   sourceHash: string;
   outputHash: string;
   corners: { x: number; y: number }[];
+  selectionMaskHash?: string;
   disposition: "candidate" | "saved" | "rejected";
   savedDocumentId?: string;
   createdAt: string;
