@@ -25,12 +25,22 @@ The comparison is recorded in `workflows/selection-refinement-comparison.json`. 
 
 No new product controls or model downloads are introduced by this follow-up.
 
+## Garment description follow-up
+
+Six descriptions were compared on the same public-domain portrait using the unchanged enabled SAM graph: orange fabric, orange clothing, orange suit, spacesuit fabric, left arm sleeve and right arm sleeve. The broad garment descriptions do not close the complete-coverage gate, and some include badge pixels. They are not substituted automatically for a user's instruction.
+
+`right arm sleeve` selects the large visible sleeve on the viewer's left: 24,254 pixels. A new live recolour run produces navy fabric with the existing sleeve folds, leaving all 237,890 unselected pixels byte-exact. The independently repeated description generates the same binary mask used by the recolour case. The opposite-side description selects a much smaller region; that result alone cannot establish whether a model understands anatomical versus viewer-relative directions. Visible selection review remains mandatory.
+
+This is a **scoped sleeve pass**, not a whole-garment or general small-part certification. Fine edge review remains necessary. The previously observed whole-garment seam/zipper omissions remain open. Evidence is in `workflows/garment-description-comparison.json` and the `garment-right-sleeve` run in `workflows/photo-corrections-qa.json`.
+
+Reproduce the masks with `node --import tsx scripts/check-selection-refinement.ts --garment-descriptions`, then run `node --import tsx scripts/validate-photo-corrections.ts` with the retained fixture set. The latter resumes recorded cases; retain or archive its local report deliberately before rerunning an existing case. These diagnostics never alter a user's master or enable a new workflow.
+
 ## Verification and review status
 
 - **Implemented:** recolour coverage preservation, regression test, retained-output comparison and selection-refinement diagnostic.
 - **Not implemented:** the remaining quality gates listed above; no selection model change was promoted.
 - **Test results:** 101 unit/integration tests pass; TypeScript and production build pass. Browser CI status is reported with the follow-up PR.
-- **Live results:** nine new SAM GPU comparisons completed against the verified running Desktop instance. Alpha correction uses retained GPU output and deterministic recomposition, not a new generation or a glass-matting benchmark.
+- **Live results:** nine native-refinement comparisons, six garment-description comparisons and a new sleeve-only recolour completed against the verified running Desktop instance. Alpha correction uses retained GPU output and deterministic recomposition, not a new generation or a glass-matting benchmark.
 - **Known issues:** the open gates above still apply. This patch changes no browser interaction.
 - **Git status:** follow-up branch `quality-gaps`, based on the approved PR #8 merge into `composite-workflow`; submit as a separate draft for review.
 - **Recommendation:** review the bounded alpha correction independently. Keep Library expansion on hold and continue photographic garment-selection work without enabling the unsuccessful refinement experiment.

@@ -1,5 +1,5 @@
 {
-  "scope": "Seven real GPU cases across the six previously unfilled categories; small public/owned fixture set, not general release certification.",
+  "scope": "Eight real GPU cases across six photographic categories; small public/owned fixture set, not general release certification.",
   "sources": "tests/golden/photo-sources.json",
   "runs": [
     {
@@ -108,6 +108,23 @@
       "visualReview": "PARTIAL: navy fabric, folds and protected face/patches retained; no old-colour feathering. Mask edges/zipper seams still need refinement before delivery.",
       "scope": "One fixture only; general photographic fidelity is not certified",
       "compositor": "No old-colour matching or inward fade for Recolour"
+    },
+    {
+      "name": "garment-right-sleeve",
+      "task": "Recolour",
+      "instruction": "Change only the selected orange fabric on the person's right arm sleeve to dark navy blue. Preserve the original sleeve shape, fabric texture, folds and stitching. Keep the badges, lettering, face, hair, helmet, rest of the orange spacesuit and background unchanged.",
+      "seed": 2027,
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "outputHash": "169e9caf73a9e5fa7e1729d3abc1f94628d774cb9270b9f6e4df29dbf92fdf90",
+      "promptId": "bdde7be5-523a-4e73-8c11-fefef2a97ef6",
+      "ms": 15437,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "protectedPixels": 237890,
+      "protectedPixelsExact": true,
+      "visualReview": "SCOPED PASS: visible right arm sleeve recoloured navy with folds retained; badge, face, helmet, chest and background remain exact outside the mask. Fine edge review is still required; not a whole-garment or general small-part accuracy certification.",
+      "scope": "One fixture only; general photographic fidelity is not certified",
+      "selectionDescription": "right arm sleeve",
+      "selectionPixels": 24254
     }
   ]
 }

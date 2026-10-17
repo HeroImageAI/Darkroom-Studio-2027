@@ -139,6 +139,15 @@ const cases: any[] = [
   },
 ];
 cases.push({
+  name: "garment-right-sleeve",
+  source: photo,
+  task: "Recolour",
+  area: "selection",
+  mask: "data/quality-gaps/right-sleeve-0.mask.png",
+  instruction:
+    "Change only the selected orange fabric on the person's right arm sleeve to dark navy blue. Preserve the original sleeve shape, fabric texture, folds and stitching. Keep the badges, lettering, face, hair, helmet, rest of the orange spacesuit and background unchanged.",
+});
+cases.push({
   name: "garment-sam-refined",
   source: photo,
   task: "Recolour",

@@ -21,18 +21,37 @@ if (
 )
   throw Error("Verified Desktop required");
 const reports: object[] = [];
-for (const [name, path, description] of [
-  ["garment", "data/scope-qa/astronaut.png", "orange spacesuit"],
-  ["person", "data/scope-qa/astronaut.png", "person"],
-  ["product", "data/create-qa/reference-1.png", "bottle"],
-] as const) {
+const garmentDescriptions = process.argv.includes("--garment-descriptions");
+const cases = garmentDescriptions
+  ? ([
+      ["fabric", "data/scope-qa/astronaut.png", "orange fabric"],
+      ["clothing", "data/scope-qa/astronaut.png", "orange clothing"],
+      ["suit", "data/scope-qa/astronaut.png", "orange suit"],
+      ["spacesuit-fabric", "data/scope-qa/astronaut.png", "spacesuit fabric"],
+      ["left-sleeve", "data/scope-qa/astronaut.png", "left arm sleeve"],
+      ["right-sleeve", "data/scope-qa/astronaut.png", "right arm sleeve"],
+    ] as const)
+  : ([
+      ["garment", "data/scope-qa/astronaut.png", "orange spacesuit"],
+      ["person", "data/scope-qa/astronaut.png", "person"],
+      ["product", "data/create-qa/reference-1.png", "bottle"],
+      ["right-sleeve", "data/scope-qa/astronaut.png", "right arm sleeve"],
+    ] as const);
+for (const [name, path, description] of cases) {
   const bytes = readFileSync(path);
   const source = await sharp(bytes)
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
-  let baseline: Buffer | undefined;
-  for (const iterations of [0, 1, 2]) {
+  let baseline: Buffer | undefined = garmentDescriptions
+    ? await sharp("data/scope-qa/sam-garment.mask.png")
+        .removeAlpha()
+        .greyscale()
+        .threshold(128)
+        .raw()
+        .toBuffer()
+    : undefined;
+  for (const iterations of garmentDescriptions ? [0] : [0, 1, 2]) {
     const queue = await client.queue();
     if (queue.queue_running.length || queue.queue_pending.length)
       throw Error("Engine busy");
@@ -93,10 +112,14 @@ for (const [name, path, description] of [
       promptId: id,
       sourceHash: createHash("sha256").update(bytes).digest("hex"),
       elapsedMs: Date.now() - started,
+      engineVersion: stats.system?.comfyui_version,
+      comparison: garmentDescriptions
+        ? "Original orange spacesuit mask"
+        : "Same description without refinement",
       visualReview: "pending",
     });
     writeFileSync(
-      `${root}/selection-refinement.json`,
+      `${root}/${garmentDescriptions ? "garment-descriptions" : "selection-refinement"}.json`,
       JSON.stringify(reports, null, 2) + "\n",
     );
     console.log(JSON.stringify(reports.at(-1)));

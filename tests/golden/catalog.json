@@ -15,7 +15,7 @@
       "generator": "scripts/validate-photo-corrections.ts",
       "evidence": "workflows/photo-corrections-qa.json",
       "rubric": "docs/SCOPE_CORRECTIONS.md",
-      "outcome": "PARTIAL: navy fabric, folds and protected face/patches retained; no old-colour feathering. Mask edges/zipper seams still need refinement before delivery."
+      "outcome": "PARTIAL: navy fabric, folds and protected face/patches retained; no old-colour feathering. Mask edges/zipper seams still need refinement before delivery. Additional scoped pass: right arm sleeve recolour preserves all 237,890 unselected pixels; whole-garment gate stays partial."
     },
     {
       "category": "artwork-logo",

@@ -1,0 +1,92 @@
+{
+  "scope": "Description comparison only; no automatic prompt rewriting or model change.",
+  "cases": [
+    {
+      "name": "fabric",
+      "description": "orange fabric",
+      "iterations": 0,
+      "selected": 50359,
+      "added": 118,
+      "removed": 8662,
+      "promptId": "1324a36e-088e-41d4-b375-ce18f15501e9",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 2977,
+      "engineVersion": "0.41.2",
+      "comparison": "Original orange spacesuit mask",
+      "visualReview": "Does not resolve complete garment coverage; some descriptions include protected badges."
+    },
+    {
+      "name": "clothing",
+      "description": "orange clothing",
+      "iterations": 0,
+      "selected": 53697,
+      "added": 126,
+      "removed": 5332,
+      "promptId": "aec0052c-fff4-4e8f-9050-992c712ff8b4",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1155,
+      "engineVersion": "0.41.2",
+      "comparison": "Original orange spacesuit mask",
+      "visualReview": "Does not resolve complete garment coverage; some descriptions include protected badges."
+    },
+    {
+      "name": "suit",
+      "description": "orange suit",
+      "iterations": 0,
+      "selected": 56495,
+      "added": 85,
+      "removed": 2493,
+      "promptId": "2ddfc32a-e7da-4fbc-847e-07c33777937b",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1146,
+      "engineVersion": "0.41.2",
+      "comparison": "Original orange spacesuit mask",
+      "visualReview": "Does not resolve complete garment coverage; some descriptions include protected badges."
+    },
+    {
+      "name": "spacesuit-fabric",
+      "description": "spacesuit fabric",
+      "iterations": 0,
+      "selected": 57828,
+      "added": 281,
+      "removed": 1356,
+      "promptId": "d1666e98-7e94-40c4-ae97-7cfca2d8480c",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1161,
+      "engineVersion": "0.41.2",
+      "comparison": "Original orange spacesuit mask",
+      "visualReview": "Does not resolve complete garment coverage; some descriptions include protected badges."
+    },
+    {
+      "name": "left-sleeve",
+      "description": "left arm sleeve",
+      "iterations": 0,
+      "selected": 1708,
+      "added": 114,
+      "removed": 57309,
+      "promptId": "66f238c6-1d02-4c68-b000-27f41788b7d8",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1132,
+      "engineVersion": "0.41.2",
+      "comparison": "Original orange spacesuit mask",
+      "visualReview": "Small opposite-side region; does not target the large visible sleeve."
+    },
+    {
+      "name": "right-sleeve",
+      "description": "right arm sleeve",
+      "iterations": 0,
+      "selected": 24254,
+      "added": 72,
+      "removed": 34721,
+      "promptId": "29baf031-f893-4901-8862-375c95b8ad64",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "elapsedMs": 1142,
+      "engineVersion": "0.41.2",
+      "comparison": "Original orange spacesuit mask",
+      "visualReview": "Scoped usable visible sleeve; tested through recolour."
+    }
+  ],
+  "recolourEvidence": "workflows/photo-corrections-qa.json#garment-right-sleeve",
+  "sourceRights": "tests/golden/photo-sources.json",
+  "enabledWorkflowChanged": false
+}
