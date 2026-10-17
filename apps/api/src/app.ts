@@ -36,6 +36,7 @@ import {
   importProject,
 } from "./handoff.js";
 import { prepareSelection } from "./selection.js";
+import { prepareArtwork, artworkHistory, reviewArtwork } from "./artwork.js";
 export async function createApp(
   options: {
     dataDir?: string;
@@ -341,6 +342,20 @@ export async function createApp(
     return importLogo(store, body.projectId, body.svg);
   });
   app.post("/api/handoffs", (req) => createHandoff(store, req.body));
+  app.post("/api/artwork", (req) => prepareArtwork(store, req.body));
+  app.get<{ Params: { id: string } }>("/api/documents/:id/artwork", (req) =>
+    artworkHistory(store, req.params.id),
+  );
+  app.post<{ Params: { id: string } }>("/api/artwork/:id/review", (req) =>
+    reviewArtwork(
+      store,
+      req.params.id,
+      z
+        .object({ action: z.enum(["save-copy", "reject"]) })
+        .strict()
+        .parse(req.body).action,
+    ),
+  );
   app.get<{ Params: { id: string } }>("/api/documents/:id/handoffs", (req) =>
     handoffHistory(store, req.params.id),
   );

@@ -1,5 +1,7 @@
 # Quality follow-up
 
+Current continuation: PR #9 is merged; the planar artwork tool and its bounded evidence are in `ARTWORK_EXTRACTION.md`. Broader photographic/curved artwork extraction remains open, along with the other gates below. New local-edit geometry comparisons also record a visible background join inside a rectangular recolour region; exact protected pixels alone do not close that outcome (`MODEL_WORKFLOW_AUDIT.md`).
+
 Latest review corrections and task-by-task outcomes are in `PR9_REVIEW.md` and `QUALITY_FOLLOWUP.md`. The preview uses an isolated recovered workspace; alternate candidate models are experimental only.
 
 The approved core corrections were merged through PR #8 into `composite-workflow` at `5166a47`. This follow-up stays within the existing editing tools. Library expansion remains on hold.
