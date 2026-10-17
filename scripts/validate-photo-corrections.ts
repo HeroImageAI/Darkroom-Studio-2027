@@ -139,6 +139,24 @@ const cases: any[] = [
   },
 ];
 cases.push({
+  name: "garment-reviewed-boundary",
+  source: photo,
+  task: "Recolour",
+  area: "selection",
+  mask: "data/quality-gaps/garment-boundary.reviewed.png",
+  instruction:
+    "Change only the selected spacesuit fabric to dark navy blue. Retain the fabric folds, stitching and shape. Keep the face, hair, badges including their borders and lettering, collar hardware, zipper fasteners, helmet and background unchanged.",
+});
+cases.push({
+  name: "garment-right-sleeve",
+  source: photo,
+  task: "Recolour",
+  area: "selection",
+  mask: "data/quality-gaps/right-sleeve-0.mask.png",
+  instruction:
+    "Change only the selected orange fabric on the person's right arm sleeve to dark navy blue. Preserve the original sleeve shape, fabric texture, folds and stitching. Keep the badges, lettering, face, hair, helmet, rest of the orange spacesuit and background unchanged.",
+});
+cases.push({
   name: "garment-sam-refined",
   source: photo,
   task: "Recolour",

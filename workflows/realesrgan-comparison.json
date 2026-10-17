@@ -1,0 +1,88 @@
+{
+  "candidate": {
+    "model": "RealESRGAN_x4plus",
+    "source": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.1.0",
+    "modelSha256": "4fa0d38905f75ac06eb49a7951b426670021be3018265fd191d2125df9d682f1",
+    "checkpointBytes": 67040989,
+    "torch": "2.12.1+cu130",
+    "spandrel": "0.4.2",
+    "scope": "Native 4x SR followed by requested-size Lanczos resize; prototype only, not an enabled route.",
+    "runs": [
+      {
+        "name": "graphic-Upscale",
+        "sourceHash": "5f83a0e4fa936f75ebd8190f90c018e92ff03d1a6619e278a2ac00a8ac36f13a",
+        "seconds": 0.4094284000020707,
+        "device": "cuda",
+        "nativeScale": 4,
+        "outputSize": 512,
+        "peakAllocatedBytes": 873158656
+      },
+      {
+        "name": "portrait-Upscale",
+        "sourceHash": "ce88ef9d4a3c18a158bfce70c936783de130fb3255d653d242fb97198f433f72",
+        "seconds": 0.18561439999029972,
+        "device": "cuda",
+        "nativeScale": 4,
+        "outputSize": 512,
+        "peakAllocatedBytes": 885741568
+      },
+      {
+        "name": "degraded-Restore",
+        "sourceHash": "6b32944332cb832de29573db13037873eb46de6533143cec7d5adfae1fb69f17",
+        "seconds": 0.7450237000011839,
+        "device": "cuda",
+        "nativeScale": 4,
+        "outputSize": 1024,
+        "peakAllocatedBytes": 3304019968
+      }
+    ]
+  },
+  "comparison": {
+    "scope": "Same source and requested dimensions; different SR architectures and native working resolutions. Timings are not comparable pipeline benchmarks.",
+    "runs": [
+      {
+        "fixture": "graphic",
+        "model": "SeedVR2-lab",
+        "translucentRgbMae": 3.043325181933355,
+        "opaqueRgbMae": 1.522413895473375,
+        "alphaExact": true,
+        "outputHash": "2bd3fb41fd9f82e57abc394a2e3babb52417937e52c10f1cc6eec3c07a3885da"
+      },
+      {
+        "fixture": "graphic",
+        "model": "RealESRGAN",
+        "translucentRgbMae": 6.888453492825786,
+        "opaqueRgbMae": 2.2810380499568392,
+        "alphaExact": true,
+        "outputHash": "2a15d75a12ad0745f836d46ed8257313d0d6e13cc0ef141378b3288829f0d5cd"
+      },
+      {
+        "fixture": "portrait",
+        "model": "SeedVR2-lab",
+        "translucentRgbMae": 19.561080074487897,
+        "opaqueRgbMae": 9.45512706855792,
+        "alphaExact": true,
+        "outputHash": "f00434db52462e1abcf566caf77eb8b80b8d5fa1e5e11fadea2dfcc02909b462"
+      },
+      {
+        "fixture": "portrait",
+        "model": "RealESRGAN",
+        "translucentRgbMae": 19.69068901303538,
+        "opaqueRgbMae": 8.869446907013396,
+        "alphaExact": true,
+        "outputHash": "17dd3a8e5f91f0f02fd90e843658c9f702c7e93a7e6c55f96009f1e9597e3084"
+      },
+      {
+        "fixture": "degraded-portrait",
+        "model": "RealESRGAN",
+        "outsidePsnr": 28.922872491450555,
+        "protectedPixels": 30240,
+        "protectedRgbaExact": true,
+        "scope": "Protected head remains at source quality; no face-repair claim."
+      }
+    ]
+  },
+  "candidateEnabled": false,
+  "publisherProjectLicense": "BSD-3-Clause",
+  "assessment": "No consistent win across graphic and photo after fixing encoder. Protected restoration surroundings PSNR improves over SeedVR2 (28.20 to 28.92) but remains below degraded source (29.89); keep current routes and restoration gate partial."
+}
