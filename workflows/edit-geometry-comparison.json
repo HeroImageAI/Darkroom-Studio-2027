@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "enabled": false,
+  "scope": "Two controlled local recolour fixtures, three geometry configurations; source review and all garment results inspected, sphere delivered results byte-identical",
+  "decision": "Do not promote: native matching slightly lowers raw protected-region distortion but does not resolve garment selection omissions or the sphere rectangle join. No consistent delivered-quality advantage.",
+  "timingScope": "Current/native matched garment 512x512; area matched 768x768 resized to delivery. Sphere 768x768 for all. Not a matched speed benchmark.",
+  "cases": [
+    {
+      "key": "garment-current",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maskHash": "d0a8d3314c9952f2ec6fab2ab48dc24d981e594291ac1bcbbc3a4d36c50965ef",
+      "resultHash": "eda79c5e5d02da7ddcc25026ac5fef9de89af4ef0a4b9aa216407a9e833716e2",
+      "rawHash": "f2110fffce67754a012f781265627ff7d5a00a5308ec111e804116655bb5aef8",
+      "promptId": "960462b1-42f4-4774-8e52-946d79d99e95",
+      "graphHash": "2c316538fc5b0bd8927bf55a341cb5546548a67171336f03a8fa6fb973203d27",
+      "instruction": "Change only the selected spacesuit fabric to dark navy blue. Retain the fabric folds, stitching and shape. Keep the face, hair, badges including their borders and lettering, collar hardware, zipper fasteners, helmet and background unchanged.",
+      "seed": 2027,
+      "steps": 40,
+      "width": 512,
+      "height": 512,
+      "nativeWidth": 512,
+      "nativeHeight": 512,
+      "ms": 12996,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "protectedPixels": 210736,
+      "protectedPixelsExact": true,
+      "rawProtectedRGBMAE": 8.132698415711285,
+      "selectedPixels": 51408,
+      "orangeRemaining": 0,
+      "visualReview": "SCOPED MANUAL PASS: navy fabric and folds; exact protected pixels. Mask omissions at seams remain; no general automatic selection certification.",
+      "enabled": false
+    },
+    {
+      "key": "garment-native-matched",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maskHash": "d0a8d3314c9952f2ec6fab2ab48dc24d981e594291ac1bcbbc3a4d36c50965ef",
+      "resultHash": "b2cce0d85552b6670ba9fd30befb413730c0b591d893f6bbdb790bb281369b68",
+      "rawHash": "40215367120604bfc4f792bb890a5ac450d9b6839bc1df0885717668be196972",
+      "promptId": "fc80e8a4-923c-40b5-8ebd-2949d1b53ed1",
+      "graphHash": "5739aae2b8187f2aee50ed99d941fe4f2a078c336bf2fcd7ab38ef32d4bb7536",
+      "instruction": "Change only the selected spacesuit fabric to dark navy blue. Retain the fabric folds, stitching and shape. Keep the face, hair, badges including their borders and lettering, collar hardware, zipper fasteners, helmet and background unchanged.",
+      "seed": 2027,
+      "steps": 40,
+      "width": 512,
+      "height": 512,
+      "nativeWidth": 512,
+      "nativeHeight": 512,
+      "ms": 9241,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "protectedPixels": 210736,
+      "protectedPixelsExact": true,
+      "rawProtectedRGBMAE": 7.13910611697416,
+      "selectedPixels": 51408,
+      "orangeRemaining": 0,
+      "visualReview": "SCOPED MANUAL PASS: navy fabric and folds; exact protected pixels. Mask omissions at seams remain; no general automatic selection certification.",
+      "enabled": false
+    },
+    {
+      "key": "garment-area-matched",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maskHash": "d0a8d3314c9952f2ec6fab2ab48dc24d981e594291ac1bcbbc3a4d36c50965ef",
+      "resultHash": "0af9929a07f0eb856c2e77635ac4074d4dc3bbebaa1c7f0903ff55f353bea35d",
+      "rawHash": "943d9a41d6258a46359c88ac66830cdff9b44d3b6e8ea551ca5add6d5fa93b1e",
+      "promptId": "7a75244f-901e-4f70-aa08-e7d6eb3db8ae",
+      "graphHash": "ec962953e32264c9cfdd38aab875bfb0c24fc92da5520720cf6ce338d984db55",
+      "instruction": "Change only the selected spacesuit fabric to dark navy blue. Retain the fabric folds, stitching and shape. Keep the face, hair, badges including their borders and lettering, collar hardware, zipper fasteners, helmet and background unchanged.",
+      "seed": 2027,
+      "steps": 40,
+      "width": 512,
+      "height": 512,
+      "nativeWidth": 768,
+      "nativeHeight": 768,
+      "ms": 20851,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "protectedPixels": 210736,
+      "protectedPixelsExact": true,
+      "rawProtectedRGBMAE": 7.559720851365373,
+      "selectedPixels": 51408,
+      "orangeRemaining": 0,
+      "visualReview": "SCOPED MANUAL PASS: navy fabric and folds; exact protected pixels. Mask omissions at seams remain; no general automatic selection certification.",
+      "enabled": false
+    },
+    {
+      "key": "sphere-current",
+      "sourceHash": "815818c477af8178e1a749d16a5fe95f3991c5ae0ca453fa139643fd06c607ab",
+      "maskHash": "4771ea38d695e7282c4e8eb8072c6cd3c99c7b4446a175b8c7d13b97bf9cc84a",
+      "resultHash": "00a2bd6b39c1cccbc034f0ac9a5f0c74c7579a874e96c770ba74e22f65d3fe5e",
+      "rawHash": "c6239e629590d607f1f907f538ed4fb3fd407d97cee6b4ce697646f654abe028",
+      "promptId": "5219fee2-2a5f-43c8-9935-42096a22a441",
+      "graphHash": "fa2fd5e5ac184c1b4617ca3d366b091617d3b9775931c4c8d84cbb48ca4ef023",
+      "instruction": "Change only the selected orange sphere to blue. Preserve the sphere's shape, position, lighting and shadows. Keep the bottle, its NOIR label and background unchanged.",
+      "seed": 2027,
+      "steps": 40,
+      "width": 768,
+      "height": 768,
+      "nativeWidth": 768,
+      "nativeHeight": 768,
+      "ms": 21171,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "protectedPixels": 545824,
+      "protectedPixelsExact": true,
+      "rawProtectedRGBMAE": 5.226700059604073,
+      "selectedPixels": 44000,
+      "orangeRemaining": 0,
+      "visualReview": "PARTIAL: blue sphere and protected bottle/NOIR label retained; visible rectangular background join around the allowed region. All three delivered results identical, so geometry changes do not close this quality gap.",
+      "enabled": false
+    },
+    {
+      "key": "sphere-native-matched",
+      "sourceHash": "815818c477af8178e1a749d16a5fe95f3991c5ae0ca453fa139643fd06c607ab",
+      "maskHash": "4771ea38d695e7282c4e8eb8072c6cd3c99c7b4446a175b8c7d13b97bf9cc84a",
+      "resultHash": "00a2bd6b39c1cccbc034f0ac9a5f0c74c7579a874e96c770ba74e22f65d3fe5e",
+      "rawHash": "795537e0ff8291d5ba2d56b3188b30cd8a918ae3d1b66595d4acc6dce9215511",
+      "promptId": "0f5b4a30-a74b-4308-b05a-2ec7116ab646",
+      "graphHash": "7f48a8fd9ccfaa2fd1647f1c60f6c81f023a416949b40903bbe71b934aafcab4",
+      "instruction": "Change only the selected orange sphere to blue. Preserve the sphere's shape, position, lighting and shadows. Keep the bottle, its NOIR label and background unchanged.",
+      "seed": 2027,
+      "steps": 40,
+      "width": 768,
+      "height": 768,
+      "nativeWidth": 768,
+      "nativeHeight": 768,
+      "ms": 20944,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "protectedPixels": 545824,
+      "protectedPixelsExact": true,
+      "rawProtectedRGBMAE": 5.226700059604073,
+      "selectedPixels": 44000,
+      "orangeRemaining": 0,
+      "visualReview": "PARTIAL: blue sphere and protected bottle/NOIR label retained; visible rectangular background join around the allowed region. All three delivered results identical, so geometry changes do not close this quality gap.",
+      "enabled": false
+    },
+    {
+      "key": "sphere-area-matched",
+      "sourceHash": "815818c477af8178e1a749d16a5fe95f3991c5ae0ca453fa139643fd06c607ab",
+      "maskHash": "4771ea38d695e7282c4e8eb8072c6cd3c99c7b4446a175b8c7d13b97bf9cc84a",
+      "resultHash": "00a2bd6b39c1cccbc034f0ac9a5f0c74c7579a874e96c770ba74e22f65d3fe5e",
+      "rawHash": "86ebf07ad4dd171812aada020154cd5a60e68e8e59c4e4377373710241bc4341",
+      "promptId": "d674ceef-c116-48bb-9e0f-2d1231c5713c",
+      "graphHash": "d35ee9e6d3bd55e4b2e8655a6015dc69be4d17ec63c6a25fcd231cb3b332f9b4",
+      "instruction": "Change only the selected orange sphere to blue. Preserve the sphere's shape, position, lighting and shadows. Keep the bottle, its NOIR label and background unchanged.",
+      "seed": 2027,
+      "steps": 40,
+      "width": 768,
+      "height": 768,
+      "nativeWidth": 768,
+      "nativeHeight": 768,
+      "ms": 21032,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "models": [
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "protectedPixels": 545824,
+      "protectedPixelsExact": true,
+      "rawProtectedRGBMAE": 5.226700059604073,
+      "selectedPixels": 44000,
+      "orangeRemaining": 0,
+      "visualReview": "PARTIAL: blue sphere and protected bottle/NOIR label retained; visible rectangular background join around the allowed region. All three delivered results identical, so geometry changes do not close this quality gap.",
+      "enabled": false
+    }
+  ]
+}

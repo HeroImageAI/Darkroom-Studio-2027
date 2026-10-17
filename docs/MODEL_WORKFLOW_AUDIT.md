@@ -26,3 +26,11 @@ All outputs have four actual channels. Therefore the current standard tiled VAE 
 Interior alpha errors on white/blue are respectively 27.29/20.62 (current), 48.03/111.40 (native-size matched), and 217.00/36.60 (area matched). Visual inspection of all six results shows altered glass density, retained input-background tint, and an opaque white body in the white/area-matched case. The opaque label/line motif is broadly retained, but this does not establish exact design fidelity. None closes the glass extraction gate. Do not promote native extraction or geometry changes from these results. Geometry effects on ordinary local edits remain a separate investigation.
 
 Evidence: `workflows/qwen-alpha-comparison.json`, with source/output/graph/model hashes, exact prompts and engine fingerprint. Review image and raw outputs remain in ignored local fixture storage. No user project or enabled workflow changed.
+
+## Local-edit reference geometry
+
+Six further live cases compare current, native-size matched and area-matched sampling on a reviewed photographic garment mask and the owned sphere fixture. All protected pixels remain exact (210,736 garment; 545,824 sphere). All variants remove orange from the selected region. Native matching reduces raw protected-region RGB error from 8.13 to 7.14 on the garment, but the delivered fabric and seams do not demonstrate a sufficient consistent advantage. Mask omissions are still mask omissions.
+
+The sphere's three delivered PNGs are byte-identical. Inspection shows a blue sphere and an intact protected label, but also a rectangular background join inside the allowed region. This is a partial outcome, despite the exact protected pixels and correct requested colour. Geometry matching does not fix it. Do not promote either alternate on this evidence. A local-edit seam correction must preserve intended recolour at object edges rather than restoring the old pigment.
+
+`scripts/check-edit-geometry.ts` records submissions for observation/recovery and never enables a graph. `workflows/edit-geometry-comparison.json` pins source/mask/output/model/graph hashes and the failed/partial assessments. The area-matched garment run samples 768 square versus 512 for the other garment runs, so timings are not a matched speed benchmark.
