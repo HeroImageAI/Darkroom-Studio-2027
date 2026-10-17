@@ -1,0 +1,446 @@
+{
+  "implementationSha256": "7565de418646b497363c88e1818d6041dd7c89f94c622fcd7786e24addfeb12d",
+  "comparisons": [
+    {
+      "name": "sphere-current",
+      "sourceHash": "815818c477af8178e1a749d16a5fe95f3991c5ae0ca453fa139643fd06c607ab",
+      "maskHash": "4771ea38d695e7282c4e8eb8072c6cd3c99c7b4446a175b8c7d13b97bf9cc84a",
+      "rawHash": "c6239e629590d607f1f907f538ed4fb3fd407d97cee6b4ce697646f654abe028",
+      "protectedExact": true,
+      "alphaExact": true,
+      "boundaryChangeMAE": 5.004761904761905,
+      "outputHash": "00a2bd6b39c1cccbc034f0ac9a5f0c74c7579a874e96c770ba74e22f65d3fe5e"
+    },
+    {
+      "name": "sphere-matched",
+      "sourceHash": "815818c477af8178e1a749d16a5fe95f3991c5ae0ca453fa139643fd06c607ab",
+      "maskHash": "4771ea38d695e7282c4e8eb8072c6cd3c99c7b4446a175b8c7d13b97bf9cc84a",
+      "rawHash": "c6239e629590d607f1f907f538ed4fb3fd407d97cee6b4ce697646f654abe028",
+      "protectedExact": true,
+      "alphaExact": true,
+      "boundaryChangeMAE": 0.9714285714285714,
+      "outputHash": "8af689eba744b9481e41338875176ae23803cf2695d62f7ebecaa21aa77ae481"
+    },
+    {
+      "name": "garment-current",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maskHash": "d0a8d3314c9952f2ec6fab2ab48dc24d981e594291ac1bcbbc3a4d36c50965ef",
+      "rawHash": "f2110fffce67754a012f781265627ff7d5a00a5308ec111e804116655bb5aef8",
+      "protectedExact": true,
+      "alphaExact": true,
+      "boundaryChangeMAE": 76.0598054679285,
+      "outputHash": "eda79c5e5d02da7ddcc25026ac5fef9de89af4ef0a4b9aa216407a9e833716e2"
+    },
+    {
+      "name": "garment-matched",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maskHash": "d0a8d3314c9952f2ec6fab2ab48dc24d981e594291ac1bcbbc3a4d36c50965ef",
+      "rawHash": "f2110fffce67754a012f781265627ff7d5a00a5308ec111e804116655bb5aef8",
+      "protectedExact": true,
+      "alphaExact": true,
+      "boundaryChangeMAE": 71.76353838065195,
+      "outputHash": "0436cfcb64c3d71b0f2d5db64ee18025f84ed3b1b281423def8bbfc2e1ebfa18"
+    }
+  ],
+  "unchangedTasks": [
+    {
+      "task": "Background",
+      "outputHash": "9fbf71b38c5ef2ad6eadf9f90459f4e44d63a4ae275cfe3283eee515204cb743",
+      "byteIdentical": true
+    },
+    {
+      "task": "Remove",
+      "outputHash": "3a806a930bee421cc9c8465f910b9c77bdc7a80b4c33be11e4222b70ab7d5f6a",
+      "byteIdentical": true
+    },
+    {
+      "task": "Replace",
+      "outputHash": "a741e409a95a28c43884af5f8cf378333cd2dfe8d2086212f732dd205e7db22b",
+      "byteIdentical": true
+    },
+    {
+      "task": "Expand",
+      "outputHash": "9432bb04cfd6f4ca7abb000ace39b9de928f4fa82a6724d0fcd522d1edbefdc3",
+      "byteIdentical": true
+    },
+    {
+      "task": "Instruct",
+      "outputHash": "300ecc224db969c523b94c7f7c2d323c29117b5d1aadd910f9b478ddb7ec79e3",
+      "byteIdentical": true
+    }
+  ],
+  "scope": "Retained GPU results, one synthetic sphere and one NASA garment photo. Boundary metric measures changed adjacent-pixel contrast, not overall image quality. Garment selection omissions remain open.",
+  "visualReview": "Sphere rectangular join substantially reduced with blue pigment retained. Garment remains navy with source seams/badges preserved, but mask omissions remain. Scoped improvement only.",
+  "live": {
+    "at": "2026-10-17T14:47:03.595Z",
+    "projectId": "97b6d8ee-0182-491b-9762-57b008dcf9df",
+    "documentId": "b29e4f7c-7a19-44e0-a3c9-ee17e806fc72",
+    "jobId": "4de8b897-f752-45f2-83a2-9278afebe42b",
+    "baseRevisionId": "2bcde633-a879-405b-9b3a-0836a82609cc",
+    "elapsedMs": 66540,
+    "protectedPixels": 545824,
+    "protectedPixelsExact": true,
+    "originalUnchanged": true,
+    "masterUnchangedBeforeReview": true,
+    "request": {
+      "documentId": "b29e4f7c-7a19-44e0-a3c9-ee17e806fc72",
+      "expectedRevision": "2bcde633-a879-405b-9b3a-0836a82609cc",
+      "instruction": "Change the orange sphere on the left to a deep blue sphere. Preserve its shape, shading and position. Keep the black NOIR bottle unchanged.",
+      "task": "Recolour",
+      "area": "selection",
+      "seed": 2027,
+      "idempotencyKey": "3e2f1ebb-1f30-40d8-8b5f-2ca27e223775"
+    },
+    "sourceHash": "815818c477af8178e1a749d16a5fe95f3991c5ae0ca453fa139643fd06c607ab",
+    "outputHash": "972daaa16ff838b9045ea5ccbd71074f60a0bd8e95dea63ab3b30b77a24d5b5c",
+    "provenance": {
+      "edit": {
+        "request": {
+          "documentId": "b29e4f7c-7a19-44e0-a3c9-ee17e806fc72",
+          "expectedRevision": "2bcde633-a879-405b-9b3a-0836a82609cc",
+          "instruction": "Change the orange sphere on the left to a deep blue sphere. Preserve its shape, shading and position. Keep the black NOIR bottle unchanged.",
+          "area": "selection",
+          "task": "Recolour",
+          "seed": 2027,
+          "idempotencyKey": "3e2f1ebb-1f30-40d8-8b5f-2ca27e223775"
+        },
+        "baseRevisionId": "2bcde633-a879-405b-9b3a-0836a82609cc",
+        "sourceAssetId": "cbc2f4d0-a566-4d29-9779-0e21d64da3a5",
+        "maskAssetId": "0bcbb4a4-e5b6-4023-a54a-446176dc381c",
+        "sourceHash": "815818c477af8178e1a749d16a5fe95f3991c5ae0ca453fa139643fd06c607ab",
+        "maskHash": "4771ea38d695e7282c4e8eb8072c6cd3c99c7b4446a175b8c7d13b97bf9cc84a",
+        "route": {
+          "workflowId": "create.qwen.2ref",
+          "quality": "Final",
+          "evidenceId": "edit-synthetic-scoped-2026-10-16",
+          "templateVersion": 2,
+          "reason": "Validated Qwen instruction route with a second reference showing the allowed edit region; exact compositing protects pixels outside it."
+        },
+        "implementationSha256": "7565de418646b497363c88e1818d6041dd7c89f94c622fcd7786e24addfeb12d",
+        "compositorVersion": 2
+      },
+      "intent": {
+        "prompt": "Edit image 1 according to the instruction below. Image 2 is ONLY an edit-region guide: white pixels may change, black pixels must remain unchanged. Return the complete edited image 1 at the same framing and dimensions. Do not draw the guide, mask, borders, captions or annotations. Preserve all other subjects, identities, product shapes, labels and visible text.\nAction: Recolour\nVerbatim user instruction:\nChange the orange sphere on the left to a deep blue sphere. Preserve its shape, shading and position. Keep the black NOIR bottle unchanged.",
+        "width": 768,
+        "height": 768,
+        "seed": 2027,
+        "model": "Qwen",
+        "quality": "Final",
+        "references": [
+          "cbc2f4d0-a566-4d29-9779-0e21d64da3a5",
+          "0bcbb4a4-e5b6-4023-a54a-446176dc381c"
+        ]
+      },
+      "workflowId": "create.qwen.2ref",
+      "workflowVersion": "1.0.0",
+      "graphHash": "d73445730c4c2bbefec6ca6c8460abedc6548b34ae91eeaaba2c309c85e6b1f7",
+      "graph": {
+        "model": {
+          "class_type": "UNETLoader",
+          "_meta": {
+            "title": "DR_MODEL"
+          },
+          "inputs": {
+            "unet_name": "qwen_image_2.1_int8_convrot.safetensors",
+            "weight_dtype": "default"
+          }
+        },
+        "encoder": {
+          "class_type": "CLIPLoader",
+          "_meta": {
+            "title": "DR_ENCODER"
+          },
+          "inputs": {
+            "clip_name": "qwen3vl_8b_int8_convrot.safetensors",
+            "type": "qwen_image",
+            "device": "default"
+          }
+        },
+        "vae": {
+          "class_type": "VAELoader",
+          "_meta": {
+            "title": "DR_VAE"
+          },
+          "inputs": {
+            "vae_name": "qwen_image_2.1_vae_bf16.safetensors"
+          }
+        },
+        "prompt": {
+          "class_type": "TextEncodeQwenImage21",
+          "_meta": {
+            "title": "DR_PROMPT"
+          },
+          "inputs": {
+            "clip": ["encoder", 0],
+            "prompt": "Edit image 1 according to the instruction below. Image 2 is ONLY an edit-region guide: white pixels may change, black pixels must remain unchanged. Return the complete edited image 1 at the same framing and dimensions. Do not draw the guide, mask, borders, captions or annotations. Preserve all other subjects, identities, product shapes, labels and visible text.\nAction: Recolour\nVerbatim user instruction:\nChange the orange sphere on the left to a deep blue sphere. Preserve its shape, shading and position. Keep the black NOIR bottle unchanged.",
+            "negative_prompt": "",
+            "resolution": 768,
+            "vae": ["vae", 0],
+            "images.image_1": ["ref1", 0],
+            "images.image_2": ["ref2", 0]
+          }
+        },
+        "width": {
+          "class_type": "PrimitiveInt",
+          "_meta": {
+            "title": "DR_WIDTH"
+          },
+          "inputs": {
+            "value": 768
+          }
+        },
+        "height": {
+          "class_type": "PrimitiveInt",
+          "_meta": {
+            "title": "DR_HEIGHT"
+          },
+          "inputs": {
+            "value": 768
+          }
+        },
+        "latent": {
+          "class_type": "EmptyLatentImage",
+          "_meta": {
+            "title": "DR_LATENT"
+          },
+          "inputs": {
+            "width": ["width", 0],
+            "height": ["height", 0],
+            "batch_size": 1
+          }
+        },
+        "sample": {
+          "class_type": "KSampler",
+          "_meta": {
+            "title": "DR_SAMPLE"
+          },
+          "inputs": {
+            "model": ["model", 0],
+            "positive": ["prompt", 0],
+            "negative": ["prompt", 1],
+            "latent_image": ["latent", 0],
+            "seed": 2027,
+            "steps": 40,
+            "cfg": 1,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1
+          }
+        },
+        "decode": {
+          "class_type": "VAEDecodeTiled",
+          "_meta": {
+            "title": "DR_DECODE"
+          },
+          "inputs": {
+            "samples": ["sample", 0],
+            "vae": ["vae", 0],
+            "tile_size": 512,
+            "overlap": 64,
+            "temporal_size": 64,
+            "temporal_overlap": 8
+          }
+        },
+        "output": {
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "DR_OUTPUT"
+          },
+          "inputs": {
+            "images": ["decode", 0],
+            "filename_prefix": "darkroom-studio-2027/create"
+          }
+        },
+        "ref1": {
+          "class_type": "LoadImage",
+          "_meta": {
+            "title": "DR_REF_1"
+          },
+          "inputs": {
+            "image": "darkroom-studio-2027/references/3e1fe0ba-3e20-4d21-8a8b-a06a92aa0b4e.png"
+          }
+        },
+        "ref2": {
+          "class_type": "LoadImage",
+          "_meta": {
+            "title": "DR_REF_2"
+          },
+          "inputs": {
+            "image": "darkroom-studio-2027/references/b22d3ffe-7070-4227-b2d5-c6fa02a1e4ce.png"
+          }
+        }
+      },
+      "executionHash": "2629c7901ee68c21aea83dc3fbea977604f96586722b2a3b2f00cf715f126f25",
+      "engine": {
+        "connected": true,
+        "verified": true,
+        "version": "0.41.2",
+        "device": "cuda:0 NVIDIA GeForce RTX 3090 : cudaMallocAsync",
+        "url": "http://127.0.0.1:8188",
+        "models": {
+          "UNETLoader": [
+            "flux-2-klein-9b-fp8.safetensors",
+            "lotus-depth-d-v1-1.safetensors",
+            "ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors",
+            "qwen_image_2.1_int8_convrot.safetensors",
+            "qwen_image_layered_fp8mixed.safetensors",
+            "rt_detr_v4-x-hgnet_fp16.safetensors",
+            "seedvr2_7b_sharp_int8_convrot.safetensors"
+          ],
+          "CLIPLoader": [
+            "gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors",
+            "qwen3.5_9b_qwen_image_2.1_pe_i2i.int8_convrot.safetensors",
+            "qwen3.5_9b_qwen_image_2.1_pe_t2i.int8_convrot.safetensors",
+            "qwen3vl_8b_int8_convrot.safetensors",
+            "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+            "qwen_3_8b_fp8mixed.safetensors"
+          ],
+          "VAELoader": [
+            "ema_vae_fp16.safetensors",
+            "flux2-vae.safetensors",
+            "ltx-2.5-audio-vae-bf16.safetensors",
+            "ltx-2.5-video-vae-bf16.safetensors",
+            "qwen_image_2.1_vae_bf16.safetensors",
+            "qwen_image_layered_vae.safetensors",
+            "qwen_image_vae.safetensors",
+            "vae-ft-mse-840000-ema-pruned.safetensors",
+            "pixel_space"
+          ]
+        },
+        "modelFiles": [
+          {
+            "filename": "flux-2-klein-9b-fp8.safetensors",
+            "sha256": "865ba09f5b4c3cbd3468a4bd3acb9fcb2f8740c54317482f0bcd4ed1d3655cee",
+            "byteSize": 9433061528,
+            "modifiedMs": 1791650456005.9524
+          },
+          {
+            "filename": "qwen_3_8b_fp8mixed.safetensors",
+            "sha256": "abad16806e0cbabc54e0325d6565847443fe396d5f0be38bb3cd3fe75a1201d6",
+            "byteSize": 8664848742,
+            "modifiedMs": 1791650925813.7134
+          },
+          {
+            "filename": "flux2-vae.safetensors",
+            "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3",
+            "byteSize": 336211292,
+            "modifiedMs": 1791642200930.4844
+          },
+          {
+            "filename": "qwen_image_2.1_int8_convrot.safetensors",
+            "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d",
+            "byteSize": 7256783064,
+            "modifiedMs": 1791642607662.429
+          },
+          {
+            "filename": "qwen3vl_8b_int8_convrot.safetensors",
+            "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f",
+            "byteSize": 9350798360,
+            "modifiedMs": 1791643107127.4617
+          },
+          {
+            "filename": "qwen_image_2.1_vae_bf16.safetensors",
+            "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9",
+            "byteSize": 675509688,
+            "modifiedMs": 1791643142897.2847
+          }
+        ],
+        "fingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36"
+      },
+      "route": {
+        "workflow": {
+          "schemaVersion": 1,
+          "id": "create.qwen.2ref",
+          "version": "1.0.0",
+          "modelFamily": "Qwen",
+          "referenceCount": 2,
+          "qualitySteps": {
+            "Draft": 25,
+            "Final": 40
+          },
+          "graphSha256": "d73445730c4c2bbefec6ca6c8460abedc6548b34ae91eeaaba2c309c85e6b1f7",
+          "bindings": {
+            "prompt": {
+              "title": "DR_PROMPT",
+              "input": "prompt",
+              "type": "string"
+            },
+            "width": {
+              "title": "DR_WIDTH",
+              "input": "value",
+              "type": "integer"
+            },
+            "height": {
+              "title": "DR_HEIGHT",
+              "input": "value",
+              "type": "integer"
+            },
+            "seed": {
+              "title": "DR_SAMPLE",
+              "input": "seed",
+              "type": "integer"
+            },
+            "steps": {
+              "title": "DR_SAMPLE",
+              "input": "steps",
+              "type": "integer"
+            },
+            "reference1": {
+              "title": "DR_REF_1",
+              "input": "image",
+              "type": "string"
+            },
+            "reference2": {
+              "title": "DR_REF_2",
+              "input": "image",
+              "type": "string"
+            }
+          },
+          "outputs": [
+            {
+              "title": "DR_OUTPUT",
+              "kind": "image",
+              "alpha": false
+            }
+          ],
+          "models": [
+            {
+              "title": "DR_MODEL",
+              "input": "unet_name",
+              "filename": "qwen_image_2.1_int8_convrot.safetensors",
+              "source": "Existing ComfyUI Desktop installation",
+              "licenceStatus": "Verify authoritative terms for intended use",
+              "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+            },
+            {
+              "title": "DR_ENCODER",
+              "input": "clip_name",
+              "filename": "qwen3vl_8b_int8_convrot.safetensors",
+              "source": "Existing ComfyUI Desktop installation",
+              "licenceStatus": "Verify authoritative terms for intended use",
+              "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+            },
+            {
+              "title": "DR_VAE",
+              "input": "vae_name",
+              "filename": "qwen_image_2.1_vae_bf16.safetensors",
+              "source": "Existing ComfyUI Desktop installation",
+              "licenceStatus": "Verify authoritative terms for intended use",
+              "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+            }
+          ],
+          "maxPixels": 1572864,
+          "validationEvidenceId": "create-synthetic-2026-10-16",
+          "validationFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+          "enabled": true,
+          "validatedQualities": ["Draft", "Final"]
+        },
+        "reason": "Requested Qwen override",
+        "evidenceId": "create-synthetic-2026-10-16",
+        "policyVersion": 2
+      },
+      "submittedAt": "2026-10-17T14:46:38.019Z"
+    },
+    "visualAssessment": "Scoped pass: deep-blue sphere, protected NOIR bottle unchanged, join substantially reduced. Slight local background texture remains. Browser candidate review reopened successfully; candidate left unaccepted."
+  }
+}

@@ -3,7 +3,7 @@
   "compositorVersion": 2,
   "fingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
   "evidenceId": "edit-synthetic-scoped-2026-10-16",
-  "implementationSha256": "88ecc855d26de2d956acda91d4bfa15f621774e9f96f0a11d1df5adcca70cb72",
+  "implementationSha256": "7565de418646b497363c88e1818d6041dd7c89f94c622fcd7786e24addfeb12d",
   "graphHashes": {
     "create.qwen.1ref": "e4f5731b9f29915277d0c16b074a6beee001dea9f234fe1fc8326a810d3d5b07",
     "create.qwen.2ref": "d73445730c4c2bbefec6ca6c8460abedc6548b34ae91eeaaba2c309c85e6b1f7"
@@ -17,9 +17,11 @@
     "Instruct"
   ],
   "limits": "Manual selection required for local actions. Tested on the owned NOIR fixture; review seams and selection edges before accepting.",
-  "previousImplementation": "a70ab8257e3bada78867fb747438dfe38eddea219ee7e54bc874f1f859ad55d1",
+  "previousImplementation": "88ecc855d26de2d956acda91d4bfa15f621774e9f96f0a11d1df5adcca70cb72",
   "compatibilityEvidence": "workflows/scope-corrections-parity.json",
   "compatibilityScope": "Existing raster input/output parity retained. Recolour compositing separately corrected to avoid restoring the old colour at selection edges; real garment output reviewed in scope corrections evidence.",
   "alphaCompatibilityEvidence": "workflows/recolour-alpha-validation.json",
-  "alphaCompatibilityScope": "Recolour retains source alpha and empty-pixel RGBA. Retained GPU results: all six tasks keep RGB parity, five unchanged tasks keep RGBA parity; recolour corrects 13,449 unintended alpha changes. Synthetic alpha-ramp checks preserve all 589,824 alpha values and 545,824 protected/empty pixels exactly."
+  "alphaCompatibilityScope": "Recolour retains source alpha and empty-pixel RGBA. Retained GPU results: all six tasks keep RGB parity, five unchanged tasks keep RGBA parity; recolour corrects 13,449 unintended alpha changes. Synthetic alpha-ramp checks preserve all 589,824 alpha values and 545,824 protected/empty pixels exactly.",
+  "boundaryCompatibilityEvidence": "workflows/recolour-boundary-validation.json",
+  "boundaryCompatibilityScope": "Recolour uses protected-context colour matching without old-pigment feathering. Five other tasks retain byte parity; all reviewed protected pixels and source alpha stay exact. Sphere join improved; garment mask omissions remain."
 }

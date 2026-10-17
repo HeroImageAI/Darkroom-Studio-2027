@@ -28,6 +28,42 @@ import {
   type EditRequest,
 } from "../../packages/contracts/src/edit.js";
 let store: Store, root: string;
+it("recolour matches background drift without restoring the old pigment", async () => {
+  const width = 24,
+    height = 24;
+  const original = Buffer.alloc(width * height * 4);
+  const generated = Buffer.alloc(original.length);
+  const mask = Buffer.alloc(width * height);
+  for (let y = 0; y < height; y++)
+    for (let x = 0; x < width; x++) {
+      const i = y * width + x;
+      const object = x >= 8 && x < 16 && y >= 8 && y < 16;
+      original.set(object ? [220, 80, 20, 255] : [120, 120, 120, 255], i * 4);
+      generated.set(object ? [20, 60, 200, 255] : [130, 130, 130, 255], i * 4);
+      if (x >= 4 && x < 20 && y >= 4 && y < 20) mask[i] = 255;
+    }
+  const png = (bytes: Buffer, channels: 1 | 4) =>
+    sharp(bytes, { raw: { width, height, channels } }).png().toBuffer();
+  const result = await sharp(
+    await protectRequestedEdit(
+      await png(original, 4),
+      await png(mask, 1),
+      await png(generated, 4),
+      "Recolour",
+    ),
+  )
+    .raw()
+    .toBuffer();
+  for (let i = 0; i < mask.length; i++)
+    if (!mask[i])
+      expect(result.subarray(i * 4, i * 4 + 4)).toEqual(
+        original.subarray(i * 4, i * 4 + 4),
+      );
+  expect(Math.abs(result[(4 * width + 4) * 4]! - 120)).toBeLessThanOrEqual(1);
+  const centre = (12 * width + 12) * 4;
+  expect(result[centre + 2]! - result[centre]!).toBeGreaterThan(150);
+  expect(result[centre]).toBeLessThan(25);
+});
 it("recolour preserves translucent coverage and empty pixels while changing selected colour", async () => {
   const width = 12,
     height = 1;
