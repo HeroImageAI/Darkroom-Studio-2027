@@ -35,7 +35,7 @@ test("imports a real image, saves a master and survives reload", async ({
 }) => {
   await page.goto("/");
   await expect(page.locator("#project")).not.toHaveValue("");
-  await page.locator("input[type=file]").setInputFiles({
+  await page.getByLabel("Import image files", { exact: true }).setInputFiles({
     name: "fixture.png",
     mimeType: "image/png",
     buffer: await sharp({

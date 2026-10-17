@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { BrandingHandoff } from "./BrandingHandoff.js";
 import type {
   ExportRecord,
   ExportRequest,
@@ -97,6 +98,7 @@ export function FinishPanel({
         onApplied={onApplied}
         onPreview={onPreview}
       />
+      <BrandingHandoff documentId={documentId} prepare={prepare} />
       <h3>Export a delivery copy</h3>
       <label>
         File format

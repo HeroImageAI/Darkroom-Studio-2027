@@ -1,12 +1,12 @@
 # Darkroom Studio 2027 — build plan
 
-Status: Phase 0. Work is incremental and gates are explicit. This baseline does not authorise automatic implementation of later phases.
+Status: Core scope corrections after the Phase 7 preview. Phase 8 Library expansion is on hold while core selection, coherent canvas rendering and broader visual QA are corrected. Phases 1–7 have scoped draft implementations; that does not certify their full outcome gates. See [scope corrections](SCOPE_CORRECTIONS.md).
 
 ## Repository strategy
 
 Use only `HeroImageAI/Darkroom-Studio-2027` for this product. `HeroImageAI/Darkroom` is read-only evidence. No submodule, shared runtime database, copied history or five-studio architecture. The supplied remote was verified as an empty public repository on 16 October 2026 through the connected GitHub tools.
 
-Bootstrap `main` with repository identity only because an empty GitHub repository cannot accept a normal branch-based pull request. Put the planning baseline on `planning-baseline` and open a draft PR against `main`; do not merge automatically. Phase 1 uses `foundation` from the reviewed main. Subsequent branches follow named product work: `create-workspace`, `edit-workspace`, `ai-routing`, `smart-selection`, `finish-workflow`, `branding-ui`, `library`.
+Bootstrap `main` with repository identity only because an empty GitHub repository cannot accept a normal branch-based pull request. Put the planning baseline on `planning-baseline` and open a draft PR against `main`; do not merge automatically. The implemented previews currently form stacked draft PRs; `main` remains the bootstrap. Review and integration are still outstanding. The original strategy called for `foundation` from reviewed main. Subsequent branches follow named product work: `create-workspace`, `edit-workspace`, `ai-routing`, `smart-selection`, `finish-workflow`, `branding-ui`, `library`.
 
 Commit logical completed milestones. No force pushes or history rewriting. Main must contain reviewed work; propose required status checks and review protection when CI exists, and report actual configuration separately. Do not assert protections are enabled merely because this document requests them. Include exact head SHA and validation in every phase report.
 

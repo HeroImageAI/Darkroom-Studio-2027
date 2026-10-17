@@ -3,7 +3,7 @@
   "compositorVersion": 2,
   "fingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
   "evidenceId": "edit-synthetic-scoped-2026-10-16",
-  "implementationSha256": "b7b8bb66330484fc0c44ae2f6a333e4b3a33a76a0b41f2750059b9f21d2cd27b",
+  "implementationSha256": "a70ab8257e3bada78867fb747438dfe38eddea219ee7e54bc874f1f859ad55d1",
   "graphHashes": {
     "create.qwen.1ref": "e4f5731b9f29915277d0c16b074a6beee001dea9f234fe1fc8326a810d3d5b07",
     "create.qwen.2ref": "d73445730c4c2bbefec6ca6c8460abedc6548b34ae91eeaaba2c309c85e6b1f7"
@@ -16,5 +16,8 @@
     "Expand",
     "Instruct"
   ],
-  "limits": "Manual selection required for local actions. Tested on the owned NOIR fixture; review seams and selection edges before accepting."
+  "limits": "Manual selection required for local actions. Tested on the owned NOIR fixture; review seams and selection edges before accepting.",
+  "previousImplementation": "b7b8bb66330484fc0c44ae2f6a333e4b3a33a76a0b41f2750059b9f21d2cd27b",
+  "compatibilityEvidence": "workflows/scope-corrections-parity.json",
+  "compatibilityScope": "Existing raster input/output parity retained. Recolour compositing separately corrected to avoid restoring the old colour at selection edges; real garment output reviewed in scope corrections evidence."
 }

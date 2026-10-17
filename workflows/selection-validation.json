@@ -1,0 +1,55 @@
+{
+  "enabled": true,
+  "engineVersion": "0.41.2",
+  "nodeFingerprint": "08f38293b54d7cd0171a54ec160eebb48b0670f31b9b32693b2e7ce046cd424b",
+  "modelHash": "9ba99c92703c2e8b4f47de2d34a539bb8e18923049e238b780d70dbe6368eb03",
+  "implementationHash": "66708911205e082a54548a7987d96cc620ad51f9cfa4dfd91f37fda9c65d1ccc",
+  "cases": [
+    {
+      "name": "sam-portrait",
+      "description": "person",
+      "ms": 1192,
+      "promptId": "38b279af-ccf9-4846-b018-8e7c92f26495",
+      "selectedPixels": 105313,
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "visualReview": "SCOPED PASS: visible object outline; review/refine edges and small details before use"
+    },
+    {
+      "name": "sam-product",
+      "description": "bottle",
+      "ms": 1137,
+      "promptId": "ee663bb7-ab4a-4e79-aa80-f0942433fec0",
+      "selectedPixels": 103522,
+      "sourceHash": "b20fb24279433cc19af18ee7fd6c37b8e5eae24531b89112dea88bbf629ccebf",
+      "visualReview": "SCOPED PASS: visible object outline; review/refine edges and small details before use"
+    },
+    {
+      "name": "sam-garment",
+      "description": "orange spacesuit",
+      "ms": 1166,
+      "promptId": "e80a6615-e71d-41d0-b90a-a09182951a80",
+      "selectedPixels": 58903,
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "visualReview": "SCOPED PASS: visible object outline; review/refine edges and small details before use"
+    },
+    {
+      "name": "sam-sleeve",
+      "point": {
+        "x": 55,
+        "y": 385
+      },
+      "description": "left sleeve",
+      "ms": 1169,
+      "promptId": "adad3c0f-bad5-45cd-9d25-541fb1942165",
+      "selectedPixels": 1741,
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "visualReview": "FAIL: short part description selects only a small wrist patch; refine manually"
+    }
+  ],
+  "scope": "Scoped SAM description masks for person, bottle and spacesuit; BiRefNet point/connected foreground selection verified separately. Native SAM point decoder is deliberately unused after failed checks.",
+  "limitations": [
+    "Descriptions of small parts can select incomplete regions; preview and brush refinement are required.",
+    "One foreground component per click; Add/Subtract builds multi-object selections.",
+    "No universal object or transparent-edge accuracy claim."
+  ]
+}

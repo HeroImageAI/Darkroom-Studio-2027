@@ -215,7 +215,7 @@ export function reviewEdit(
         : store.createDocument(original.projectId, original.originalAssetId);
     const asset = store.asset(job.resultId)!;
     const e = request.expand ?? { left: 0, top: 0 };
-    const { selection: _, ...rest } = base;
+    const { selection: _, selectionMaskAssetId: _mask, ...rest } = base;
     const snapshot: Snapshot = {
       ...rest,
       id: target.id,

@@ -16,8 +16,11 @@ export const finishEvidence = () =>
     evidenceId: string;
     engineVersion: string;
   };
+import { canvasSignature } from "./render-signature.js";
 const loadedFinishSignature = createHash("sha256")
   .update(readFileSync("apps/api/src/finish-workflows.ts"))
+  .update(readFileSync("apps/api/src/finish-jobs.ts"))
+  .update(canvasSignature())
   .digest("hex");
 export const finishSignature = () => loadedFinishSignature;
 export function finishNodeFingerprint(info: ObjectInfo) {

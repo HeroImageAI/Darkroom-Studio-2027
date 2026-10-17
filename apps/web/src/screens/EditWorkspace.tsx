@@ -12,6 +12,7 @@ import {
   type Layer,
   type Point,
 } from "../../../../packages/document/src/edit.js";
+import { TextArtwork } from "./TextArtwork.js";
 import { AIEditPanel } from "./AIEditPanel.js";
 import { FinishPanel } from "./FinishPanel.js";
 import { api } from "../lib/api.js";
@@ -25,7 +26,16 @@ type Document = {
   snapshot: Snapshot;
 };
 type Tool =
-  "Move" | "Pan" | "Select" | "Lasso" | "Mask" | "Crop" | "Paint" | "Erase";
+  | "Refine"
+  | "Subject"
+  | "Move"
+  | "Pan"
+  | "Select"
+  | "Lasso"
+  | "Mask"
+  | "Crop"
+  | "Paint"
+  | "Erase";
 type Gesture = {
   start: Point;
   last: Point;
@@ -58,6 +68,7 @@ export function EditWorkspace({
   const [paintBusy, setPaintBusy] = useState(false);
   const painting = useRef(false);
   const placeInput = useRef<HTMLInputElement>(null);
+  const logoInput = useRef<HTMLInputElement>(null);
   const allAssets = [
     ...assets,
     ...placedAssets.filter((a) => !assets.some((v) => v.id === a.id)),
@@ -78,6 +89,11 @@ export function EditWorkspace({
   const [past, setPast] = useState<Snapshot[]>([]);
   const [future, setFuture] = useState<Snapshot[]>([]);
   const [selected, setSelected] = useState("");
+  const [selectionDescription, setSelectionDescription] = useState("");
+  const [selectionBusy, setSelectionBusy] = useState(false);
+  const [selectionMode, setSelectionMode] = useState<
+    "replace" | "add" | "subtract"
+  >("replace");
   const [tool, setTool] = useState<Tool>("Move");
   const [status, setStatus] = useState("Opening master…");
   const [error, setError] = useState("");
@@ -354,9 +370,67 @@ export function EditWorkspace({
     );
     return { x: p.x, y: p.y };
   }
+  async function selectRegion(
+    polygon?: Point[],
+    subjectPoint?: Point,
+    refinement?: { points: Point[]; size: number },
+  ) {
+    if (selectionBusy || !current.current) return;
+    setSelectionBusy(true);
+    setError("");
+    const before = current.current;
+    try {
+      const base = await prepareAI();
+      const result = await api<{
+        expectedRevision: string;
+        selectionMaskAssetId: string | null;
+      }>("/documents/" + base.documentId + "/selection", {
+        method: "POST",
+        body: JSON.stringify({
+          expectedRevision: base.expectedRevision,
+          mode: selectionMode,
+          subject: !polygon && !refinement,
+          stroke: refinement,
+          description:
+            !polygon && !refinement && selectionDescription.trim()
+              ? selectionDescription.trim()
+              : undefined,
+          polygon,
+          point: subjectPoint,
+        }),
+      });
+      if (
+        current.current !== before ||
+        revision.current !== result.expectedRevision
+      )
+        throw Error("The master changed during selection; try again.");
+      const { selection: _, selectionMaskAssetId: _mask, ...rest } = before;
+      commit({
+        ...rest,
+        ...(result.selectionMaskAssetId
+          ? { selectionMaskAssetId: result.selectionMaskAssetId }
+          : {}),
+      });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSelectionBusy(false);
+    }
+  }
   function down(e: React.PointerEvent<SVGSVGElement>) {
-    if (!doc || blocked.current || painting.current || e.button !== 0) return;
+    if (
+      !doc ||
+      blocked.current ||
+      painting.current ||
+      selectionBusy ||
+      e.button !== 0
+    )
+      return;
     const p = point(e);
+    if (tool === "Subject") {
+      void selectRegion(undefined, p);
+      return;
+    }
     e.currentTarget.setPointerCapture(e.pointerId);
     const hit = (e.target as Element)
       .closest("[data-layer]")
@@ -374,7 +448,8 @@ export function EditWorkspace({
       client: { x: e.clientX, y: e.clientY },
     };
     if (tool === "Crop") setCrop(undefined);
-    if (tool === "Paint" || tool === "Erase") setStroke([p]);
+    if (tool === "Paint" || tool === "Erase" || tool === "Refine")
+      setStroke([p]);
     if (tool === "Mask" && chosen && !chosen.locked && "assetId" in chosen)
       setStroke([localPoint(p, chosen.transform)]);
   }
@@ -406,6 +481,7 @@ export function EditWorkspace({
         height: Math.abs(p.y - g.start.y),
       });
     else if (
+      tool === "Refine" ||
       tool === "Lasso" ||
       tool === "Mask" ||
       tool === "Paint" ||
@@ -437,7 +513,9 @@ export function EditWorkspace({
       setCrop(undefined);
       return;
     }
-    if (tool === "Paint" || tool === "Erase") {
+    if (tool === "Refine") {
+      void selectRegion(undefined, undefined, { points: g.points, size });
+    } else if (tool === "Paint" || tool === "Erase") {
       void finishPaint(g);
     } else if (tool === "Move" && current.current) {
       const next = current.current;
@@ -462,8 +540,12 @@ export function EditWorkspace({
           ],
         } as Partial<Layer>),
       );
-    } else if ((tool === "Select" || tool === "Lasso") && stroke.length >= 3)
-      commit({ ...g.before, selection: stroke });
+    } else if ((tool === "Select" || tool === "Lasso") && stroke.length >= 3) {
+      if (selectionMode === "replace") {
+        const { selectionMaskAssetId: _, ...rest } = g.before;
+        commit({ ...rest, selection: stroke });
+      } else void selectRegion(stroke);
+    }
     setStroke([]);
   }
   async function finishPaint(g: Gesture) {
@@ -553,6 +635,92 @@ export function EditWorkspace({
     commit({ ...d, layers: [...d.layers, l] });
     setSelected(l.id);
     setTool("Move");
+  }
+  function addBranding(kind: "text" | "rectangle" | "ellipse") {
+    if (!current.current || painting.current || blocked.current) return;
+    const layer = {
+      id: crypto.randomUUID(),
+      name:
+        kind === "text"
+          ? "Text"
+          : kind === "rectangle"
+            ? "Rectangle"
+            : "Ellipse",
+      visible: true,
+      locked: false,
+      opacity: 1,
+      transform: {
+        x: current.current.width * 0.1,
+        y: current.current.height * 0.1,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+      },
+      ...(kind === "text"
+        ? {
+            type: "text" as const,
+            text: "YOUR BRAND",
+            fontFamily: "Darkroom Sans",
+            fontSize: 48,
+            fill: "#f2f2f3",
+          }
+        : {
+            type: "vector" as const,
+            shape: kind,
+            width: 200,
+            height: 100,
+            fill: "#e31824",
+            stroke: "#000000",
+            strokeWidth: 0,
+          }),
+    };
+    commit({ ...current.current, layers: [...current.current.layers, layer] });
+    setSelected(layer.id);
+    setTool("Move");
+  }
+  async function importSvgLogo(file?: File) {
+    if (!file || !current.current) return;
+    const target = current.current.id;
+    try {
+      if (file.size > 256000)
+        throw Error("SVG logo exceeds 256 KB. Simplify the artwork first.");
+      const imported = await api<{ asset: Asset; svg: string }>("/logos", {
+        method: "POST",
+        body: JSON.stringify({ projectId, svg: await file.text() }),
+      });
+      if (current.current?.id !== target) return;
+      setPlacedAssets((list) => [...list, imported.asset]);
+      const a = imported.asset,
+        d = current.current,
+        scale = Math.min(
+          1,
+          (d.width * 0.5) / a.width,
+          (d.height * 0.5) / a.height,
+        );
+      const layer = {
+        id: crypto.randomUUID(),
+        name: file.name.slice(0, 200),
+        type: "raster" as const,
+        assetId: a.id,
+        vectorSvg: imported.svg,
+        visible: true,
+        locked: false,
+        opacity: 1,
+        transform: {
+          x: (d.width - a.width * scale) / 2,
+          y: (d.height - a.height * scale) / 2,
+          scaleX: scale,
+          scaleY: scale,
+          rotation: 0,
+        },
+      };
+      commit({ ...d, layers: [...d.layers, layer] });
+      setSelected(layer.id);
+      setTool("Move");
+      await onRefresh();
+    } catch (e) {
+      setError((e as Error).message);
+    }
   }
   async function importLayer(file?: File) {
     if (!file) return;
@@ -690,21 +858,10 @@ export function EditWorkspace({
         </div>
       )}
       <div className="edit-toolbar" aria-label="Canvas tools">
-        {(
-          [
-            "Move",
-            "Pan",
-            "Select",
-            "Lasso",
-            "Mask",
-            "Paint",
-            "Erase",
-            "Crop",
-          ] as Tool[]
-        ).map((t) => (
+        {(["Move", "Select", "Crop"] as Tool[]).map((t) => (
           <Button
             key={t}
-            disabled={paintBusy}
+            disabled={paintBusy || selectionBusy}
             aria-pressed={tool === t}
             onClick={() => {
               setTool(t);
@@ -714,6 +871,91 @@ export function EditWorkspace({
             {t}
           </Button>
         ))}
+        <Button
+          disabled={paintBusy || selectionBusy}
+          aria-pressed={tool === "Subject"}
+          onClick={() => setTool("Subject")}
+        >
+          Smart Select
+        </Button>
+        <details className="more-canvas-tools">
+          <summary>More tools</summary>
+          {(["Pan", "Lasso", "Refine", "Mask", "Paint", "Erase"] as Tool[]).map(
+            (t) => (
+              <Button
+                key={t}
+                disabled={paintBusy || selectionBusy}
+                aria-pressed={tool === t}
+                onClick={() => {
+                  setTool(t);
+                  setCrop(undefined);
+                }}
+              >
+                {t === "Refine" ? "Refine selection" : t}
+              </Button>
+            ),
+          )}
+        </details>
+        {(["Subject", "Select", "Lasso", "Refine"] as Tool[]).includes(
+          tool,
+        ) && (
+          <label>
+            Selection
+            <select
+              aria-label="Selection mode"
+              value={selectionMode}
+              onChange={(e) =>
+                setSelectionMode(e.target.value as typeof selectionMode)
+              }
+            >
+              <option value="replace">Replace</option>
+              <option value="add">Add</option>
+              <option value="subtract">Subtract</option>
+            </select>
+          </label>
+        )}
+        {tool === "Subject" && (
+          <span className="muted">
+            {selectionBusy
+              ? "Finding the subject…"
+              : "Click a foreground subject, or describe an object. Refine the mask before editing."}
+          </span>
+        )}
+        {tool === "Subject" && (
+          <label>
+            Find
+            <input
+              aria-label="Object to select"
+              maxLength={120}
+              value={selectionDescription}
+              placeholder="e.g. orange spacesuit"
+              onChange={(e) => setSelectionDescription(e.target.value)}
+            />
+            <Button
+              disabled={selectionBusy || !selectionDescription.trim()}
+              onClick={() => void selectRegion()}
+            >
+              Select matching objects
+            </Button>
+          </label>
+        )}
+        {tool === "Refine" && (
+          <label>
+            Brush size
+            <input
+              aria-label="Selection brush size"
+              type="number"
+              min={1}
+              max={4096}
+              value={size}
+              onChange={(e) =>
+                setSize(
+                  Math.max(1, Math.min(4096, Number(e.target.value) || 1)),
+                )
+              }
+            />
+          </label>
+        )}
         <Button onClick={undo} disabled={!past.length || blocked.current}>
           Undo
         </Button>
@@ -809,6 +1051,56 @@ export function EditWorkspace({
             </Button>
           </details>
           {paintBusy && <p role="status">Saving paint stroke�</p>}
+          <details>
+            <summary>Add branding</summary>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => addBranding("text")}
+            >
+              Add text
+            </Button>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => addBranding("rectangle")}
+            >
+              Add rectangle
+            </Button>
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => addBranding("ellipse")}
+            >
+              Add ellipse
+            </Button>
+            <input
+              type="file"
+              accept="image/svg+xml,.svg"
+              hidden
+              ref={logoInput}
+              aria-label="Import SVG logo file"
+              onChange={(e) => {
+                void importSvgLogo(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <Button
+              disabled={
+                paintBusy || blocked.current || doc.layers.length >= 100
+              }
+              onClick={() => logoInput.current?.click()}
+            >
+              Import SVG logo
+            </Button>
+            <p>
+              Static paths and shapes only. Outline text and simplify gradients,
+              clipping or effects before import.
+            </p>
+          </details>
           <p className="muted">Top layer appears in front.</p>
           {[...doc.layers].reverse().map((l) => (
             <div
@@ -1028,20 +1320,28 @@ export function EditWorkspace({
                     >
                       {a ? (
                         <image
-                          href={"/api/assets/" + a.id}
+                          href={
+                            "vectorSvg" in l &&
+                            l.vectorSvg &&
+                            !l.maskAssetId &&
+                            !l.maskStrokes?.length
+                              ? "data:image/svg+xml," +
+                                encodeURIComponent(l.vectorSvg)
+                              : "/api/assets/" + a.id
+                          }
                           width={a.width}
                           height={a.height}
                           preserveAspectRatio="none"
                           mask={`url(#mask-${l.id})`}
                         />
                       ) : l.type === "text" ? (
-                        <text
+                        <TextArtwork
+                          text={l.text}
                           fontFamily={l.fontFamily}
                           fontSize={l.fontSize}
                           fill={l.fill}
-                        >
-                          {l.text}
-                        </text>
+                          selected={l.id === selected}
+                        />
                       ) : l.type === "vector" ? (
                         l.shape === "rectangle" ? (
                           <rect
@@ -1077,7 +1377,7 @@ export function EditWorkspace({
                     </g>
                   );
                 })}
-              {(tool === "Paint" || tool === "Erase") &&
+              {(tool === "Paint" || tool === "Erase" || tool === "Refine") &&
                 stroke.length > 0 &&
                 (stroke.length === 1 ? (
                   <circle
@@ -1098,6 +1398,29 @@ export function EditWorkspace({
                     pointerEvents="none"
                   />
                 ))}
+              {doc.selectionMaskAssetId && (
+                <g pointerEvents="none">
+                  <defs>
+                    <mask
+                      id="selection-preview"
+                      style={{ maskType: "luminance" }}
+                    >
+                      <image
+                        href={"/api/assets/" + doc.selectionMaskAssetId}
+                        width={doc.width}
+                        height={doc.height}
+                      />
+                    </mask>
+                  </defs>
+                  <rect
+                    width={doc.width}
+                    height={doc.height}
+                    fill="#e31824"
+                    opacity={0.35}
+                    mask="url(#selection-preview)"
+                  />
+                </g>
+              )}
               {doc.selection && (
                 <polygon
                   points={path(doc.selection)}
@@ -1113,7 +1436,7 @@ export function EditWorkspace({
         </div>
         <aside className="edit-properties" aria-label="Layer properties">
           <FinishPanel
-            hasSelection={!!doc.selection}
+            hasSelection={!!(doc.selection || doc.selectionMaskAssetId)}
             key={documentId}
             documentId={documentId}
             width={doc.width}
@@ -1125,7 +1448,7 @@ export function EditWorkspace({
           />
           <AIEditPanel
             documentId={documentId}
-            hasSelection={!!doc.selection}
+            hasSelection={!!(doc.selection || doc.selectionMaskAssetId)}
             prepare={prepareAI}
             onApplied={adoptAI}
             onPreview={setAiPreview}
@@ -1159,6 +1482,142 @@ export function EditWorkspace({
                 />
                 <output>{Math.round(chosen.opacity * 100)}%</output>
               </label>
+              {chosen.type === "text" && (
+                <fieldset disabled={locked}>
+                  <legend>Exact text</legend>
+                  <label>
+                    Text
+                    <input
+                      aria-label="Text content"
+                      maxLength={500}
+                      value={chosen.text}
+                      onChange={(e) =>
+                        changeLayer({ text: e.target.value } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Font
+                    <select
+                      aria-label="Text font"
+                      value={chosen.fontFamily}
+                      onChange={(e) =>
+                        changeLayer({
+                          fontFamily: e.target.value,
+                        } as Partial<Layer>)
+                      }
+                    >
+                      <option>Darkroom Sans</option>
+                      <option>Darkroom Sans Bold</option>
+                    </select>
+                  </label>
+                  <label>
+                    Size
+                    <input
+                      aria-label="Text size"
+                      type="number"
+                      min="1"
+                      max="512"
+                      value={chosen.fontSize}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        if (n >= 1 && n <= 512)
+                          changeLayer({ fontSize: n } as Partial<Layer>);
+                      }}
+                    />
+                  </label>
+                  <label>
+                    Text colour
+                    <input
+                      aria-label="Text colour"
+                      type="color"
+                      value={chosen.fill}
+                      onChange={(e) =>
+                        changeLayer({ fill: e.target.value } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <p>
+                    Bundled Inter Latin outlines. Text stays editable in the
+                    project; SVG handoff outlines it. AI input uses these exact
+                    glyphs. Protect lettering with the selection when editing.
+                  </p>
+                </fieldset>
+              )}
+              {chosen.type === "vector" && (
+                <fieldset disabled={locked}>
+                  <legend>Shape</legend>
+                  {(["width", "height"] as const).map((k) => (
+                    <label key={k}>
+                      {k}
+                      <input
+                        aria-label={"Shape " + k}
+                        type="number"
+                        min="1"
+                        max="16384"
+                        value={chosen[k]}
+                        onChange={(e) => {
+                          const n = Number(e.target.value);
+                          if (n >= 1 && n <= 16384)
+                            changeLayer({ [k]: n } as Partial<Layer>);
+                        }}
+                      />
+                    </label>
+                  ))}
+                  <label>
+                    Fill
+                    <input
+                      aria-label="Shape fill"
+                      type="color"
+                      value={chosen.fill === "none" ? "#000000" : chosen.fill}
+                      onChange={(e) =>
+                        changeLayer({ fill: e.target.value } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      aria-label="Shape no fill"
+                      checked={chosen.fill === "none"}
+                      onChange={(e) =>
+                        changeLayer({
+                          fill: e.target.checked ? "none" : "#e31824",
+                        } as Partial<Layer>)
+                      }
+                    />
+                    No fill
+                  </label>
+                  <label>
+                    Stroke
+                    <input
+                      aria-label="Shape stroke"
+                      type="color"
+                      value={chosen.stroke}
+                      onChange={(e) =>
+                        changeLayer({
+                          stroke: e.target.value,
+                        } as Partial<Layer>)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Stroke width
+                    <input
+                      aria-label="Shape stroke width"
+                      type="number"
+                      min="0"
+                      max="512"
+                      value={chosen.strokeWidth}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        if (n >= 0 && n <= 512)
+                          changeLayer({ strokeWidth: n } as Partial<Layer>);
+                      }}
+                    />
+                  </label>
+                </fieldset>
+              )}
               <fieldset disabled={locked}>
                 <legend>Transform</legend>
                 {(["x", "y", "scaleX", "scaleY", "rotation"] as const).map(
@@ -1195,10 +1654,44 @@ export function EditWorkspace({
                 )}
               </fieldset>
               {rasterAsset && (
-                <p className="muted">
-                  {Math.round(rasterAsset.width * chosen.transform.scaleX)} ×{" "}
-                  {Math.round(rasterAsset.height * chosen.transform.scaleY)} px
-                </p>
+                <fieldset disabled={locked}>
+                  <legend>Image size</legend>
+                  {(["width", "height"] as const).map((dimension) => {
+                    const axis = dimension === "width" ? "scaleX" : "scaleY";
+                    const currentSize =
+                      rasterAsset[dimension] * chosen.transform[axis];
+                    return (
+                      <label key={dimension}>
+                        {dimension === "width" ? "Width" : "Height"} (px)
+                        <input
+                          aria-label={"Image " + dimension}
+                          type="number"
+                          min="1"
+                          max="16384"
+                          step="0.1"
+                          value={Number(currentSize.toFixed(3))}
+                          onChange={(e) => {
+                            const n = Number(e.target.value);
+                            if (n >= 1 && n <= 16384)
+                              changeLayer({
+                                transform: {
+                                  ...chosen.transform,
+                                  scaleX:
+                                    (chosen.transform.scaleX * n) / currentSize,
+                                  scaleY:
+                                    (chosen.transform.scaleY * n) / currentSize,
+                                },
+                              });
+                          }}
+                        />
+                      </label>
+                    );
+                  })}
+                  <p className="muted">
+                    Keeps current proportions. Use the scale controls for
+                    independent dimensions.
+                  </p>
+                </fieldset>
               )}
               {chosen.locked && (
                 <p className="muted">
@@ -1274,11 +1767,15 @@ export function EditWorkspace({
               </Button>
             </fieldset>
           )}
-          {doc.selection && (
+          {(doc.selection || doc.selectionMaskAssetId) && (
             <Button
               disabled={blocked.current}
               onClick={() => {
-                const { selection: _, ...rest } = doc;
+                const {
+                  selection: _,
+                  selectionMaskAssetId: _mask,
+                  ...rest
+                } = doc;
                 commit(rest);
               }}
             >

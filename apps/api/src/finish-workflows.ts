@@ -155,8 +155,9 @@ export async function finishOutput(
   width: number,
   height: number,
   preserve?: Point[],
+  preserveMask?: Buffer,
 ) {
-  if (task === "Restore" && (!preserve || preserve.length < 3))
+  if (task === "Restore" && !preserveMask && (!preserve || preserve.length < 3))
     throw Error("Select the lettering or details to preserve before restoring");
   const resized = await sharp(source)
     .resize(width, height, { fit: "fill", kernel: "lanczos3" })
@@ -182,12 +183,26 @@ export async function finishOutput(
     .toBuffer();
   let protectedPixels: Buffer | undefined, transition: Buffer | undefined;
   if (task === "Restore") {
-    const polygon = preserve!.map((p) => `${p.x},${p.y}`).join(" ");
-    const mask = Buffer.from(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="black"/><polygon points="${polygon}" fill="white"/></svg>`,
-    );
-    protectedPixels = await sharp(mask).greyscale().raw().toBuffer();
-    transition = await sharp(mask).blur(3).greyscale().raw().toBuffer();
+    const polygon = (preserve ?? []).map((p) => `${p.x},${p.y}`).join(" ");
+    const mask =
+      preserveMask ??
+      Buffer.from(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="black"/><polygon points="${polygon}" fill="white"/></svg>`,
+      );
+    const meta = await sharp(mask).metadata();
+    if (meta.width !== width || meta.height !== height)
+      throw Error("Preserved selection dimensions do not match the image");
+    protectedPixels = await sharp(mask)
+      .removeAlpha()
+      .greyscale()
+      .raw()
+      .toBuffer();
+    transition = await sharp(mask)
+      .blur(3)
+      .removeAlpha()
+      .greyscale()
+      .raw()
+      .toBuffer();
   }
   for (let i = 0; i < width * height; i++)
     for (let c = 0; c < 3; c++) {

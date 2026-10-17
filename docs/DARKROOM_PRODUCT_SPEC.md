@@ -1,6 +1,6 @@
 # Darkroom Studio 2027 — product specification
 
-Status: Phase 0 proposal, 16 October 2026. The complete product-brief.md is the requirements source; this document converts it into a bounded product contract. No implementation or model validation is implied.
+Status: Product baseline; implementation remains a scoped preview, with core corrections before Library expansion. Original proposal, 16 October 2026. The complete product-brief.md is the requirements source; this document converts it into a bounded product contract. No implementation or model validation is implied.
 
 ## Purpose and boundaries
 

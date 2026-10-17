@@ -222,13 +222,14 @@ export class Store {
       .prepare("SELECT projectId FROM documents WHERE id=?")
       .get(id)?.projectId;
     const assets = [
-      ...new Set(
-        doc.layers.flatMap((l) =>
+      ...new Set([
+        ...(doc.selectionMaskAssetId ? [doc.selectionMaskAssetId] : []),
+        ...doc.layers.flatMap((l) =>
           "assetId" in l
             ? [l.assetId, ...(l.maskAssetId ? [l.maskAssetId] : [])]
             : [],
         ),
-      ),
+      ]),
     ];
     for (const a of assets)
       if (

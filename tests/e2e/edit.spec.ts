@@ -4,7 +4,7 @@ async function open(page: Page) {
   await page.goto("/");
   await expect(page.locator("#project")).not.toHaveValue("");
   await page.getByRole("button", { name: "Edit", exact: true }).click();
-  await page.locator("input[type=file]").setInputFiles({
+  await page.getByLabel("Import image files", { exact: true }).setInputFiles({
     name: "edit-fixture.png",
     mimeType: "image/png",
     buffer: await sharp({
@@ -62,6 +62,7 @@ test("real editable master persists transforms masks selection crop and keyboard
   await expect(page.getByLabel("x", { exact: true })).toHaveValue("0");
   await page.keyboard.press("Control+Shift+z");
   await expect(page.getByLabel("x", { exact: true })).toHaveValue("30");
+  await page.getByText("More tools", { exact: true }).click();
   await page.getByRole("button", { name: "Mask", exact: true }).click();
   await page.getByLabel("Mask brush size").fill("100");
   const before = await page
@@ -284,6 +285,12 @@ test("composition places cutouts, paints and erases on a separate layer, then re
     .toBuffer();
   expect(before[(336 * 640 + 288) * 4 + 1]).toBe(255);
   expect(before[(336 * 640 + 288) * 4 + 3]).toBe(255);
+  if (
+    !(await page
+      .getByRole("button", { name: "Erase", exact: true })
+      .isVisible())
+  )
+    await page.getByText("More tools", { exact: true }).click();
   await page.getByRole("button", { name: "Erase", exact: true }).click();
   await drag(page, [0.4, 0.7], [0.5, 0.7]);
   await expect(
@@ -315,6 +322,7 @@ test("composition places cutouts, paints and erases on a separate layer, then re
   expect(undone.snapshot.layers[2].assetId).toBe(paint.assetId);
   await page.getByRole("button", { name: "Select", exact: true }).click();
   await drag(page, [0.1, 0.1], [0.3, 0.3]);
+  await page.getByText("Harmonise a composite", { exact: true }).click();
   await page.getByRole("button", { name: "Harmonise composite" }).click();
   await expect(page.getByLabel("AI edit action")).toHaveValue("Instruct");
   await expect(page.getByLabel("AI edit area")).toHaveValue("outside");
@@ -334,4 +342,45 @@ test("composition places cutouts, paints and erases on a separate layer, then re
   ).json();
   expect(reopened.originalAssetId).toBe(original.originalAssetId);
   expect(reopened.snapshot.layers).toHaveLength(3);
+});
+
+test("selection add/subtract survives undo and reload without changing source pixels", async ({
+  page,
+}) => {
+  const { id } = await open(page);
+  await page.getByRole("button", { name: "Select", exact: true }).click();
+  await drag(page, [0.1, 0.1], [0.8, 0.8]);
+  await page.getByLabel("Selection mode").selectOption("subtract");
+  await drag(page, [0.3, 0.3], [0.5, 0.5]);
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get("/api/documents/" + id)).json()).snapshot
+          .selectionMaskAssetId,
+    )
+    .toBeTruthy();
+  let doc = await (await page.request.get("/api/documents/" + id)).json();
+  const bytes = await (
+    await page.request.get("/api/assets/" + doc.snapshot.selectionMaskAssetId)
+  ).body();
+  const mask = await sharp(bytes).removeAlpha().greyscale().raw().toBuffer();
+  expect(mask[192 * 640 + 256]).toBe(0);
+  expect(mask[96 * 640 + 128]).toBe(255);
+  await expect(
+    page.getByText("All changes saved", { exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await expect(page.locator("mask#selection-preview image")).toHaveAttribute(
+    "href",
+    "/api/assets/" + doc.snapshot.selectionMaskAssetId,
+  );
+  await page
+    .getByRole("button", { name: "Clear selection", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(page.locator("mask#selection-preview image")).toHaveAttribute(
+    "href",
+    "/api/assets/" + doc.snapshot.selectionMaskAssetId,
+  );
 });

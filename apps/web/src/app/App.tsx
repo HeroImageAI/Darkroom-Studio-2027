@@ -36,6 +36,7 @@ export function App() {
   const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const upload = useRef<HTMLInputElement>(null);
+  const projectUpload = useRef<HTMLInputElement>(null);
   async function refresh(id = project) {
     if (id) setAssets(await api<Asset[]>("/projects/" + id + "/assets"));
   }
@@ -166,6 +167,41 @@ export function App() {
     window.addEventListener("paste", paste);
     return () => window.removeEventListener("paste", paste);
   }, [project, page, references]);
+  async function openProjectFile(file?: File) {
+    if (!file) return;
+    setBusy(true);
+    setError("");
+    try {
+      if (file.size > 30 * 1024 * 1024)
+        throw Error("Project file exceeds 30 MB");
+      const r = await api<{ project: Project; document: { id: string } }>(
+        "/project-imports",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            bundle: JSON.parse(await file.text()),
+            idempotencyKey: crypto.randomUUID(),
+          }),
+        },
+      );
+      setProjects(await api<Project[]>("/projects"));
+      setSelected(undefined);
+      setProject(r.project.id);
+      setSelectedDocument(r.document.id);
+      setPage("Edit");
+      localStorage.setItem(
+        "darkroom.lastDocument." + r.project.id,
+        r.document.id,
+      );
+      setNotice(
+        "Editable project opened as a new copy. Existing projects preserved.",
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   async function newProject() {
     const name = window.prompt("Project name");
     if (!name?.trim()) return;
@@ -324,6 +360,24 @@ export function App() {
             <Button className="wide quiet" onClick={() => void newProject()}>
               ＋ New project
             </Button>
+            <input
+              ref={projectUpload}
+              type="file"
+              accept=".darkroom.json,application/json"
+              aria-label="Open Darkroom project file"
+              hidden
+              onChange={(e) => {
+                void openProjectFile(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <Button
+              className="wide quiet"
+              disabled={busy}
+              onClick={() => projectUpload.current?.click()}
+            >
+              Open project copy
+            </Button>
           </div>
           <div className="sidebar-note">
             <span className="mini-mark">D / 27</span>
@@ -339,7 +393,7 @@ export function App() {
                 : "Engine not connected"}
             </Status>
           </div>
-          <small className="foundation-label">COMPOSITE PREVIEW · 0.6</small>
+          <small className="foundation-label">BRANDING PREVIEW · 0.7</small>
         </aside>
         <main id="workspace" tabIndex={-1}>
           {error && (
@@ -523,6 +577,7 @@ export function App() {
         ref={upload}
         type="file"
         accept="image/png,image/jpeg,image/webp"
+        aria-label="Import image files"
         multiple
         hidden
         onChange={(e) => {
