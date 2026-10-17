@@ -1,0 +1,70 @@
+{
+  "enabled": false,
+  "engineVersion": "0.41.2",
+  "nodeFingerprint": "08f38293b54d7cd0171a54ec160eebb48b0670f31b9b32693b2e7ce046cd424b",
+  "modelHash": "9ba99c92703c2e8b4f47de2d34a539bb8e18923049e238b780d70dbe6368eb03",
+  "cases": [
+    {
+      "name": "badge-raw",
+      "path": "data/scope-qa/astronaut.png",
+      "point": {
+        "x": 171,
+        "y": 385
+      },
+      "refine": 0,
+      "promptId": "58eafac6-bef6-41b9-85b4-6858747e1769",
+      "ms": 1179,
+      "status": "success",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "visualReview": "Partial badge region with holes; not a clean complete badge selection.",
+      "selectedPixels": 3199
+    },
+    {
+      "name": "badge-refined",
+      "path": "data/scope-qa/astronaut.png",
+      "point": {
+        "x": 171,
+        "y": 385
+      },
+      "refine": 2,
+      "promptId": "af7f1ab9-9930-4e9b-b7fa-86895509fd2f",
+      "ms": 1013,
+      "status": "success",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "visualReview": "Refinement reduces badge coverage further; fail for complete badge.",
+      "selectedPixels": 2391
+    },
+    {
+      "name": "sleeve",
+      "path": "data/scope-qa/astronaut.png",
+      "point": {
+        "x": 55,
+        "y": 385
+      },
+      "refine": 2,
+      "promptId": "e9ef9cb9-f3da-4721-950f-230d2e5a7eff",
+      "ms": 688,
+      "status": "success",
+      "sourceHash": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "visualReview": "Most of the person selected instead of the sleeve; fail.",
+      "selectedPixels": 94743
+    },
+    {
+      "name": "bottle",
+      "path": "data/create-qa/reference-1.png",
+      "point": {
+        "x": 384,
+        "y": 400
+      },
+      "refine": 2,
+      "promptId": "a7e8766d-fc27-47f1-811a-5f825a54b798",
+      "ms": 702,
+      "status": "success",
+      "sourceHash": "b20fb24279433cc19af18ee7fd6c37b8e5eae24531b89112dea88bbf629ccebf",
+      "visualReview": "Small lettering fragment selected instead of whole synthetic bottle; fail.",
+      "selectedPixels": 681
+    }
+  ],
+  "scope": "Isolated diagnostic only; production selection and model settings unchanged. One NASA photo and one owned synthetic bottle. No broad photographic selection pass.",
+  "guidance": "Native SAM3 point inputs use original-image pixel coordinates; see official Comfy-Org/ComfyUI comfy_extras/nodes_sam3.py. Tested installed Desktop 0.41.2; no engine modifications."
+}
