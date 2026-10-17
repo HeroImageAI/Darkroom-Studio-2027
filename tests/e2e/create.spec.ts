@@ -176,3 +176,32 @@ test("reuses the same idempotency key and random seed after a lost response", as
   expect(calls[0].idempotencyKey).toBe(calls[1].idempotencyKey);
   expect(calls[0].intent.seed).toBe(calls[1].intent.seed);
 });
+
+for (const model of ["Klein", "Qwen"] as const) {
+  test(`visible image model chooser submits ${model} and retains it on retry`, async ({
+    page,
+  }) => {
+    const calls = await mockCreate(page, true);
+    await page.goto("/");
+    await expect(page.locator("#project")).not.toHaveValue("");
+    const chooser = page.getByRole("combobox", {
+      name: "Image model",
+      exact: true,
+    });
+    await expect(chooser).toBeVisible();
+    await expect(chooser).toHaveValue("Auto");
+    await chooser.selectOption(model);
+    await page
+      .getByLabel("YOUR CREATIVE BRIEF")
+      .fill("One red bottle. Exact text NOIR.");
+    await page.getByRole("button", { name: "Generate ↗" }).click();
+    await expect(page.getByRole("alert")).toBeVisible();
+    await page.getByRole("button", { name: "Generate ↗" }).click();
+    await expect(page.getByAltText("Generated variation 1")).toBeVisible();
+    expect(calls).toHaveLength(2);
+    expect(calls.every((request) => request.intent.model === model)).toBe(true);
+    expect(calls[0].idempotencyKey).toBe(calls[1].idempotencyKey);
+    expect(calls[0].intent.seed).toBe(calls[1].intent.seed);
+    await expect(chooser).toHaveValue(model);
+  });
+}
