@@ -199,7 +199,7 @@ export function protectRequestedEdit(
     source,
     mask,
     generated,
-    !["Background", "Recolour"].includes(task),
+    task !== "Background",
     !["Expand", "Recolour"].includes(task),
     task === "Recolour",
   );
