@@ -2,6 +2,8 @@
 
 Status: Product baseline; implementation remains a scoped preview, with core corrections before Library expansion. Original proposal, 16 October 2026. The complete product-brief.md is the requirements source; this document converts it into a bounded product contract. No implementation or model validation is implied.
 
+Continuation authorised 17 October: work may proceed through completion and reviewed integration without further phase approvals. This supersedes the original phase-boundary approval language below; the original scope and evidence gates still apply. See `COMPLETION_GATES.md`.
+
 ## Purpose and boundaries
 
 Turn an idea, photograph, reference, sketch or rough artwork into a usable visual asset through local AI. Prioritise image quality, fidelity, understandable controls and safe iteration. Three destinations only: Create, Edit, Library. Finish belongs inside Edit; compositing also belongs inside Edit.
