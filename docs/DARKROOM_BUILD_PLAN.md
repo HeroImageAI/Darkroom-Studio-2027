@@ -63,3 +63,7 @@ Phase 0 checks are document completeness, cross-links, requirement coverage, cle
 ## 17 October artwork quality continuation
 
 PR11 planar perspective correction is merged into composite-workflow at f61ee27e8c36a9362d211d638c7c23cbf461a67f. The next bounded correction adds opt-in isolation from an existing visible selection. It preserves photographed pixels and saves a separate master; it introduces no model, package or additional product destination. See ARTWORK_EXTRACTION.md and workflows/artwork-isolation-validation.json for scoped photographic evidence and remaining edge-quality limitations. Core quality gates still precede Library expansion. The user's explicit continuing authorization supersedes the earlier phase-boundary approval stop rule.
+
+## Latest scope correction
+
+The user's subsequent direction narrows the product to Windows image generation and editing, with simplicity as a requirement. CURRENT_SCOPE.md takes precedence over the original phase table: no vector development, expanded branding/handoff or Library feature programme. Complete representative image-quality and reliability outcomes before adding controls.

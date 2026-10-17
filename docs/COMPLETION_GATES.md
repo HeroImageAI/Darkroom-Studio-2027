@@ -2,7 +2,7 @@
 
 Updated 17 October 2026. The user authorises continued work through completion, including routine decisions and phase progression without another approval request. This supersedes earlier phase-boundary approval instructions; tests, review, immutable originals and evidence requirements still apply. Platform permission restrictions remain separate.
 
-The original `product-brief.md` defines scope. Completion means passing its bounded outcomes, not adding every possible editing feature. The earlier approximate 70% estimate is not an acceptance metric. A gate is complete only with linked evidence; partial results remain partial.
+The latest user instructions in `CURRENT_SCOPE.md` define the current scope and override broader requirements in `product-brief.md`. Windows image generation and editing are the release focus; vector work and expanded branding/handoff are excluded. Completion means passing its bounded outcomes, not adding every possible editing feature. The earlier approximate 70% estimate is not an acceptance metric. A gate is complete only with linked evidence; partial results remain partial.
 
 | Gate | Current evidence | Remaining acceptance |
 | --- | --- | --- |
@@ -14,16 +14,16 @@ The original `product-brief.md` defines scope. Completion means passing its boun
 | Upscale and alpha | PR9 review, 107-test baseline, GPU comparisons | Broader photographic detail, hair and translucent edges; supported practical dimensions |
 | Restore | Protected surroundings only | Demonstrate reduced damage with identity/design retained; source copying alone does not close this gate |
 | Background removal and clear glass | BiRefNet ordinary cutouts; isolated guided matte experiment | Photographic transparency, foreground colour recovery and validated native workflow |
-| Branding and handoff | Phase 7 and later visible-branding correction | Release round-trip and Affinity checks; assess whether layered PSD is useful within original scope |
-| Lightweight Library | Basic access only | Recent, projects/boards, search, favourites, originals/masters/versions/exports and recoverable deletion |
+| Image delivery | Existing PNG/JPEG export | Windows image dimensions, colour, transparency and saved-master recovery |
+| Saved work | Basic access and projects | Simple retrieval and recovery for image work; no expanded Library feature programme |
 | UX/UI | Existing browser flows and brand tokens | Observed Create → Edit → Finish tasks, keyboard/focus, readable states, recovery guidance and practical viewport review |
-| Release | Cross-platform CI on PR9 baseline | Integrate reviewed stack; install/upgrade/restart, storage, compatibility, cold/warm VRAM/performance and complete end-to-end acceptance |
+| Release | Windows CI through PR12 | Integrate reviewed stack; install/upgrade/restart, storage, compatibility, cold/warm VRAM/performance and complete end-to-end acceptance |
 
 ## Working order
 
 1. Audit official prompt/node/settings guidance against the installed versions, then close core quality outcomes through controlled comparisons. No candidate is enabled from publisher claims alone.
 2. Integrate reviewed, passing milestones with history intact; main must represent stable reviewed work.
-3. Complete only the planned lightweight Library after the core quality gates pass.
+3. Keep saved-work access simple; do not expand Library while image quality remains the priority.
 4. Finish release testing and the acceptance matrix. Do not label unresolved model limits as completed outcomes.
 
 ## Checks applied to each change
