@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
-import { editWorkflowId } from "./edit-template.js";
+import { editWorkflowId, editModel } from "./edit-template.js";
 import { canvasSignature } from "../../../apps/api/src/render-signature.js";
 const loadedEditSignature = createHash("sha256")
   .update(readFileSync(resolve("packages/routing/src/edit-template.ts")))
@@ -47,6 +47,6 @@ export function assertEditReady(task: string, fingerprint?: string) {
     templateVersion: evidence.templateVersion,
     reason: workflowId.endsWith("1ref")
       ? "Validated Qwen background/expansion instruction route; exact compositing protects original pixels."
-      : "Validated Qwen instruction route with a second reference showing the allowed edit region; exact compositing protects pixels outside it.",
+      : `Validated ${editModel(task)} instruction route with a second reference showing the allowed edit region; exact compositing protects pixels outside it.`,
   };
 }

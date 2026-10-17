@@ -1,5 +1,6 @@
-import { beforeEach, afterEach, it, expect } from "vitest";
-import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { beforeEach, afterEach, it, expect, vi } from "vitest";
+import { mkdtempSync, mkdirSync, rmSync, readFileSync } from "node:fs";
+import * as readinessModule from "../../apps/api/src/readiness.js";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
@@ -115,6 +116,7 @@ beforeEach(() => {
   store = new Store(root);
 });
 afterEach(() => {
+  vi.restoreAllMocks();
   store.close();
   rmSync(root, { recursive: true, force: true });
 });
@@ -261,6 +263,93 @@ async function completed() {
   store.completeJob(j.id, result.id);
   return { ...f, j, result };
 }
+function routeClient() {
+  vi.spyOn(readinessModule, "readiness").mockReturnValue(
+    ["Klein", "Qwen"].map((model) => ({
+      id: `create.${model.toLowerCase()}.2ref`,
+      model: model as "Klein" | "Qwen",
+      references: 2,
+      qualities: ["Final"],
+      ready: true,
+      reason: "Isolated route test",
+    })),
+  );
+  class Fake extends ComfyClient {
+    override async inspect() {
+      return {
+        status: {
+          connected: true,
+          verified: true,
+          url: this.url,
+          models: {},
+          fingerprint: JSON.parse(
+            readFileSync("workflows/edit-validation.json", "utf8"),
+          ).fingerprint,
+        },
+        info: {},
+      };
+    }
+    override async queue() {
+      return { queue_running: [], queue_pending: [] };
+    }
+    override async submit(): Promise<string> {
+      throw Error("Unexpected engine submission");
+    }
+  }
+  return new Fake("http://127.0.0.1:8188", "test");
+}
+it("submits recolour to Klein while retaining Qwen for other local actions", async () => {
+  const f = await fixture(),
+    saved = store.saveDocument(f.doc.id, f.doc.currentRevisionId, f.snapshot),
+    client = routeClient();
+  for (const task of ["Recolour", "Remove"] as const) {
+    const request = {
+      ...f.request,
+      task,
+      expectedRevision: saved.currentRevisionId,
+      idempotencyKey: randomUUID(),
+    };
+    const row = await submitEdit(store, client, request),
+      job = store.job(row.jobId)!;
+    expect(job.intent.model).toBe(task === "Recolour" ? "Klein" : "Qwen");
+    expect(job.intent.references).toEqual([row.sourceAssetId, row.maskAssetId]);
+    expect(JSON.parse(row.requestJson).instruction).toBe(f.request.instruction);
+  }
+  expect(store.document(f.doc.id)!.currentRevisionId).toBe(
+    saved.currentRevisionId,
+  );
+});
+it("refuses an obsolete queued recolour route before engine submission", async () => {
+  const f = await completed(),
+    row = editRow(store, f.j.id)!,
+    old = store.job(f.j.id)!;
+  store.db.prepare("DELETE FROM candidates WHERE jobId=?").run(f.j.id);
+  store.db
+    .prepare("UPDATE edit_requests SET requestJson=? WHERE jobId=?")
+    .run(JSON.stringify({ ...f.request, task: "Recolour" }), f.j.id);
+  store.db
+    .prepare("UPDATE jobs SET state='queued',resultId=NULL,intent=? WHERE id=?")
+    .run(
+      JSON.stringify({
+        ...old.intent,
+        model: "Qwen",
+        quality: "Final",
+        references: [row.sourceAssetId, row.maskAssetId],
+      }),
+      f.j.id,
+    );
+  const client = routeClient(),
+    submitted = vi.spyOn(client, "submit"),
+    worker = new Worker(store, client);
+  await worker.tick();
+  await worker.stop();
+  expect(submitted).not.toHaveBeenCalled();
+  expect(store.job(f.j.id)!.state).toBe("failed");
+  expect(store.job(f.j.id)!.error).toContain("older model route");
+  expect(store.document(f.doc.id)!.currentRevisionId).toBe(
+    f.doc.currentRevisionId,
+  );
+});
 it("accepts a result only explicitly, keeps source layers and makes review idempotent", async () => {
   const f = await completed();
   expect(store.document(f.doc.id)!.currentRevisionId).toBe(

@@ -48,3 +48,7 @@ On retained GPU outputs, sphere boundary contrast error decreases from 5.005 to 
 ## Broader Windows acceptance
 
 See WINDOWS_IMAGE_ACCEPTANCE.md for matched generator checks and fresh app/API edit, upscale, cutout and image-delivery checks. A new generated photographic-style mug edit exposes a severe texture failure despite exact protected pixels. RGB flattening, one-reference framing, native geometry and cache-off comparisons do not cure it. Klein produces cleaner scoped recolour candidates, but no production edit route is replaced from one case. Create now starts at Final quality to favour full-quality generation; the manual chooser remains. No model download or additional product feature is introduced.
+
+## Validated Recolour model correction
+
+RECOLOUR_MODEL_VALIDATION.md supersedes the earlier one-case decision to keep Klein experimental for Recolour. Four fresh native-source checks cover the generated mug, NASA garment, sphere and translucent derivative. Klein's cleaner mug result survives the app's two-reference mask template; all checked protected RGBA and source alpha remain exact. Recolour alone now uses existing create.klein.2ref at four steps. Other actions retain Qwen. Minor selected-region/shadow variation and selection omissions remain; no universal-best-model claim is made.
