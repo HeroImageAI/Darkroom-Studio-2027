@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "scope": "Dedicated Windows QA project with newly generated photographic-style mugs. No real-world photograph or universal-best-model certification.",
+  "projectId": "eb03006a-deac-420c-8d4c-d13285bc6c87",
+  "documentId": "c6612ec4-c89b-4164-8f71-4634c52a2ddc",
+  "masterUnchanged": true,
+  "generators": [
+    {
+      "model": "Klein",
+      "request": {
+        "prompt": "A realistic studio product photograph of exactly two ceramic mugs on a light grey tabletop. On the left is one glossy red mug with the word \"NOIR\" printed clearly in black uppercase letters. On the right is one matte cobalt-blue mug with no lettering. Both mugs are upright and fully visible with separate handles and soft contact shadows. Plain light grey seamless background, soft window light from the left, natural ceramic texture, eye-level camera. No other objects, no extra mugs, no floating text, no border.",
+        "width": 1024,
+        "height": 1024,
+        "seed": 20271017,
+        "quality": "Final",
+        "model": "Klein",
+        "references": []
+      },
+      "jobId": "11ae4c3a-ade9-4215-ae0d-221074307bad",
+      "sha256": "167e25950756c31b9efcc854aecb0efa97021a0b4adc16eefe91acaa11bbce32",
+      "workflowId": "create.klein.0ref",
+      "executionHash": "b5a14f9f034d307ed027368f0cc61115b99261517d876d0a5940955656aef1cc",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "modelFiles": [
+        {
+          "filename": "flux-2-klein-9b-fp8.safetensors",
+          "sha256": "865ba09f5b4c3cbd3468a4bd3acb9fcb2f8740c54317482f0bcd4ed1d3655cee"
+        },
+        {
+          "filename": "qwen_3_8b_fp8mixed.safetensors",
+          "sha256": "abad16806e0cbabc54e0325d6565847443fe396d5f0be38bb3cd3fe75a1201d6"
+        },
+        {
+          "filename": "flux2-vae.safetensors",
+          "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
+        },
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "steps": 4,
+      "startedAt": "2026-10-17T15:01:04.968Z",
+      "completedAt": "2026-10-17T15:01:18.582Z",
+      "visualReview": "Scoped pass: two correctly coloured mugs and readable NOIR"
+    },
+    {
+      "model": "Qwen",
+      "request": {
+        "prompt": "A realistic studio product photograph of exactly two ceramic mugs on a light grey tabletop. On the left is one glossy red mug with the word \"NOIR\" printed clearly in black uppercase letters. On the right is one matte cobalt-blue mug with no lettering. Both mugs are upright and fully visible with separate handles and soft contact shadows. Plain light grey seamless background, soft window light from the left, natural ceramic texture, eye-level camera. No other objects, no extra mugs, no floating text, no border.",
+        "width": 1024,
+        "height": 1024,
+        "seed": 20271017,
+        "quality": "Final",
+        "model": "Qwen",
+        "references": []
+      },
+      "jobId": "7413b9c1-a165-46eb-8061-9666081128d1",
+      "sha256": "b8fc8cf9b9dec16484c7d68033b7c29cf0171992c9c52027dd907788ff128804",
+      "workflowId": "create.qwen.0ref",
+      "executionHash": "03c720d26e30016a39276fb7c194158ae82143d81fcbfc3ef483780f53abc9d4",
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "modelFiles": [
+        {
+          "filename": "flux-2-klein-9b-fp8.safetensors",
+          "sha256": "865ba09f5b4c3cbd3468a4bd3acb9fcb2f8740c54317482f0bcd4ed1d3655cee"
+        },
+        {
+          "filename": "qwen_3_8b_fp8mixed.safetensors",
+          "sha256": "abad16806e0cbabc54e0325d6565847443fe396d5f0be38bb3cd3fe75a1201d6"
+        },
+        {
+          "filename": "flux2-vae.safetensors",
+          "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
+        },
+        {
+          "filename": "qwen_image_2.1_int8_convrot.safetensors",
+          "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+        },
+        {
+          "filename": "qwen3vl_8b_int8_convrot.safetensors",
+          "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+        },
+        {
+          "filename": "qwen_image_2.1_vae_bf16.safetensors",
+          "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+        }
+      ],
+      "steps": 40,
+      "startedAt": "2026-10-17T15:01:18.585Z",
+      "completedAt": "2026-10-17T15:01:48.602Z",
+      "visualReview": "Partial: counts and lettering pass; blue mug too glossy for matte request"
+    }
+  ],
+  "actions": [
+    {
+      "task": "Recolour",
+      "request": {
+        "documentId": "c6612ec4-c89b-4164-8f71-4634c52a2ddc",
+        "expectedRevision": "4d141348-afc4-4fc4-af16-542a01d3ebde",
+        "task": "Recolour",
+        "area": "selection",
+        "seed": 20271017,
+        "instruction": "Change only the red mug on the left to forest green. Preserve its shape, handle, glossy ceramic finish, lighting, shadow and the exact black word NOIR. Keep the blue mug, tabletop, background, camera framing and all other details unchanged."
+      },
+      "jobId": "54fc29ee-5b41-4988-b7bc-ed0bc8c04b5b",
+      "sha256": "e3a0faeaf3841f956323929e46898fa758253e6160b6ac6e7a95d4d6a3e12179",
+      "width": 1024,
+      "height": 1024,
+      "masterUnchanged": true,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "executionHash": "c8929a97ccceafea7e19a703bf094930fb26d0d0ef36c7cc93ce9a683cea7c4f",
+      "protectedPixels": 867584,
+      "protectedExact": true,
+      "visualReview": "FAIL: heavy invented texture inside allowed region"
+    },
+    {
+      "task": "Upscale",
+      "request": {
+        "documentId": "c6612ec4-c89b-4164-8f71-4634c52a2ddc",
+        "expectedRevision": "4d141348-afc4-4fc4-af16-542a01d3ebde",
+        "task": "Upscale",
+        "width": 2048,
+        "height": 2048
+      },
+      "jobId": "4e2909b4-a1ae-43ed-bc7f-36b653d03b31",
+      "sha256": "bd119aaff7c2d83689e1e1f1b901138bcc1fe5648484f9fda69552b1081f7f0d",
+      "width": 2048,
+      "height": 2048,
+      "masterUnchanged": true,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "executionHash": "80cfd0b6e0a1655435d4228e3cc1f88541b0c1e91c0f1937ae578a5160997223",
+      "protectedPixels": null,
+      "protectedExact": null,
+      "visualReview": "Scoped pass: 2048 square, readable NOIR, retained mug shapes"
+    },
+    {
+      "task": "Remove-background",
+      "request": {
+        "documentId": "c6612ec4-c89b-4164-8f71-4634c52a2ddc",
+        "expectedRevision": "4d141348-afc4-4fc4-af16-542a01d3ebde",
+        "task": "Remove background",
+        "width": 1024,
+        "height": 1024
+      },
+      "jobId": "35b5274b-0102-4e7d-bf6f-1b6a8f520024",
+      "sha256": "33269879522a57f8ffe30ad3e0925b40abd26cedbbe91d2b53be1b55cc482887",
+      "width": 1024,
+      "height": 1024,
+      "masterUnchanged": true,
+      "engineFingerprint": "3b00b6c06ed7b885d070476b44e382b5d300c278ae19d81859c2699c0b07ea36",
+      "executionHash": "93cb54d94ab472939586d58f5a1de163b71c053ef41c90929250802134f4c864",
+      "protectedPixels": null,
+      "protectedExact": null,
+      "visualReview": "Scoped pass: cutout and handle holes on dark background; minor light edge remains"
+    }
+  ],
+  "exports": {
+    "png": {
+      "id": "0f70cc1c-c114-4c7c-a3c2-b01160459759",
+      "documentId": "c6612ec4-c89b-4164-8f71-4634c52a2ddc",
+      "revisionId": "4d141348-afc4-4fc4-af16-542a01d3ebde",
+      "assetId": "1101ce23-528f-402f-8e26-d2116d57b472",
+      "filename": "darkroom-1024x1024-0f70cc1c.png",
+      "sha256": "da2a9bee266d07ff7e367e5c0f89934ab0066ccd2e38fa62dcb87fbf2913f547",
+      "width": 1024,
+      "height": 1024,
+      "format": "png",
+      "transparent": false,
+      "createdAt": "2026-10-17T15:06:16.682Z",
+      "downloadVerified": true
+    },
+    "jpeg": {
+      "id": "041fddb0-01f3-43ed-89ee-0466cc92d969",
+      "documentId": "c6612ec4-c89b-4164-8f71-4634c52a2ddc",
+      "revisionId": "4d141348-afc4-4fc4-af16-542a01d3ebde",
+      "assetId": "cc1af4b8-9faa-47b0-8a1b-fcc28e854c36",
+      "filename": "darkroom-1024x1024-041fddb0.jpg",
+      "sha256": "ba9581896065657c22a4abe3d0e339839c9ff1d2a3d8e3413c131338e440c7cb",
+      "width": 1024,
+      "height": 1024,
+      "format": "jpeg",
+      "transparent": false,
+      "createdAt": "2026-10-17T15:06:17.157Z",
+      "downloadVerified": true
+    }
+  },
+  "comparisonEvidence": "workflows/windows-edit-input-comparison.json",
+  "productionChange": "Create UI starts at Final quality. Model choices, API defaults, graphs and editing routes unchanged.",
+  "binaryRoot": "data/windows-image-acceptance",
+  "restoreStatus": "Existing limitations remain open; not retested or certified here"
+}

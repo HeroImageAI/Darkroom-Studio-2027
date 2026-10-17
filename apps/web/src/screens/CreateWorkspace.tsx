@@ -30,7 +30,7 @@ type Props = {
 };
 export function CreateWorkspace(p: Props) {
   const [aspect, setAspect] = useState<keyof typeof aspectDimensions>("Square");
-  const [quality, setQuality] = useState<"Draft" | "Final">("Draft");
+  const [quality, setQuality] = useState<"Draft" | "Final">("Final");
   const [variations, setVariations] = useState(1);
   const [model, setModel] = useState<"Auto" | "Klein" | "Qwen">("Auto");
   const [custom, setCustom] = useState(false);

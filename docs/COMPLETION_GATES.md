@@ -33,3 +33,7 @@ The latest user instructions in `CURRENT_SCOPE.md` define the current scope and 
 - UX/UI: retain Create/Edit/Library only, one coherent canvas, visible selection and candidate review, simple outcome wording, Advanced for technical settings, and central brand tokens.
 - Validation: appropriate meaningful regression tests, typecheck/build, relevant browser tests and real GPU visual assessment where behaviour changes. Protect originals and existing user masters.
 - Reporting: record input/output/model/graph hashes, settings, measured timing scope, visual failures and remaining limits. Successful execution is not a visual pass.
+
+## Latest Windows quality evidence
+
+WINDOWS_IMAGE_ACCEPTANCE.md and workflows/windows-image-acceptance.json add live paired generator, protected recolour, 2K upscale, cutout and image-download checks. The new Qwen mug recolour fails material/background texture quality; exact protection alone does not pass it. Klein is a cleaner candidate on that case, pending broader validation. Core image-edit quality remains open. Final quality is the starting UI setting; model selection stays available. No vector, Library expansion or additional product feature is part of this work.

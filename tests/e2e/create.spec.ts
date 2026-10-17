@@ -142,6 +142,9 @@ test("reviews variations, compares references, saves versions and sends a result
     "One red bottle. Preserve the exact text NOIR.",
   );
   expect(calls[0].intent.model).toBe("Auto");
+  expect(calls[0].intent.quality).toBe("Final");
+  expect(calls[0].intent.width).toBe(1024);
+  expect(calls[0].intent.height).toBe(1024);
   await page.getByRole("button", { name: "Review variation 2" }).click();
   await page.getByRole("button", { name: "Compare", exact: true }).click();
   await expect(page.getByLabel("Compare with")).toBeVisible();
